@@ -1,0 +1,23 @@
+name: WeatherApp
+options:
+  bundleIdPrefix: com.weather
+  deploymentTarget:
+    iOS: "18.0"
+targets:
+  WeatherApp:
+    type: application
+    platform: iOS
+    sources: 
+      - path: WeatherApp
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.weather.WeatherApp
+      INFOPLIST_FILE: WeatherApp/Info.plist
+      ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+      CODE_SIGN_IDENTITY: ""
+      CODE_SIGNING_REQUIRED: NO
+      CODE_SIGNING_ALLOWED: NO
+    dependencies:
+      - package: WeatherCore
+packages:
+  WeatherCore:
+    path: WeatherCore
