@@ -10,7 +10,10 @@ public struct HourlyForecastGrouper {
             maxTemp = max(maxTemp, item.main.temp)
         }
         
-        if minTemp == maxTemp {
+        if forecast.list.isEmpty {
+            minTemp = 0
+            maxTemp = 0
+        } else if minTemp == maxTemp {
             minTemp -= 1
             maxTemp += 1
         }
