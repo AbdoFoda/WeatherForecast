@@ -8,4 +8,11 @@ final class AppCoordinator {
         let httpClient = HTTPClient(baseURL: ProxyConfiguration.baseURL)
         weatherService = WeatherService(client: httpClient)
     }
+
+    func start(window: UIWindow) {
+        let viewModel = LocationWeatherViewModel(weatherService: weatherService)
+        let viewController = LocationWeatherViewController(viewModel: viewModel)
+        window.rootViewController = viewController
+        window.makeKeyAndVisible()
+    }
 }
