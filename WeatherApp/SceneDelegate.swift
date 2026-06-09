@@ -1,6 +1,7 @@
 import UIKit
 
-class SceneDelegate: UIResponder, UIWindowSceneDelegate {
+@objc(SceneDelegate)
+final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     var window: UIWindow?
     private var coordinator: AppCoordinator?
 
@@ -12,7 +13,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         guard let windowScene = (scene as? UIWindowScene) else { return }
         
         let window = UIWindow(windowScene: windowScene)
-        let coordinator = AppCoordinator()
+        let coordinator = AppCoordinator.live()
         coordinator.start(window: window)
         
         self.window = window
