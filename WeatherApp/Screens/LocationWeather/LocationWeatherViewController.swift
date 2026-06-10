@@ -150,7 +150,7 @@ final class LocationWeatherViewController: UIViewController {
                 self.loadingView.startAnimating()
                 self.permissionView.isHidden = true
                 self.setOfflineBannerVisible(false)
-                self.backgroundView.configure(scene: .neutral)
+                self.backgroundView.configure(with: .neutral)
             case .loaded(let displayData, let notice):
                 self.loadingView.stopAnimating()
                 self.refreshControl.endRefreshing()
@@ -161,7 +161,7 @@ final class LocationWeatherViewController: UIViewController {
                 self.tilesView.configure(with: displayData.tiles)
                 self.tilesHeightConstraint?.constant = self.tilesView.intrinsicContentSize.height
                 self.setOfflineBannerVisible(notice == .offline)
-                self.backgroundView.configure(scene: displayData.backgroundScene)
+                self.backgroundView.configure(with: WeatherBackgroundConfiguration(displayData: displayData))
                 self.view.setNeedsLayout()
             case .unavailable(let notice):
                 self.loadingView.stopAnimating()
@@ -169,7 +169,7 @@ final class LocationWeatherViewController: UIViewController {
                 self.permissionView.isHidden = true
                 self.setContentHidden(true)
                 self.setOfflineBannerVisible(notice == .offline)
-                self.backgroundView.configure(scene: .neutral)
+                self.backgroundView.configure(with: .neutral)
             case .locationPermissionDenied:
                 self.loadingView.stopAnimating()
                 self.permissionView.isHidden = false
