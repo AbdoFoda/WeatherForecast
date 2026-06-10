@@ -2,75 +2,172 @@ import UIKit
 import WeatherCore
 
 final class WeatherCloudParallaxView: UIView {
-    private let backCloud = UIImageView()
-    private let frontCloud = UIImageView()
+    private let backBand = UIImageView()
+    private let frontBand = UIImageView()
+
+    private var configuredScene: WeatherScene = .neutral
+    private var configuredCoverage = 0
+    private var configuredWindSpeed: Double = 0
+    private var configuredOpacity: CGFloat = 0
+    private var allowsAnimation = false
+    private var lastRenderedSize: CGSize = .zero
+    private var lastLayoutSize: CGSize = .zero
+    private var appliedMotionSignature: String?
 
     override init(frame: CGRect) {
         super.init(frame: frame)
         isUserInteractionEnabled = false
-        [backCloud, frontCloud].forEach {
-            $0.contentMode = .scaleAspectFit
-            $0.translatesAutoresizingMaskIntoConstraints = false
+        clipsToBounds = true
+        [backBand, frontBand].forEach {
+            $0.contentMode = .scaleToFill
+            $0.clipsToBounds = true
             addSubview($0)
         }
-        NSLayoutConstraint.activate([
-            backCloud.leadingAnchor.constraint(equalTo: leadingAnchor, constant: -40),
-            backCloud.centerYAnchor.constraint(equalTo: centerYAnchor, constant: -30),
-            backCloud.widthAnchor.constraint(equalTo: widthAnchor, multiplier: 0.9),
-            backCloud.heightAnchor.constraint(equalTo: heightAnchor, multiplier: 0.35),
-
-            frontCloud.trailingAnchor.constraint(equalTo: trailingAnchor, constant: 30),
-            frontCloud.centerYAnchor.constraint(equalTo: centerYAnchor, constant: 10),
-            frontCloud.widthAnchor.constraint(equalTo: widthAnchor, multiplier: 0.75),
-            frontCloud.heightAnchor.constraint(equalTo: heightAnchor, multiplier: 0.28),
-        ])
     }
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
-    func configure(scene: WeatherScene, cloudCoveragePercent: Int, animated: Bool) {
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        layoutBands()
+        refreshTexturesIfNeeded()
+    }
+
+    func configure(
+        scene: WeatherScene,
+        cloudCoveragePercent: Int,
+        windSpeedMetersPerSecond: Double,
+        animated: Bool
+    ) {
         let visible = WeatherBackgroundEffectsPolicy.shouldShowClouds(
             scene: scene,
             cloudCoveragePercent: cloudCoveragePercent
         )
         isHidden = !visible
         guard visible else {
-            layer.removeAllAnimations()
+            stopMotion()
             return
         }
 
-        let opacity = min(
+        configuredScene = scene
+        configuredCoverage = cloudCoveragePercent
+        configuredWindSpeed = windSpeedMetersPerSecond
+        configuredOpacity = CGFloat(min(
             WeatherBackgroundConstants.Cloud.maxOpacity,
-            Float(cloudCoveragePercent) / 100 * WeatherBackgroundConstants.Cloud.maxOpacity
-        )
-        backCloud.alpha = CGFloat(opacity * 0.75)
-        frontCloud.alpha = CGFloat(opacity)
+            Float(cloudCoveragePercent) / WeatherBackgroundConstants.Cloud.coverageScale
+                * WeatherBackgroundConstants.Cloud.maxOpacity
+        ))
+        allowsAnimation = animated && !UIAccessibility.isReduceMotionEnabled
 
-        let backImage = WeatherBackgroundAssetFactory.cloudImage(width: 280, height: 120)
-        let frontImage = WeatherBackgroundAssetFactory.cloudImage(width: 220, height: 90)
-        backCloud.image = backImage
-        frontCloud.image = frontImage
-
-        layer.removeAllAnimations()
-        backCloud.layer.removeAllAnimations()
-        frontCloud.layer.removeAllAnimations()
-
-        guard animated, !UIAccessibility.isReduceMotionEnabled else { return }
-
-        addDrift(to: backCloud.layer, distance: 28, duration: WeatherBackgroundConstants.parallaxDuration)
-        addDrift(to: frontCloud.layer, distance: -22, duration: WeatherBackgroundConstants.parallaxDuration * 0.8)
+        lastRenderedSize = .zero
+        lastLayoutSize = .zero
+        appliedMotionSignature = nil
+        setNeedsLayout()
+        layoutIfNeeded()
+        applyMotionIfNeeded()
     }
 
-    private func addDrift(to layer: CALayer, distance: CGFloat, duration: TimeInterval) {
-        let animation = CABasicAnimation(keyPath: "transform.translation.x")
-        animation.fromValue = 0
-        animation.toValue = distance
-        animation.duration = duration
-        animation.autoreverses = true
-        animation.repeatCount = .infinity
-        animation.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-        layer.add(animation, forKey: "drift")
+    private func layoutBands() {
+        guard bounds.width > 0, bounds.height > 0 else { return }
+        guard bounds.size != lastLayoutSize else { return }
+
+        lastLayoutSize = bounds.size
+        let textureWidth = WeatherBackgroundMotionPolicy.cloudTextureWidth(for: bounds.width)
+        let insetX = (textureWidth - bounds.width) / 2
+
+        backBand.frame = CGRect(
+            x: -insetX,
+            y: 0,
+            width: textureWidth,
+            height: bounds.height
+        )
+        frontBand.frame = CGRect(
+            x: -insetX,
+            y: WeatherBackgroundConstants.Cloud.frontBandVerticalOffset,
+            width: textureWidth,
+            height: bounds.height
+        )
+
+        appliedMotionSignature = nil
+        applyMotionIfNeeded()
+    }
+
+    private func refreshTexturesIfNeeded() {
+        guard !isHidden else { return }
+
+        let bandSize = bounds.size
+        guard bandSize.width > 0, bandSize.height > 0 else { return }
+        guard bandSize != lastRenderedSize else { return }
+
+        lastRenderedSize = bandSize
+        let density = WeatherBackgroundCloudPolicy.density(
+            scene: configuredScene,
+            cloudCoveragePercent: configuredCoverage
+        )
+        let isWideLayout = WeatherBackgroundCloudPolicy.isWideLayout(width: bandSize.width)
+        let textureSize = CGSize(
+            width: WeatherBackgroundMotionPolicy.cloudTextureWidth(for: bandSize.width),
+            height: bandSize.height
+        )
+
+        backBand.image = WeatherBackgroundAssetFactory.cloudSkyTexture(
+            size: textureSize,
+            density: WeatherBackgroundCloudPolicy.adjustedLayerDensity(density, wide: isWideLayout, layer: .back),
+            variant: WeatherBackgroundConstants.Cloud.backTextureVariant,
+            layerPhase: WeatherBackgroundConstants.Cloud.backLayerPhase
+        )
+        frontBand.image = WeatherBackgroundAssetFactory.cloudSkyTexture(
+            size: textureSize,
+            density: WeatherBackgroundCloudPolicy.adjustedLayerDensity(density, wide: isWideLayout, layer: .front),
+            variant: WeatherBackgroundConstants.Cloud.frontTextureVariant,
+            layerPhase: WeatherBackgroundConstants.Cloud.frontLayerPhase
+        )
+
+        backBand.alpha = configuredOpacity * WeatherBackgroundCloudPolicy.bandOpacityMultiplier(wide: isWideLayout, layer: .back)
+        frontBand.alpha = configuredOpacity * WeatherBackgroundCloudPolicy.bandOpacityMultiplier(wide: isWideLayout, layer: .front)
+
+        appliedMotionSignature = nil
+        applyMotionIfNeeded()
+    }
+
+    private func applyMotionIfNeeded() {
+        guard allowsAnimation, !isHidden, bounds.width > 0 else { return }
+
+        let drift = WeatherBackgroundMotionPolicy.cloudDrift(windSpeed: configuredWindSpeed)
+        let signature = "\(drift.backDistance)-\(drift.frontDistance)-\(drift.duration)-\(configuredWindSpeed)"
+        guard signature != appliedMotionSignature else { return }
+        appliedMotionSignature = signature
+
+        startDrift(on: backBand, distance: drift.backDistance, duration: drift.duration)
+        startDrift(
+            on: frontBand,
+            distance: drift.frontDistance,
+            duration: drift.duration * WeatherBackgroundConstants.Animation.cloudFrontDurationScale
+        )
+    }
+
+    private func startDrift(on view: UIView, distance: CGFloat, duration: TimeInterval) {
+        view.layer.removeAllAnimations()
+        view.transform = .identity
+
+        UIView.animate(
+            withDuration: duration,
+            delay: 0,
+            options: [.autoreverse, .repeat, .curveEaseInOut, .allowUserInteraction],
+            animations: {
+                view.transform = CGAffineTransform(translationX: distance, y: 0)
+            }
+        )
+    }
+
+    private func stopMotion() {
+        allowsAnimation = false
+        appliedMotionSignature = nil
+        [backBand, frontBand].forEach { band in
+            band.layer.removeAllAnimations()
+            band.transform = .identity
+        }
     }
 }

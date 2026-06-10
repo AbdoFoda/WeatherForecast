@@ -8,6 +8,7 @@ final class WeatherBackgroundView: UIView {
     private let celestialGlow = WeatherCelestialGlowView()
     private let stormFlash = WeatherStormFlashView()
     private var particleEmitter: CAEmitterLayer?
+    private var snapshotOverlayLayer: CALayer?
 
     private var activeIsFront = true
     private var currentConfiguration = WeatherBackgroundConfiguration.neutral
@@ -27,6 +28,46 @@ final class WeatherBackgroundView: UIView {
         backGradient.frame = bounds
         frontGradient.frame = bounds
         updateParticleEmitterFrame()
+        snapshotOverlayLayer?.frame = bounds
+    }
+
+    func configureForSnapshot(with configuration: WeatherBackgroundConfiguration) {
+        particleEmitter?.removeFromSuperlayer()
+        particleEmitter = nil
+        snapshotOverlayLayer?.removeFromSuperlayer()
+        snapshotOverlayLayer = nil
+
+        currentConfiguration = configuration
+        allowsMotion = false
+
+        let palette = WeatherBackgroundPalette.colors(for: configuration.scene)
+        backGradient.colors = [palette.top.cgColor, palette.bottom.cgColor]
+        backGradient.locations = [
+            WeatherBackgroundConstants.Layout.gradientLocationStart,
+            WeatherBackgroundConstants.Layout.gradientLocationEnd,
+        ]
+        backGradient.opacity = 1
+        frontGradient.opacity = 0
+        backGradient.removeAllAnimations()
+        frontGradient.removeAllAnimations()
+        activeIsFront = false
+
+        cloudParallax.configure(
+            scene: configuration.scene,
+            cloudCoveragePercent: configuration.cloudCoveragePercent,
+            windSpeedMetersPerSecond: configuration.windSpeedMetersPerSecond,
+            animated: false
+        )
+        celestialGlow.configure(
+            scene: configuration.scene,
+            windSpeedMetersPerSecond: configuration.windSpeedMetersPerSecond,
+            animated: false
+        )
+        stormFlash.configure(
+            active: configuration.scene == .thunderstorm,
+            animated: false
+        )
+        updateSnapshotOverlay(for: configuration)
     }
 
     func configure(scene: WeatherScene) {
@@ -52,9 +93,14 @@ final class WeatherBackgroundView: UIView {
         cloudParallax.configure(
             scene: configuration.scene,
             cloudCoveragePercent: configuration.cloudCoveragePercent,
+            windSpeedMetersPerSecond: configuration.windSpeedMetersPerSecond,
             animated: allowsMotion
         )
-        celestialGlow.configure(scene: configuration.scene, animated: allowsMotion)
+        celestialGlow.configure(
+            scene: configuration.scene,
+            windSpeedMetersPerSecond: configuration.windSpeedMetersPerSecond,
+            animated: allowsMotion
+        )
         stormFlash.configure(
             active: configuration.scene == .thunderstorm,
             animated: allowsMotion
@@ -63,16 +109,22 @@ final class WeatherBackgroundView: UIView {
     }
 
     private func setup() {
-        backGradient.startPoint = CGPoint(x: 0.5, y: 0)
-        backGradient.endPoint = CGPoint(x: 0.5, y: 1)
-        frontGradient.startPoint = CGPoint(x: 0.5, y: 0)
-        frontGradient.endPoint = CGPoint(x: 0.5, y: 1)
+        backGradient.startPoint = WeatherBackgroundConstants.Layout.gradientStartPoint
+        backGradient.endPoint = WeatherBackgroundConstants.Layout.gradientEndPoint
+        frontGradient.startPoint = WeatherBackgroundConstants.Layout.gradientStartPoint
+        frontGradient.endPoint = WeatherBackgroundConstants.Layout.gradientEndPoint
 
         let neutral = WeatherBackgroundPalette.colors(for: .neutral)
         backGradient.colors = [neutral.top.cgColor, neutral.bottom.cgColor]
         frontGradient.colors = [neutral.top.cgColor, neutral.bottom.cgColor]
-        backGradient.locations = [0, 1]
-        frontGradient.locations = [0, 1]
+        backGradient.locations = [
+            WeatherBackgroundConstants.Layout.gradientLocationStart,
+            WeatherBackgroundConstants.Layout.gradientLocationEnd,
+        ]
+        frontGradient.locations = [
+            WeatherBackgroundConstants.Layout.gradientLocationStart,
+            WeatherBackgroundConstants.Layout.gradientLocationEnd,
+        ]
 
         layer.addSublayer(backGradient)
         layer.addSublayer(frontGradient)
@@ -110,7 +162,10 @@ final class WeatherBackgroundView: UIView {
         let outgoing = activeIsFront ? frontGradient : backGradient
 
         incoming.colors = [palette.top.cgColor, palette.bottom.cgColor]
-        incoming.locations = [0, 1]
+        incoming.locations = [
+            WeatherBackgroundConstants.Layout.gradientLocationStart,
+            WeatherBackgroundConstants.Layout.gradientLocationEnd,
+        ]
         incoming.opacity = 0
 
         if !allowsMotion {
@@ -125,19 +180,19 @@ final class WeatherBackgroundView: UIView {
         let fade = CABasicAnimation(keyPath: "opacity")
         fade.fromValue = 0
         fade.toValue = 1
-        fade.duration = WeatherBackgroundConstants.gradientCrossfadeDuration
+        fade.duration = WeatherBackgroundConstants.Animation.gradientCrossfadeDuration
         fade.fillMode = .forwards
         fade.isRemovedOnCompletion = false
-        incoming.add(fade, forKey: "fadeIn")
+        incoming.add(fade, forKey: WeatherBackgroundConstants.Animation.Key.fadeIn)
         incoming.opacity = 1
 
         let fadeOut = CABasicAnimation(keyPath: "opacity")
         fadeOut.fromValue = 1
         fadeOut.toValue = 0
-        fadeOut.duration = WeatherBackgroundConstants.gradientCrossfadeDuration
+        fadeOut.duration = WeatherBackgroundConstants.Animation.gradientCrossfadeDuration
         fadeOut.fillMode = .forwards
         fadeOut.isRemovedOnCompletion = false
-        outgoing.add(fadeOut, forKey: "fadeOut")
+        outgoing.add(fadeOut, forKey: WeatherBackgroundConstants.Animation.Key.fadeOut)
         outgoing.opacity = 0
 
         activeIsFront.toggle()
@@ -165,8 +220,46 @@ final class WeatherBackgroundView: UIView {
     private func updateParticleEmitterFrame() {
         guard let particleEmitter else { return }
         particleEmitter.frame = bounds
-        particleEmitter.emitterPosition = CGPoint(x: bounds.midX, y: -8)
-        particleEmitter.emitterSize = CGSize(width: bounds.width, height: 1)
+        particleEmitter.emitterPosition = CGPoint(
+            x: bounds.midX,
+            y: WeatherBackgroundConstants.Layout.particleEmitterVerticalOffset
+        )
+        particleEmitter.emitterSize = CGSize(
+            width: bounds.width,
+            height: WeatherBackgroundConstants.Layout.particleEmitterLineHeight
+        )
+    }
+
+    private func updateSnapshotOverlay(for configuration: WeatherBackgroundConfiguration) {
+        guard bounds.width > 0, bounds.height > 0 else { return }
+        guard let density = snapshotPrecipitationDensity(for: configuration.scene) else { return }
+
+        let image = WeatherBackgroundAssetFactory.precipitationOverlayImage(
+            density: density,
+            size: bounds.size
+        )
+        let overlay = CALayer()
+        overlay.frame = bounds
+        overlay.contents = image.cgImage
+        snapshotOverlayLayer = overlay
+        layer.addSublayer(overlay)
+    }
+
+    private func snapshotPrecipitationDensity(
+        for scene: WeatherScene
+    ) -> WeatherBackgroundAssetFactory.PrecipitationOverlayDensity? {
+        switch scene {
+        case .drizzle:
+            return .drizzle
+        case .rain:
+            return .rain
+        case .thunderstorm:
+            return .storm
+        case .snow:
+            return .snow
+        default:
+            return nil
+        }
     }
 }
 

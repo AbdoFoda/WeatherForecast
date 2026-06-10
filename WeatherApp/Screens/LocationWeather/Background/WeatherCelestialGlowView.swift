@@ -4,12 +4,18 @@ import WeatherCore
 final class WeatherCelestialGlowView: UIView {
     private let glowLayer = CALayer()
     private let bodyLayer = CALayer()
+    private let motionContainer = CALayer()
+
+    private var configuredWindSpeed: Double = 0
+    private var allowsAnimation = false
+    private var appliedMotionSignature: String?
 
     override init(frame: CGRect) {
         super.init(frame: frame)
         isUserInteractionEnabled = false
-        layer.addSublayer(glowLayer)
-        layer.addSublayer(bodyLayer)
+        layer.addSublayer(motionContainer)
+        motionContainer.addSublayer(glowLayer)
+        motionContainer.addSublayer(bodyLayer)
     }
 
     required init?(coder: NSCoder) {
@@ -18,47 +24,104 @@ final class WeatherCelestialGlowView: UIView {
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        let diameter: CGFloat = 56
-        let origin = CGPoint(x: bounds.width * 0.72, y: bounds.height * 0.14)
-        let frame = CGRect(origin: origin, size: CGSize(width: diameter, height: diameter))
-        bodyLayer.frame = frame
-        glowLayer.frame = frame.insetBy(dx: -18, dy: -18)
+        let diameter = WeatherBackgroundConstants.Celestial.bodyDiameter
+        let origin = CGPoint(
+            x: bounds.width * WeatherBackgroundConstants.Celestial.horizontalAnchorRatio,
+            y: max(
+                bounds.height * WeatherBackgroundConstants.Celestial.verticalAnchorRatio,
+                WeatherBackgroundConstants.Celestial.minimumVerticalAnchor
+            )
+        )
+        motionContainer.frame = CGRect(origin: origin, size: CGSize(width: diameter, height: diameter))
+        bodyLayer.frame = motionContainer.bounds
+        glowLayer.frame = motionContainer.bounds.insetBy(
+            dx: -WeatherBackgroundConstants.Celestial.glowInset,
+            dy: -WeatherBackgroundConstants.Celestial.glowInset
+        )
         bodyLayer.cornerRadius = diameter / 2
         glowLayer.cornerRadius = glowLayer.bounds.width / 2
+        applyMotionIfNeeded()
     }
 
-    func configure(scene: WeatherScene, animated: Bool) {
+    func configure(scene: WeatherScene, windSpeedMetersPerSecond: Double, animated: Bool) {
+        configuredWindSpeed = windSpeedMetersPerSecond
+        allowsAnimation = animated && !UIAccessibility.isReduceMotionEnabled
+        appliedMotionSignature = nil
+
         switch WeatherBackgroundEffectsPolicy.celestialKind(for: scene) {
         case .none:
             isHidden = true
-            layer.removeAllAnimations()
+            stopMotion()
         case .sun:
             isHidden = false
-            bodyLayer.backgroundColor = UIColor(red: 1, green: 0.92, blue: 0.45, alpha: 1).cgColor
-            glowLayer.backgroundColor = UIColor(red: 1, green: 0.85, blue: 0.35, alpha: 0.35).cgColor
+            bodyLayer.backgroundColor = UIColor(
+                red: WeatherBackgroundConstants.Celestial.Sun.bodyRed,
+                green: WeatherBackgroundConstants.Celestial.Sun.bodyGreen,
+                blue: WeatherBackgroundConstants.Celestial.Sun.bodyBlue,
+                alpha: 1
+            ).cgColor
+            glowLayer.backgroundColor = UIColor(
+                red: WeatherBackgroundConstants.Celestial.Sun.glowRed,
+                green: WeatherBackgroundConstants.Celestial.Sun.glowGreen,
+                blue: WeatherBackgroundConstants.Celestial.Sun.glowBlue,
+                alpha: WeatherBackgroundConstants.Celestial.Sun.glowAlpha
+            ).cgColor
             bodyLayer.shadowOpacity = 0
-            animatePulse(enabled: animated)
+            applyMotionIfNeeded()
         case .moon:
             isHidden = false
-            bodyLayer.backgroundColor = UIColor(white: 0.92, alpha: 1).cgColor
-            glowLayer.backgroundColor = UIColor(white: 0.85, alpha: 0.22).cgColor
+            bodyLayer.backgroundColor = UIColor(
+                white: WeatherBackgroundConstants.Celestial.Moon.bodyWhite,
+                alpha: 1
+            ).cgColor
+            glowLayer.backgroundColor = UIColor(
+                white: WeatherBackgroundConstants.Celestial.Moon.glowWhite,
+                alpha: WeatherBackgroundConstants.Celestial.Moon.glowAlpha
+            ).cgColor
             bodyLayer.shadowOpacity = 0
-            animatePulse(enabled: animated)
+            applyMotionIfNeeded()
         }
     }
 
-    private func animatePulse(enabled: Bool) {
-        glowLayer.removeAllAnimations()
-        guard enabled, !UIAccessibility.isReduceMotionEnabled else {
+    private func applyMotionIfNeeded() {
+        glowLayer.removeAnimation(forKey: WeatherBackgroundConstants.Animation.Key.pulse)
+        motionContainer.removeAnimation(forKey: WeatherBackgroundConstants.Animation.Key.sway)
+
+        guard allowsAnimation, !isHidden else {
             glowLayer.opacity = 1
             return
         }
+
+        let signature = "\(configuredWindSpeed)-\(bounds.width)"
+        guard signature != appliedMotionSignature else { return }
+        appliedMotionSignature = signature
+
         let pulse = CABasicAnimation(keyPath: "opacity")
-        pulse.fromValue = 0.65
-        pulse.toValue = 1
-        pulse.duration = WeatherBackgroundConstants.celestialPulseDuration
+        pulse.fromValue = WeatherBackgroundConstants.Animation.pulseOpacityMin
+        pulse.toValue = WeatherBackgroundConstants.Animation.pulseOpacityMax
+        pulse.duration = WeatherBackgroundConstants.Animation.celestialPulseDuration
         pulse.autoreverses = true
         pulse.repeatCount = .infinity
-        glowLayer.add(pulse, forKey: "pulse")
+        glowLayer.add(pulse, forKey: WeatherBackgroundConstants.Animation.Key.pulse)
+
+        let swayDistance = WeatherBackgroundMotionPolicy.celestialSwayDistance(windSpeed: configuredWindSpeed)
+        let swayDuration = WeatherBackgroundMotionPolicy.celestialSwayDuration(windSpeed: configuredWindSpeed)
+        let sway = CABasicAnimation(keyPath: "transform.translation.x")
+        sway.fromValue = -swayDistance
+        sway.toValue = swayDistance
+        sway.duration = swayDuration
+        sway.autoreverses = true
+        sway.repeatCount = .infinity
+        sway.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+        motionContainer.add(sway, forKey: WeatherBackgroundConstants.Animation.Key.sway)
+    }
+
+    private func stopMotion() {
+        allowsAnimation = false
+        appliedMotionSignature = nil
+        layer.removeAllAnimations()
+        motionContainer.removeAllAnimations()
+        glowLayer.removeAllAnimations()
+        bodyLayer.removeAllAnimations()
     }
 }

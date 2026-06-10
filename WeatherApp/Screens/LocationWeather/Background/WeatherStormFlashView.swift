@@ -27,19 +27,28 @@ final class WeatherStormFlashView: UIView {
 
         guard active, animated, !UIAccessibility.isReduceMotionEnabled else { return }
 
-        flashTimer = Timer.scheduledTimer(withTimeInterval: 4.5, repeats: true) { [weak self] _ in
+        flashTimer = Timer.scheduledTimer(
+            withTimeInterval: WeatherBackgroundConstants.Storm.flashInterval,
+            repeats: true
+        ) { [weak self] _ in
             self?.playFlash()
         }
-        flashTimer?.tolerance = 1.2
+        flashTimer?.tolerance = WeatherBackgroundConstants.Storm.flashTimerTolerance
     }
 
     private func playFlash() {
-        UIView.animate(withDuration: 0.08, animations: {
-            self.backgroundColor = UIColor.white.withAlphaComponent(0.18)
-        }, completion: { _ in
-            UIView.animate(withDuration: 0.25) {
-                self.backgroundColor = UIColor.white.withAlphaComponent(0)
+        UIView.animate(
+            withDuration: WeatherBackgroundConstants.Storm.flashPeakDuration,
+            animations: {
+                self.backgroundColor = UIColor.white.withAlphaComponent(
+                    WeatherBackgroundConstants.Storm.flashPeakAlpha
+                )
+            },
+            completion: { _ in
+                UIView.animate(withDuration: WeatherBackgroundConstants.Storm.flashFadeDuration) {
+                    self.backgroundColor = UIColor.white.withAlphaComponent(0)
+                }
             }
-        })
+        )
     }
 }

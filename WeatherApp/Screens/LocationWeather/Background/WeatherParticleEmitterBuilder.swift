@@ -26,13 +26,13 @@ enum WeatherParticleEmitterBuilder {
         let cell = CAEmitterCell()
         cell.contents = WeatherBackgroundAssetFactory.rainDropImage()
         cell.birthRate = rainBirthRate(for: scene)
-        cell.lifetime = 1.2
-        cell.velocity = 280
-        cell.velocityRange = 60
+        cell.lifetime = WeatherBackgroundConstants.Particle.rainLifetime
+        cell.velocity = WeatherBackgroundConstants.Particle.rainVelocity
+        cell.velocityRange = WeatherBackgroundConstants.Particle.rainVelocityRange
         cell.emissionLongitude = .pi
-        cell.scale = 0.12
-        cell.scaleRange = 0.04
-        cell.alphaRange = 0.2
+        cell.scale = WeatherBackgroundConstants.Particle.rainScale
+        cell.scaleRange = WeatherBackgroundConstants.Particle.rainScaleRange
+        cell.alphaRange = WeatherBackgroundConstants.Particle.rainAlphaRange
         applyWind(to: cell, windSpeed: windSpeed)
         emitter.emitterCells = [cell]
         return emitter
@@ -43,24 +43,34 @@ enum WeatherParticleEmitterBuilder {
         let cell = CAEmitterCell()
         cell.contents = WeatherBackgroundAssetFactory.snowflakeImage()
         cell.birthRate = WeatherBackgroundConstants.Particle.baseSnowBirthRate
-        cell.lifetime = 5
-        cell.velocity = 45
-        cell.velocityRange = 20
+        cell.lifetime = WeatherBackgroundConstants.Particle.snowLifetime
+        cell.velocity = WeatherBackgroundConstants.Particle.snowVelocity
+        cell.velocityRange = WeatherBackgroundConstants.Particle.snowVelocityRange
         cell.emissionLongitude = .pi
-        cell.spin = 0.4
-        cell.spinRange = 0.8
-        cell.scale = 0.2
-        cell.scaleRange = 0.08
-        applyWind(to: cell, windSpeed: windSpeed, driftMultiplier: 0.35)
+        cell.spin = WeatherBackgroundConstants.Particle.snowSpin
+        cell.spinRange = WeatherBackgroundConstants.Particle.snowSpinRange
+        cell.scale = WeatherBackgroundConstants.Particle.snowScale
+        cell.scaleRange = WeatherBackgroundConstants.Particle.snowScaleRange
+        applyWind(
+            to: cell,
+            windSpeed: windSpeed,
+            driftMultiplier: WeatherBackgroundConstants.Particle.snowWindDriftMultiplier
+        )
         emitter.emitterCells = [cell]
         return emitter
     }
 
     private static func baseEmitter(bounds: CGRect) -> CAEmitterLayer {
         let emitter = CAEmitterLayer()
-        emitter.emitterPosition = CGPoint(x: bounds.midX, y: -8)
+        emitter.emitterPosition = CGPoint(
+            x: bounds.midX,
+            y: WeatherBackgroundConstants.Layout.particleEmitterVerticalOffset
+        )
         emitter.emitterShape = .line
-        emitter.emitterSize = CGSize(width: bounds.width, height: 1)
+        emitter.emitterSize = CGSize(
+            width: bounds.width,
+            height: WeatherBackgroundConstants.Layout.particleEmitterLineHeight
+        )
         return emitter
     }
 

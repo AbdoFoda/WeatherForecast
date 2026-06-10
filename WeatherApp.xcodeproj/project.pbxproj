@@ -17,6 +17,10 @@
 		349930EF4D7A775719F5F2A7 /* WeatherBackgroundPaletteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8423875CEF0246FD99FEB247 /* WeatherBackgroundPaletteTests.swift */; };
 		34AB649F8D23B383774B7D8C /* WeatherCloudParallaxView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B056633315EA361DE34259EB /* WeatherCloudParallaxView.swift */; };
 		369BFDF7C8A13A7C32072F7D /* WeatherBackgroundConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25663BA02D4026841B9F4B45 /* WeatherBackgroundConstants.swift */; };
+		M0T10NP0L1CY001BUILD00001 /* WeatherBackgroundMotionPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = M0T10NP0L1CY001FILE00001 /* WeatherBackgroundMotionPolicy.swift */; };
+		CLOUDPOLICY001BUILD00001 /* WeatherBackgroundCloudPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = CLOUDPOLICY001FILE00001 /* WeatherBackgroundCloudPolicy.swift */; };
+		M0T10NP0L1CY002BUILD00001 /* WeatherBackgroundMotionPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = M0T10NP0L1CY002FILE00001 /* WeatherBackgroundMotionPolicyTests.swift */; };
+		CLOUDPOLICY002BUILD00001 /* WeatherBackgroundCloudPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CLOUDPOLICY002FILE00001 /* WeatherBackgroundCloudPolicyTests.swift */; };
 		38806E99E616E24CF5BBE733 /* WeatherBackgroundPalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CE99F6C0A1390E69D5B98ED /* WeatherBackgroundPalette.swift */; };
 		41BFEFABA896A44F4318CC31 /* AppCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5F16F8BAC2D25F9845A85FA /* AppCoordinator.swift */; };
 		44F3C71C8DB92191914835F9 /* LocationWeatherViewControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44F246F04D822F8BCE69917E /* LocationWeatherViewControllerTests.swift */; };
@@ -70,6 +74,10 @@
 		21A695A06A5BD659D85FE4C2 /* WeatherBackgroundViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherBackgroundViewTests.swift; sourceTree = "<group>"; };
 		23F4F401954BA5591A0F158E /* LoadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingView.swift; sourceTree = "<group>"; };
 		25663BA02D4026841B9F4B45 /* WeatherBackgroundConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherBackgroundConstants.swift; sourceTree = "<group>"; };
+		M0T10NP0L1CY001FILE00001 /* WeatherBackgroundMotionPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherBackgroundMotionPolicy.swift; sourceTree = "<group>"; };
+		CLOUDPOLICY001FILE00001 /* WeatherBackgroundCloudPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherBackgroundCloudPolicy.swift; sourceTree = "<group>"; };
+		M0T10NP0L1CY002FILE00001 /* WeatherBackgroundMotionPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherBackgroundMotionPolicyTests.swift; sourceTree = "<group>"; };
+		CLOUDPOLICY002FILE00001 /* WeatherBackgroundCloudPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherBackgroundCloudPolicyTests.swift; sourceTree = "<group>"; };
 		25BC59F755991BBB3351FCD6 /* WeatherApp.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = WeatherApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2792CE6B32EEAE063DE09107 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		31004CBFD78B3A0EA4757620 /* LocationPermissionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationPermissionView.swift; sourceTree = "<group>"; };
@@ -296,6 +304,8 @@
 				1505F3EB62C744A68E4C8288 /* WeatherBackgroundEffectsPolicyTests.swift */,
 				8423875CEF0246FD99FEB247 /* WeatherBackgroundPaletteTests.swift */,
 				21A695A06A5BD659D85FE4C2 /* WeatherBackgroundViewTests.swift */,
+				M0T10NP0L1CY002FILE00001 /* WeatherBackgroundMotionPolicyTests.swift */,
+				CLOUDPOLICY002FILE00001 /* WeatherBackgroundCloudPolicyTests.swift */,
 				B6E8E8FD6D1E574EB99D4F00 /* WeatherParticleEmitterBuilderTests.swift */,
 			);
 			path = Background;
@@ -307,7 +317,9 @@
 				F623C0F47A87C8087C574EC0 /* WeatherBackgroundAssetFactory.swift */,
 				D93D5091CD948DAA6779F978 /* WeatherBackgroundConfiguration.swift */,
 				25663BA02D4026841B9F4B45 /* WeatherBackgroundConstants.swift */,
+				CLOUDPOLICY001FILE00001 /* WeatherBackgroundCloudPolicy.swift */,
 				7FA6185DE28A5CA18E23B5CA /* WeatherBackgroundEffectsPolicy.swift */,
+				M0T10NP0L1CY001FILE00001 /* WeatherBackgroundMotionPolicy.swift */,
 				6CE99F6C0A1390E69D5B98ED /* WeatherBackgroundPalette.swift */,
 				92E2720920BC78A7D671760A /* WeatherBackgroundView.swift */,
 				0EDE72CC84A27F2F747CCB46 /* WeatherCelestialGlowView.swift */,
@@ -445,6 +457,8 @@
 				AB1734EE815563FC23DD7AE7 /* WeatherBackgroundAssetFactory.swift in Sources */,
 				546738A86ED1DB34EFA3F658 /* WeatherBackgroundConfiguration.swift in Sources */,
 				369BFDF7C8A13A7C32072F7D /* WeatherBackgroundConstants.swift in Sources */,
+				CLOUDPOLICY001BUILD00001 /* WeatherBackgroundCloudPolicy.swift in Sources */,
+				M0T10NP0L1CY001BUILD00001 /* WeatherBackgroundMotionPolicy.swift in Sources */,
 				5D23F0B8DB2F6FDA21E5E88A /* WeatherBackgroundEffectsPolicy.swift in Sources */,
 				38806E99E616E24CF5BBE733 /* WeatherBackgroundPalette.swift in Sources */,
 				0EA1676FCC9ED3D7A435EB48 /* WeatherBackgroundView.swift in Sources */,
@@ -470,6 +484,8 @@
 				E1688F3BDDF548BB507A75E6 /* WeatherBackgroundEffectsPolicyTests.swift in Sources */,
 				349930EF4D7A775719F5F2A7 /* WeatherBackgroundPaletteTests.swift in Sources */,
 				EC4DCD1671EFDB043C737F0F /* WeatherBackgroundViewTests.swift in Sources */,
+				M0T10NP0L1CY002BUILD00001 /* WeatherBackgroundMotionPolicyTests.swift in Sources */,
+				CLOUDPOLICY002BUILD00001 /* WeatherBackgroundCloudPolicyTests.swift in Sources */,
 				5FA8D4546B1DF0B679050ED4 /* WeatherParticleEmitterBuilderTests.swift in Sources */,
 				CD9F7D1DB7050C89DD83DF4D /* WeatherSummaryViewTests.swift in Sources */,
 			);
