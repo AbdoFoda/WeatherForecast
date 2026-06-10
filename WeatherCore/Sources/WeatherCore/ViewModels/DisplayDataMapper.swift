@@ -142,6 +142,8 @@ public struct DisplayDataMapper {
             )
         }()
 
+        let cloudCoveragePercent = weather.clouds?.all ?? 0
+
         return LocationWeatherDisplayData(
             cityName: weather.name,
             countryCode: weather.sys.country ?? "",
@@ -158,7 +160,10 @@ public struct DisplayDataMapper {
             sunset: timeFormatter.string(from: sunsetDate),
             aqi: aqiLabel,
             pm25: L10n.Format.pm25(pm25Value),
-            cloudCoverage: L10n.Format.percentage(weather.clouds?.all ?? 0),
+            cloudCoverage: L10n.Format.percentage(cloudCoveragePercent),
+            backgroundScene: WeatherSceneResolver.resolve(from: weather),
+            cloudCoveragePercent: cloudCoveragePercent,
+            windSpeedMetersPerSecond: windSpeed,
             hourlyItems: hourlyItems,
             tiles: tiles
         )

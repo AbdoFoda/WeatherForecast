@@ -18,6 +18,9 @@ public struct LocationWeatherDisplayData: Sendable {
     public let aqi: String
     public let pm25: String
     public let cloudCoverage: String
+    public let backgroundScene: WeatherScene
+    public let cloudCoveragePercent: Int
+    public let windSpeedMetersPerSecond: Double
 
     public let hourlyItems: [HourlyDisplayItem]
     public let tiles: [TileDisplayItem]
@@ -39,6 +42,9 @@ public struct LocationWeatherDisplayData: Sendable {
         aqi: String,
         pm25: String,
         cloudCoverage: String,
+        backgroundScene: WeatherScene,
+        cloudCoveragePercent: Int,
+        windSpeedMetersPerSecond: Double,
         hourlyItems: [HourlyDisplayItem],
         tiles: [TileDisplayItem]
     ) {
@@ -58,6 +64,9 @@ public struct LocationWeatherDisplayData: Sendable {
         self.aqi = aqi
         self.pm25 = pm25
         self.cloudCoverage = cloudCoverage
+        self.backgroundScene = backgroundScene
+        self.cloudCoveragePercent = cloudCoveragePercent
+        self.windSpeedMetersPerSecond = windSpeedMetersPerSecond
         self.hourlyItems = hourlyItems
         self.tiles = tiles
     }

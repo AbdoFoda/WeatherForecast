@@ -32,6 +32,10 @@ public enum WeatherConstants {
         public static let time = "HH:mm"
     }
 
+    public enum Scene {
+        public static let heavyCloudThreshold = 75
+    }
+
     public enum TileLayout {
         public static let rowHeight: CGFloat = 120
         public static let phoneColumnCount = 2
