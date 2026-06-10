@@ -9,6 +9,7 @@ final class LocationWeatherViewController: UIViewController {
     private var currentLatitude: Double?
     private var currentLongitude: Double?
 
+    private let backgroundView = WeatherBackgroundView()
     private let scrollView = UIScrollView()
     private let contentView = UIView()
     private let topView = WeatherSummaryView()
@@ -52,9 +53,10 @@ final class LocationWeatherViewController: UIViewController {
     }
 
     private func setupUI() {
-        view.backgroundColor = .systemGroupedBackground
-
+        backgroundView.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.backgroundColor = .clear
         scrollView.translatesAutoresizingMaskIntoConstraints = false
+        contentView.backgroundColor = .clear
         contentView.translatesAutoresizingMaskIntoConstraints = false
         topView.translatesAutoresizingMaskIntoConstraints = false
         graphView.translatesAutoresizingMaskIntoConstraints = false
@@ -74,6 +76,7 @@ final class LocationWeatherViewController: UIViewController {
         refreshControl.addTarget(self, action: #selector(handleRefresh), for: .valueChanged)
         scrollView.refreshControl = refreshControl
 
+        view.addSubview(backgroundView)
         view.addSubview(scrollView)
         scrollView.addSubview(contentView)
         contentView.addSubview(topView)
@@ -88,6 +91,11 @@ final class LocationWeatherViewController: UIViewController {
         tilesHeightConstraint = tilesView.heightAnchor.constraint(equalToConstant: 200)
 
         NSLayoutConstraint.activate([
+            backgroundView.topAnchor.constraint(equalTo: view.topAnchor),
+            backgroundView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            backgroundView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            backgroundView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+
             scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -142,6 +150,7 @@ final class LocationWeatherViewController: UIViewController {
                 self.loadingView.startAnimating()
                 self.permissionView.isHidden = true
                 self.setOfflineBannerVisible(false)
+                self.backgroundView.configure(scene: .neutral)
             case .loaded(let displayData, let notice):
                 self.loadingView.stopAnimating()
                 self.refreshControl.endRefreshing()
@@ -152,6 +161,7 @@ final class LocationWeatherViewController: UIViewController {
                 self.tilesView.configure(with: displayData.tiles)
                 self.tilesHeightConstraint?.constant = self.tilesView.intrinsicContentSize.height
                 self.setOfflineBannerVisible(notice == .offline)
+                self.backgroundView.configure(scene: displayData.backgroundScene)
                 self.view.setNeedsLayout()
             case .unavailable(let notice):
                 self.loadingView.stopAnimating()
@@ -159,6 +169,7 @@ final class LocationWeatherViewController: UIViewController {
                 self.permissionView.isHidden = true
                 self.setContentHidden(true)
                 self.setOfflineBannerVisible(notice == .offline)
+                self.backgroundView.configure(scene: .neutral)
             case .locationPermissionDenied:
                 self.loadingView.stopAnimating()
                 self.permissionView.isHidden = false

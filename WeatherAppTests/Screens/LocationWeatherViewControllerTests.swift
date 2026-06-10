@@ -67,6 +67,9 @@ final class LocationWeatherViewControllerTests: XCTestCase {
             aqi: "Good",
             pm25: "5.0 μg/m³",
             cloudCoverage: "0%",
+            backgroundScene: .clearDay,
+            cloudCoveragePercent: 0,
+            windSpeedMetersPerSecond: 3,
             hourlyItems: [],
             tiles: []
         )

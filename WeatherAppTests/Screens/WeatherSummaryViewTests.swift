@@ -23,6 +23,9 @@ final class WeatherSummaryViewTests: XCTestCase {
             aqi: "Good",
             pm25: "5.0 μg/m³",
             cloudCoverage: "20%",
+            backgroundScene: .partlyCloudyDay,
+            cloudCoveragePercent: 20,
+            windSpeedMetersPerSecond: 3,
             hourlyItems: [],
             tiles: []
         )
