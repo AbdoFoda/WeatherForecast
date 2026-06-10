@@ -38,6 +38,42 @@ final class LocationWeatherViewControllerTests: XCTestCase {
         XCTAssertEqual(banner?.isHidden, false)
     }
 
+    func test_loadedState_configuresAnimatedBackground() {
+        let viewModel = MockLocationWeatherViewModel()
+        let sut = LocationWeatherViewController(viewModel: viewModel)
+        sut.loadViewIfNeeded()
+
+        var rainyData = sampleDisplayData()
+        rainyData = LocationWeatherDisplayData(
+            cityName: rainyData.cityName,
+            countryCode: rainyData.countryCode,
+            currentTemperature: rainyData.currentTemperature,
+            feelsLike: rainyData.feelsLike,
+            tempRange: rainyData.tempRange,
+            weatherDescription: rainyData.weatherDescription,
+            iconURL: rainyData.iconURL,
+            humidity: rainyData.humidity,
+            pressure: rainyData.pressure,
+            windSpeed: rainyData.windSpeed,
+            visibility: rainyData.visibility,
+            sunrise: rainyData.sunrise,
+            sunset: rainyData.sunset,
+            aqi: rainyData.aqi,
+            pm25: rainyData.pm25,
+            cloudCoverage: rainyData.cloudCoverage,
+            backgroundScene: .rain,
+            cloudCoveragePercent: 80,
+            windSpeedMetersPerSecond: 6,
+            hourlyItems: [],
+            tiles: []
+        )
+
+        viewModel.emit(.loaded(rainyData, notice: nil))
+
+        let background = sut.view.subviews.compactMap { $0 as? WeatherBackgroundView }.first
+        XCTAssertTrue(background?.hasActiveParticleEmitter ?? false)
+    }
+
     func test_unavailable_hidesScrollContent() {
         let viewModel = MockLocationWeatherViewModel()
         let sut = LocationWeatherViewController(viewModel: viewModel)
