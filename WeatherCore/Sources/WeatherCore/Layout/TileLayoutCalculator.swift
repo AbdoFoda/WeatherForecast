@@ -26,16 +26,16 @@ public struct TileLayoutCalculator {
     public static func calculate(input: Input) -> Output {
         guard !input.tiles.isEmpty else { return Output(frames: [], totalHeight: 0) }
         
-        var columns = 2
-        if input.containerSize.width >= 800 {
-            columns = 4
-        } else if input.containerSize.width >= 500 {
-            columns = 3
+        var columns = WeatherConstants.TileLayout.phoneColumnCount
+        if input.containerSize.width >= WeatherConstants.TileLayout.largeTabletMinWidth {
+            columns = WeatherConstants.TileLayout.largeTabletColumnCount
+        } else if input.containerSize.width >= WeatherConstants.TileLayout.tabletMinWidth {
+            columns = WeatherConstants.TileLayout.tabletColumnCount
         }
-        
+
         let availableWidth = input.containerSize.width - (input.horizontalPadding * 2) - (input.spacing * CGFloat(columns - 1))
         let colWidth = max(0, availableWidth / CGFloat(columns))
-        let rowHeight: CGFloat = 120
+        let rowHeight = WeatherConstants.TileLayout.rowHeight
         
         var frames: [CGRect] = []
         

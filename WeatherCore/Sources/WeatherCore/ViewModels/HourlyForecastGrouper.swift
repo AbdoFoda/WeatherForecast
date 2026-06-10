@@ -1,63 +1,139 @@
 import Foundation
 
 public struct HourlyForecastGrouper {
-    public static func process(forecast: ForecastResponse) -> (items: [HourlyDisplayItem], minTemp: Double, maxTemp: Double) {
+    public static func groupByDay(forecast: ForecastResponse) -> [[HourlyForecastItem]] {
+        let tzOffset = TimeInterval(forecast.city.timezone)
+        let formatter = WeatherFormatters.dayKey(timezoneOffset: tzOffset)
+        var groups: [[HourlyForecastItem]] = []
+        var currentGroup: [HourlyForecastItem] = []
+        var lastDayKey: String?
+
+        for item in forecast.list {
+            let localDate = Date(timeIntervalSince1970: item.dt).addingTimeInterval(tzOffset)
+            let dayKey = formatter.string(from: localDate)
+
+            if lastDayKey != dayKey, !currentGroup.isEmpty {
+                groups.append(currentGroup)
+                currentGroup = []
+            }
+
+            currentGroup.append(item)
+            lastDayKey = dayKey
+        }
+
+        if !currentGroup.isEmpty {
+            groups.append(currentGroup)
+        }
+
+        return groups
+    }
+
+    public static func dayHeaderIndices(from items: [HourlyDisplayItem]) -> [(index: Int, label: String)] {
+        items.enumerated().compactMap { index, item in
+            guard let label = item.dayLabel else { return nil }
+            return (index: index, label: label)
+        }
+    }
+
+    public static func todayTemperatureRange(forecast: ForecastResponse, now: Date = Date()) -> (min: Double, max: Double)? {
+        temperatureRange(for: forecast, matchingLocalDay: now)
+    }
+
+    public static func forecastPeriodTemperatureRange(forecast: ForecastResponse) -> (min: Double, max: Double)? {
+        guard !forecast.list.isEmpty else { return nil }
         var minTemp = Double.greatestFiniteMagnitude
         var maxTemp = -Double.greatestFiniteMagnitude
-        
         for item in forecast.list {
             minTemp = min(minTemp, item.main.temp)
             maxTemp = max(maxTemp, item.main.temp)
         }
-        
-        if forecast.list.isEmpty {
-            minTemp = 0
-            maxTemp = 0
-        } else if minTemp == maxTemp {
-            minTemp -= 1
-            maxTemp += 1
-        }
-        
+        return (minTemp, maxTemp)
+    }
+
+    public static func temperatureRange(
+        for forecast: ForecastResponse,
+        matchingLocalDay date: Date
+    ) -> (min: Double, max: Double)? {
         let tzOffset = TimeInterval(forecast.city.timezone)
-        var lastDayString: String? = nil
-        
-        let displayItems: [HourlyDisplayItem] = forecast.list.map { item in
-            let date = Date(timeIntervalSince1970: item.dt)
-            let localDate = date.addingTimeInterval(tzOffset)
-            
-            let dateFormatter = DateFormatter()
-            dateFormatter.timeZone = TimeZone(secondsFromGMT: 0)
-            
-            dateFormatter.dateFormat = "d MMM"
-            let dayString = dateFormatter.string(from: localDate)
-            
-            dateFormatter.dateFormat = "HH:mm"
-            let timeString = dateFormatter.string(from: localDate)
-            
-            let isNewDay = (lastDayString != dayString)
-            let dayLabel = isNewDay ? dayString : nil
+        let formatter = WeatherFormatters.dayKey(timezoneOffset: tzOffset)
+        let targetDayKey = formatter.string(from: date.addingTimeInterval(tzOffset))
+
+        let dayItems = groupByDay(forecast: forecast).first { group in
+            guard let first = group.first else { return false }
+            let localDate = Date(timeIntervalSince1970: first.dt).addingTimeInterval(tzOffset)
+            return formatter.string(from: localDate) == targetDayKey
+        }
+
+        guard let dayItems, !dayItems.isEmpty else { return nil }
+
+        var minTemp = Double.greatestFiniteMagnitude
+        var maxTemp = -Double.greatestFiniteMagnitude
+        for item in dayItems {
+            minTemp = min(minTemp, item.main.temp)
+            maxTemp = max(maxTemp, item.main.temp)
+        }
+        return (minTemp, maxTemp)
+    }
+
+    public static func process(forecast: ForecastResponse) -> (items: [HourlyDisplayItem], minTemp: Double, maxTemp: Double) {
+        let (minTemp, maxTemp) = paddedTemperatureBounds(for: forecast.list)
+        let items = makeDisplayItems(forecast: forecast, minTemp: minTemp, maxTemp: maxTemp)
+        return (items, minTemp, maxTemp)
+    }
+
+    private static func paddedTemperatureBounds(
+        for list: [HourlyForecastItem]
+    ) -> (min: Double, max: Double) {
+        guard !list.isEmpty else { return (0, 0) }
+
+        var minTemp = Double.greatestFiniteMagnitude
+        var maxTemp = -Double.greatestFiniteMagnitude
+        for item in list {
+            minTemp = min(minTemp, item.main.temp)
+            maxTemp = max(maxTemp, item.main.temp)
+        }
+
+        if minTemp == maxTemp {
+            minTemp -= WeatherConstants.Temperature.flatRangePadding
+            maxTemp += WeatherConstants.Temperature.flatRangePadding
+        }
+        return (minTemp, maxTemp)
+    }
+
+    private static func makeDisplayItems(
+        forecast: ForecastResponse,
+        minTemp: Double,
+        maxTemp: Double
+    ) -> [HourlyDisplayItem] {
+        let tzOffset = TimeInterval(forecast.city.timezone)
+        let now = Date().timeIntervalSince1970
+        let dayHeaderFormatter = WeatherFormatters.dayHeader(timezoneOffset: tzOffset)
+        let timeFormatter = WeatherFormatters.time(timezoneOffset: tzOffset)
+        var lastDayString: String?
+
+        return forecast.list.map { item in
+            let localDate = Date(timeIntervalSince1970: item.dt).addingTimeInterval(tzOffset)
+            let dayString = dayHeaderFormatter.string(from: localDate)
+            let dayLabel = lastDayString != dayString ? dayString : nil
             lastDayString = dayString
-            
-            let t = item.main.temp
-            let normalisedY = CGFloat(1.0 - ((t - minTemp) / (maxTemp - minTemp)))
-            
+
+            let normalisedY = TemperatureGraphGeometry.normalizedDotY(
+                temperature: item.main.temp,
+                minTemp: minTemp,
+                maxTemp: maxTemp
+            )
             let pop = item.pop ?? 0
-            let popString = pop > 0 ? "\(Int(pop * 100))%" : nil
-            
-            let iconID = item.weather.first?.icon ?? "01d"
-            let iconURL = URL(string: "https://openweathermap.org/img/wn/\(iconID)@2x.png")!
-            
+            let popString = pop > 0 ? L10n.Format.percentage(Int(pop * 100)) : nil
+
             return HourlyDisplayItem(
-                time: timeString,
-                temperature: "\(Int(round(t)))°",
-                iconURL: iconURL,
+                time: timeFormatter.string(from: localDate),
+                temperature: L10n.Format.temperature(Int(round(item.main.temp))),
+                iconURL: WeatherIconURL.make(iconID: item.weather.first?.icon),
                 temperatureDotY: normalisedY,
-                isCurrentHour: false,
+                isCurrentHour: abs(item.dt - now) < WeatherConstants.Forecast.currentSlotTolerance,
                 dayLabel: dayLabel,
                 precipitationChance: popString
             )
         }
-        
-        return (displayItems, minTemp, maxTemp)
     }
 }

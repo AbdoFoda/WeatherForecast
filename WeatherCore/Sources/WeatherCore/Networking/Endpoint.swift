@@ -14,57 +14,66 @@ public struct Endpoint: Sendable {
     }
 }
 
-
 public extension Endpoint {
     static func currentWeather(lat: Double, lon: Double) -> Endpoint {
-        Endpoint(
-            path: "current",
-            queryItems: [
-                URLQueryItem(name: "lat", value: String(format: "%.4f", lat)),
-                URLQueryItem(name: "lon", value: String(format: "%.4f", lon)),
-            ]
-        )
+        coordinateEndpoint(route: .current, lat: lat, lon: lon)
     }
 
-    static func forecast(lat: Double, lon: Double, count: Int = 40) -> Endpoint {
+    static func forecast(
+        lat: Double,
+        lon: Double,
+        count: Int = WeatherAPI.Defaults.forecastItemCount
+    ) -> Endpoint {
         Endpoint(
-            path: "forecast",
-            queryItems: [
-                URLQueryItem(name: "lat", value: String(format: "%.4f", lat)),
-                URLQueryItem(name: "lon", value: String(format: "%.4f", lon)),
-                URLQueryItem(name: "cnt", value: String(count)),
+            path: WeatherAPI.Route.forecast.rawValue,
+            queryItems: coordinateQueryItems(lat: lat, lon: lon) + [
+                URLQueryItem(name: WeatherAPI.QueryKey.cnt.rawValue, value: String(count)),
             ]
         )
     }
 
     static func airPollution(lat: Double, lon: Double) -> Endpoint {
+        coordinateEndpoint(route: .airPollution, lat: lat, lon: lon)
+    }
+
+    static func geocodingDirect(
+        query: String,
+        limit: Int = WeatherAPI.Defaults.geocodingDirectLimit
+    ) -> Endpoint {
         Endpoint(
-            path: "air",
+            path: WeatherAPI.Route.geocodingDirect.rawValue,
             queryItems: [
-                URLQueryItem(name: "lat", value: String(format: "%.4f", lat)),
-                URLQueryItem(name: "lon", value: String(format: "%.4f", lon)),
+                URLQueryItem(name: WeatherAPI.QueryKey.q.rawValue, value: query),
+                URLQueryItem(name: WeatherAPI.QueryKey.limit.rawValue, value: String(limit)),
             ]
         )
     }
 
-    static func geocodingDirect(query: String, limit: Int = 5) -> Endpoint {
+    static func geocodingReverse(
+        lat: Double,
+        lon: Double,
+        limit: Int = WeatherAPI.Defaults.geocodingReverseLimit
+    ) -> Endpoint {
         Endpoint(
-            path: "geo/direct",
-            queryItems: [
-                URLQueryItem(name: "q", value: query),
-                URLQueryItem(name: "limit", value: String(limit)),
+            path: WeatherAPI.Route.geocodingReverse.rawValue,
+            queryItems: coordinateQueryItems(lat: lat, lon: lon) + [
+                URLQueryItem(name: WeatherAPI.QueryKey.limit.rawValue, value: String(limit)),
             ]
         )
     }
 
-    static func geocodingReverse(lat: Double, lon: Double, limit: Int = 1) -> Endpoint {
+    private static func coordinateEndpoint(route: WeatherAPI.Route, lat: Double, lon: Double) -> Endpoint {
         Endpoint(
-            path: "geo/reverse",
-            queryItems: [
-                URLQueryItem(name: "lat", value: String(format: "%.4f", lat)),
-                URLQueryItem(name: "lon", value: String(format: "%.4f", lon)),
-                URLQueryItem(name: "limit", value: String(limit)),
-            ]
+            path: route.rawValue,
+            queryItems: coordinateQueryItems(lat: lat, lon: lon)
         )
+    }
+
+    private static func coordinateQueryItems(lat: Double, lon: Double) -> [URLQueryItem] {
+        let format = "%.\(WeatherAPI.Defaults.coordinateDecimalPlaces)f"
+        return [
+            URLQueryItem(name: WeatherAPI.QueryKey.lat.rawValue, value: String(format: format, lat)),
+            URLQueryItem(name: WeatherAPI.QueryKey.lon.rawValue, value: String(format: format, lon)),
+        ]
     }
 }

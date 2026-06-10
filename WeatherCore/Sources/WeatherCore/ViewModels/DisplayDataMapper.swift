@@ -6,77 +6,161 @@ public struct DisplayDataMapper {
         forecast: ForecastResponse,
         airPollution: AirPollutionResponse
     ) -> LocationWeatherDisplayData {
-        let (hourlyItems, minTemp, maxTemp) = HourlyForecastGrouper.process(forecast: forecast)
-        
+        let (hourlyItems, _, _) = HourlyForecastGrouper.process(forecast: forecast)
+        let todayRange = HourlyForecastGrouper.todayTemperatureRange(forecast: forecast)
+        let periodRange = HourlyForecastGrouper.forecastPeriodTemperatureRange(forecast: forecast)
+
         let tzOffset = TimeInterval(weather.timezone)
-        let dateFormatter = DateFormatter()
-        dateFormatter.timeZone = TimeZone(secondsFromGMT: 0)
-        dateFormatter.dateFormat = "HH:mm"
-        
+        let timeFormatter = WeatherFormatters.time(timezoneOffset: tzOffset)
+
         let sunriseDate = Date(timeIntervalSince1970: weather.sys.sunrise ?? 0).addingTimeInterval(tzOffset)
         let sunsetDate = Date(timeIntervalSince1970: weather.sys.sunset ?? 0).addingTimeInterval(tzOffset)
-        
-        let aqiValue = airPollution.list.first?.main.aqi ?? 1
+
+        let aqiValue = airPollution.list.first?.main.aqi ?? AirQualityIndex.good.rawValue
+        let aqiLabel = AirQualityIndex.label(for: aqiValue)
         let pm25Value = airPollution.list.first?.components.pm2_5 ?? 0
-        let aqiLabels = [1: "Good", 2: "Fair", 3: "Moderate", 4: "Poor", 5: "Very Poor"]
-        let aqiString = aqiLabels[aqiValue] ?? "Unknown"
-        
-        var tiles: [TileDisplayItem] = []
-        
-        tiles.append(TileDisplayItem(id: "feelsLike", title: "Feels Like", value: "\(Int(round(weather.main.feelsLike)))°", subtitle: nil, tileSize: .standard))
-        tiles.append(TileDisplayItem(id: "humidity", title: "Humidity", value: "\(weather.main.humidity)%", subtitle: nil, tileSize: .standard))
-        
+
         let windDeg = weather.wind?.deg ?? 0
         let windSpeed = weather.wind?.speed ?? 0
-        let windDir = compassDirection(from: Double(windDeg))
-        tiles.append(TileDisplayItem(id: "wind", title: "Wind", value: "\(windSpeed) m/s", subtitle: windDir, tileSize: .standard))
-        
-        tiles.append(TileDisplayItem(id: "pressure", title: "Pressure", value: "\(weather.main.pressure) hPa", subtitle: nil, tileSize: .standard))
-        
-        let visibility = (weather.visibility ?? 0) / 1000
-        tiles.append(TileDisplayItem(id: "visibility", title: "Visibility", value: "\(visibility) km", subtitle: nil, tileSize: .standard))
-        
-        tiles.append(TileDisplayItem(id: "sun", title: "Sunrise", value: dateFormatter.string(from: sunriseDate), subtitle: "Sunset: \(dateFormatter.string(from: sunsetDate))", tileSize: .standard))
-        
-        tiles.append(TileDisplayItem(id: "air", title: "Air Quality", value: aqiString, subtitle: "\(pm25Value) μg/m³", tileSize: .wide))
-        tiles.append(TileDisplayItem(id: "clouds", title: "Cloud Cover", value: "\(weather.clouds?.all ?? 0)%", subtitle: nil, tileSize: .standard))
-        
-        let minT = Int(round(minTemp))
-        let maxT = Int(round(maxTemp))
-        tiles.append(TileDisplayItem(id: "5day", title: "5-Day Summary", value: "H:\(maxT)° L:\(minT)°", subtitle: nil, tileSize: .wide))
-        
-        if let firstPop = forecast.list.first?.pop {
-            tiles.append(TileDisplayItem(id: "precip", title: "Precipitation", value: "\(Int(firstPop * 100))%", subtitle: "Next 3h", tileSize: .standard))
+        let windDir = WeatherFormatters.compassDirection(from: Double(windDeg))
+        let visibilityKm = (weather.visibility ?? 0) / WeatherConstants.Visibility.metersPerKilometer
+
+        var tiles: [TileDisplayItem] = []
+
+        tiles.append(
+            TileDisplayItem(
+                id: TileKind.feelsLike.rawValue,
+                title: L10n.Tile.feelsLike,
+                value: L10n.Format.temperature(Int(round(weather.main.feelsLike))),
+                subtitle: nil,
+                tileSize: .standard
+            )
+        )
+        tiles.append(
+            TileDisplayItem(
+                id: TileKind.humidity.rawValue,
+                title: L10n.Tile.humidity,
+                value: L10n.Format.percentage(weather.main.humidity),
+                subtitle: nil,
+                tileSize: .standard
+            )
+        )
+        tiles.append(
+            TileDisplayItem(
+                id: TileKind.wind.rawValue,
+                title: L10n.Tile.wind,
+                value: L10n.Format.windSpeedValue(windSpeed),
+                subtitle: windDir,
+                tileSize: .standard
+            )
+        )
+        tiles.append(
+            TileDisplayItem(
+                id: TileKind.pressure.rawValue,
+                title: L10n.Tile.pressure,
+                value: L10n.Format.pressure(weather.main.pressure),
+                subtitle: nil,
+                tileSize: .standard
+            )
+        )
+        tiles.append(
+            TileDisplayItem(
+                id: TileKind.visibility.rawValue,
+                title: L10n.Tile.visibility,
+                value: L10n.Format.visibilityKilometers(visibilityKm),
+                subtitle: nil,
+                tileSize: .standard
+            )
+        )
+        tiles.append(
+            TileDisplayItem(
+                id: TileKind.sun.rawValue,
+                title: L10n.Tile.sunrise,
+                value: timeFormatter.string(from: sunriseDate),
+                subtitle: L10n.Format.sunsetSubtitle(timeFormatter.string(from: sunsetDate)),
+                tileSize: .standard
+            )
+        )
+        tiles.append(
+            TileDisplayItem(
+                id: TileKind.air.rawValue,
+                title: L10n.Tile.airQuality,
+                value: aqiLabel,
+                subtitle: L10n.Format.pm25(pm25Value),
+                tileSize: .wide
+            )
+        )
+        tiles.append(
+            TileDisplayItem(
+                id: TileKind.clouds.rawValue,
+                title: L10n.Tile.cloudCover,
+                value: L10n.Format.percentage(weather.clouds?.all ?? 0),
+                subtitle: nil,
+                tileSize: .standard
+            )
+        )
+
+        if let periodRange {
+            tiles.append(
+                TileDisplayItem(
+                    id: TileKind.fiveDay.rawValue,
+                    title: L10n.Tile.fiveDaySummary,
+                    value: L10n.Format.tempHighLow(
+                        high: Int(round(periodRange.max)),
+                        low: Int(round(periodRange.min))
+                    ),
+                    subtitle: nil,
+                    tileSize: .wide
+                )
+            )
         }
-        
-        let iconID = weather.weather.first?.icon ?? "01d"
-        let iconURL = URL(string: "https://openweathermap.org/img/wn/\(iconID)@2x.png")!
-        
+
+        if let firstPop = forecast.list.first?.pop {
+            tiles.append(
+                TileDisplayItem(
+                    id: TileKind.precipitation.rawValue,
+                    title: L10n.Tile.precipitation,
+                    value: L10n.Format.percentage(Int(firstPop * 100)),
+                    subtitle: L10n.Tile.nextThreeHours,
+                    tileSize: .standard
+                )
+            )
+        }
+
+        let iconURL = WeatherIconURL.make(iconID: weather.weather.first?.icon)
+
+        let tempRange: String = {
+            if let todayRange {
+                return L10n.Format.tempHighLow(
+                    high: Int(round(todayRange.max)),
+                    low: Int(round(todayRange.min))
+                )
+            }
+            return L10n.Format.tempHighLow(
+                high: Int(round(weather.main.tempMax)),
+                low: Int(round(weather.main.tempMin))
+            )
+        }()
+
         return LocationWeatherDisplayData(
             cityName: weather.name,
             countryCode: weather.sys.country ?? "",
-            currentTemperature: "\(Int(round(weather.main.temp)))°",
-            feelsLike: "Feels like \(Int(round(weather.main.feelsLike)))°",
-            tempRange: "H:\(Int(round(weather.main.tempMax)))° L:\(Int(round(weather.main.tempMin)))°",
+            currentTemperature: L10n.Format.temperature(Int(round(weather.main.temp))),
+            feelsLike: L10n.Format.feelsLike(Int(round(weather.main.feelsLike))),
+            tempRange: tempRange,
             weatherDescription: (weather.weather.first?.description ?? "").capitalized,
             iconURL: iconURL,
-            humidity: "\(weather.main.humidity)%",
-            pressure: "\(weather.main.pressure) hPa",
-            windSpeed: "\(windSpeed) m/s \(windDir)",
-            visibility: "\(visibility) km",
-            sunrise: dateFormatter.string(from: sunriseDate),
-            sunset: dateFormatter.string(from: sunsetDate),
-            aqi: aqiString,
-            pm25: "\(pm25Value) μg/m³",
-            cloudCoverage: "\(weather.clouds?.all ?? 0)%",
+            humidity: L10n.Format.percentage(weather.main.humidity),
+            pressure: L10n.Format.pressure(weather.main.pressure),
+            windSpeed: L10n.Format.windSpeed(windSpeed, direction: windDir),
+            visibility: L10n.Format.visibilityKilometers(visibilityKm),
+            sunrise: timeFormatter.string(from: sunriseDate),
+            sunset: timeFormatter.string(from: sunsetDate),
+            aqi: aqiLabel,
+            pm25: L10n.Format.pm25(pm25Value),
+            cloudCoverage: L10n.Format.percentage(weather.clouds?.all ?? 0),
             hourlyItems: hourlyItems,
             tiles: tiles
         )
-    }
-    
-    private static func compassDirection(from degrees: Double) -> String {
-        let directions = ["N","NNE","NE","ENE","E","ESE","SE","SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"]
-        let index = Int((degrees / 22.5) + 0.5) % 16
-        return directions[index]
     }
 }

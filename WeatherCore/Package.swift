@@ -15,7 +15,8 @@ let package = Package(
     targets: [
         .target(
             name: "WeatherCore",
-            dependencies: []),
+            dependencies: [],
+            resources: [.process("Resources")]),
         .testTarget(
             name: "WeatherCoreTests",
             dependencies: ["WeatherCore"]),

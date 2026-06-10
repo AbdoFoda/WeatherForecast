@@ -9,9 +9,13 @@ final class EndpointTests: XCTestCase {
         let url = try endpoint.url(baseURL: base)
         let components = URLComponents(url: url, resolvingAgainstBaseURL: false)!
 
-        XCTAssertEqual(components.path, "/current")
-        XCTAssertTrue(components.queryItems!.contains(URLQueryItem(name: "lat", value: "52.5200")))
-        XCTAssertTrue(components.queryItems!.contains(URLQueryItem(name: "lon", value: "13.4050")))
+        XCTAssertEqual(components.path, "/\(WeatherAPI.Route.current.rawValue)")
+        XCTAssertTrue(components.queryItems!.contains(
+            URLQueryItem(name: WeatherAPI.QueryKey.lat.rawValue, value: "52.5200")
+        ))
+        XCTAssertTrue(components.queryItems!.contains(
+            URLQueryItem(name: WeatherAPI.QueryKey.lon.rawValue, value: "13.4050")
+        ))
         XCTAssertNil(components.queryItems!.first(where: { $0.name == "appid" }))
     }
 
@@ -20,15 +24,17 @@ final class EndpointTests: XCTestCase {
         let url = try endpoint.url(baseURL: base)
         let components = URLComponents(url: url, resolvingAgainstBaseURL: false)!
 
-        XCTAssertEqual(components.path, "/forecast")
-        XCTAssertTrue(components.queryItems!.contains(URLQueryItem(name: "cnt", value: "40")))
+        XCTAssertEqual(components.path, "/\(WeatherAPI.Route.forecast.rawValue)")
+        XCTAssertTrue(components.queryItems!.contains(
+            URLQueryItem(name: WeatherAPI.QueryKey.cnt.rawValue, value: "40")
+        ))
         XCTAssertNil(components.queryItems!.first(where: { $0.name == "appid" }))
     }
 
     func test_airPollution_buildsCorrectPath() throws {
         let endpoint = Endpoint.airPollution(lat: 52.5200, lon: 13.4050)
         let url = try endpoint.url(baseURL: base)
-        XCTAssertTrue(url.absoluteString.contains("/air"))
+        XCTAssertTrue(url.absoluteString.contains("/\(WeatherAPI.Route.airPollution.rawValue)"))
         XCTAssertNil(URLComponents(url: url, resolvingAgainstBaseURL: false)!
             .queryItems!.first(where: { $0.name == "appid" }))
     }
@@ -38,8 +44,12 @@ final class EndpointTests: XCTestCase {
         let url = try endpoint.url(baseURL: base)
         let components = URLComponents(url: url, resolvingAgainstBaseURL: false)!
 
-        XCTAssertEqual(components.path, "/geo/direct")
-        XCTAssertTrue(components.queryItems!.contains(URLQueryItem(name: "q", value: "New York")))
-        XCTAssertTrue(components.queryItems!.contains(URLQueryItem(name: "limit", value: "3")))
+        XCTAssertEqual(components.path, "/\(WeatherAPI.Route.geocodingDirect.rawValue)")
+        XCTAssertTrue(components.queryItems!.contains(
+            URLQueryItem(name: WeatherAPI.QueryKey.q.rawValue, value: "New York")
+        ))
+        XCTAssertTrue(components.queryItems!.contains(
+            URLQueryItem(name: WeatherAPI.QueryKey.limit.rawValue, value: "3")
+        ))
     }
 }
