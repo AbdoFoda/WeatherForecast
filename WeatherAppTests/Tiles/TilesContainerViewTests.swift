@@ -29,4 +29,22 @@ final class TilesContainerViewTests: XCTestCase {
         XCTAssertFalse(sut.subviews.isEmpty)
         XCTAssertNotEqual(sut.subviews.first?.frame, .zero)
     }
+
+    func test_compactWidth_showsFewerTilesThanLargeWidth() {
+        let tiles = TileKind.allCases.map {
+            TileDisplayItem(id: $0.rawValue, title: $0.rawValue, value: "1", subtitle: nil, tileSize: .standard)
+        }
+
+        let compact = TilesContainerView(frame: CGRect(x: 0, y: 0, width: 390, height: 400))
+        compact.configure(with: tiles)
+        compact.layoutIfNeeded()
+
+        let large = TilesContainerView(frame: CGRect(x: 0, y: 0, width: 1024, height: 400))
+        large.configure(with: tiles)
+        large.layoutIfNeeded()
+
+        XCTAssertLessThan(compact.subviews.count, large.subviews.count)
+        XCTAssertEqual(compact.subviews.count, 6)
+        XCTAssertEqual(large.subviews.count, TileKind.allCases.count)
+    }
 }
