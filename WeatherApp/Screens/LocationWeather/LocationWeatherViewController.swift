@@ -23,6 +23,7 @@ final class LocationWeatherViewController: UIViewController {
 
     private var tilesHeightConstraint: NSLayoutConstraint?
     private var graphHeightConstraint: NSLayoutConstraint?
+    private var summaryTopConstraint: NSLayoutConstraint?
 
     init(viewModel: LocationWeatherViewModelProtocol) {
         self.viewModel = viewModel
@@ -53,8 +54,10 @@ final class LocationWeatherViewController: UIViewController {
     }
 
     private func setupUI() {
+        view.backgroundColor = .clear
         backgroundView.translatesAutoresizingMaskIntoConstraints = false
         scrollView.backgroundColor = .clear
+        scrollView.contentInsetAdjustmentBehavior = .never
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         contentView.backgroundColor = .clear
         contentView.translatesAutoresizingMaskIntoConstraints = false
@@ -87,8 +90,12 @@ final class LocationWeatherViewController: UIViewController {
         view.addSubview(permissionView)
         view.addSubview(offlineBanner)
 
-        graphHeightConstraint = graphView.heightAnchor.constraint(equalToConstant: 232)
-        tilesHeightConstraint = tilesView.heightAnchor.constraint(equalToConstant: 200)
+        graphHeightConstraint = graphView.heightAnchor.constraint(
+            equalToConstant: 232
+        )
+        tilesHeightConstraint = tilesView.heightAnchor.constraint(
+            equalToConstant: 200
+        )
 
         NSLayoutConstraint.activate([
             backgroundView.topAnchor.constraint(equalTo: view.topAnchor),
@@ -96,7 +103,7 @@ final class LocationWeatherViewController: UIViewController {
             backgroundView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             backgroundView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
 
-            scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            scrollView.topAnchor.constraint(equalTo: view.topAnchor),
             scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
@@ -107,24 +114,41 @@ final class LocationWeatherViewController: UIViewController {
             contentView.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor),
             contentView.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor),
 
-            topView.topAnchor.constraint(equalTo: contentView.topAnchor),
             topView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             topView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
 
-            graphView.topAnchor.constraint(equalTo: topView.bottomAnchor, constant: 24),
+            graphView.topAnchor.constraint(
+                equalTo: topView.bottomAnchor,
+                constant: 24
+            ),
             graphView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             graphView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             graphHeightConstraint!,
 
-            tilesView.topAnchor.constraint(equalTo: graphView.bottomAnchor, constant: 24),
+            tilesView.topAnchor.constraint(
+                equalTo: graphView.bottomAnchor,
+                constant: 24
+            ),
             tilesView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             tilesView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             tilesHeightConstraint!,
 
-            attributionLabel.topAnchor.constraint(equalTo: tilesView.bottomAnchor, constant: 20),
-            attributionLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            attributionLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            attributionLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -24),
+            attributionLabel.topAnchor.constraint(
+                equalTo: tilesView.bottomAnchor,
+                constant: 20
+            ),
+            attributionLabel.leadingAnchor.constraint(
+                equalTo: contentView.leadingAnchor,
+                constant: 16
+            ),
+            attributionLabel.trailingAnchor.constraint(
+                equalTo: contentView.trailingAnchor,
+                constant: -16
+            ),
+            attributionLabel.bottomAnchor.constraint(
+                equalTo: contentView.bottomAnchor,
+                constant: -20
+            ),
 
             loadingView.topAnchor.constraint(equalTo: view.topAnchor),
             loadingView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
@@ -136,10 +160,30 @@ final class LocationWeatherViewController: UIViewController {
             permissionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             permissionView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
 
-            offlineBanner.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            offlineBanner.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-            offlineBanner.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -12)
+            offlineBanner.leadingAnchor.constraint(
+                equalTo: view.leadingAnchor,
+                constant: 16
+            ),
+            offlineBanner.trailingAnchor.constraint(
+                equalTo: view.trailingAnchor,
+                constant: -16
+            ),
+            offlineBanner.bottomAnchor.constraint(
+                equalTo: view.safeAreaLayoutGuide.bottomAnchor,
+                constant: -12
+            ),
         ])
+
+        summaryTopConstraint = topView.topAnchor.constraint(
+            equalTo: contentView.topAnchor,
+            constant: 16
+        )
+        summaryTopConstraint?.isActive = true
+    }
+
+    override func viewSafeAreaInsetsDidChange() {
+        super.viewSafeAreaInsetsDidChange()
+        summaryTopConstraint?.constant = view.safeAreaInsets.top + 12
     }
 
     private func bindViewModel() {
@@ -206,6 +250,7 @@ final class LocationWeatherViewController: UIViewController {
         coordinator.animate(alongsideTransition: { [weak self] _ in
             self?.graphView.invalidateGraphLayout()
             self?.tilesView.setNeedsLayout()
+            self?.tilesView.layoutIfNeeded()
             if let height = self?.tilesView.intrinsicContentSize.height {
                 self?.tilesHeightConstraint?.constant = height
             }

@@ -25,29 +25,32 @@ final class WeatherSummaryView: UIView {
     }
 
     private func setup() {
+        backgroundColor = .clear
+
         cityLabel.font = UIFont.preferredFont(forTextStyle: .title1)
         cityLabel.adjustsFontForContentSizeCategory = true
         cityLabel.textAlignment = .center
+        WeatherSkyReadableText.applyPrimary(to: cityLabel)
 
-        let metrics = UIFontMetrics(forTextStyle: .largeTitle)
-        temperatureLabel.font = metrics.scaledFont(for: UIFont.systemFont(ofSize: 72, weight: .thin))
+        temperatureLabel.font = UIFontMetrics(forTextStyle: .largeTitle).scaledFont(for: UIFont.systemFont(ofSize: 72, weight: .thin))
         temperatureLabel.adjustsFontForContentSizeCategory = true
         temperatureLabel.textAlignment = .center
+        WeatherSkyReadableText.applyPrimary(to: temperatureLabel)
 
         descriptionLabel.font = UIFont.preferredFont(forTextStyle: .title3)
         descriptionLabel.adjustsFontForContentSizeCategory = true
         descriptionLabel.textAlignment = .center
-        descriptionLabel.textColor = .secondaryLabel
+        WeatherSkyReadableText.applySecondary(to: descriptionLabel)
 
         highLowLabel.font = UIFont.preferredFont(forTextStyle: .body)
         highLowLabel.adjustsFontForContentSizeCategory = true
         highLowLabel.textAlignment = .center
-        highLowLabel.textColor = .secondaryLabel
+        WeatherSkyReadableText.applySecondary(to: highLowLabel)
 
         feelsLikeLabel.font = UIFont.preferredFont(forTextStyle: .subheadline)
         feelsLikeLabel.adjustsFontForContentSizeCategory = true
         feelsLikeLabel.textAlignment = .center
-        feelsLikeLabel.textColor = .secondaryLabel
+        WeatherSkyReadableText.applySecondary(to: feelsLikeLabel)
 
         iconView.contentMode = .scaleAspectFit
 
@@ -67,11 +70,17 @@ final class WeatherSummaryView: UIView {
         addSubview(stack)
         NSLayoutConstraint.activate([
             stack.topAnchor.constraint(equalTo: topAnchor, constant: 8),
-            stack.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 20),
-            stack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -20),
+            stack.leadingAnchor.constraint(
+                equalTo: leadingAnchor,
+                constant: 20
+            ),
+            stack.trailingAnchor.constraint(
+                equalTo: trailingAnchor,
+                constant: -20
+            ),
             stack.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8),
             iconView.heightAnchor.constraint(equalToConstant: 56),
-            iconView.widthAnchor.constraint(equalToConstant: 56)
+            iconView.widthAnchor.constraint(equalToConstant: 56),
         ])
 
         applyLayout(for: traitCollection)

@@ -53,6 +53,7 @@
 		EDA5CC13DB84A6A450CE5B34 /* WeatherTileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B405F1472E1AF3AF7BFCC73C /* WeatherTileView.swift */; };
 		EE3137953FEB5329A2DFACBA /* MockCollectionViewDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C780EB4AE0D826BEF8BCBE /* MockCollectionViewDataSource.swift */; };
 		FDCC39C6B8EAF7CFA370AC4A /* WeatherStormFlashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B778195BF3409CD5CA75C3C /* WeatherStormFlashView.swift */; };
+		FEDCBA9876543210ABCDEF01 /* WeatherSkyReadableText.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABCDEF0123456789FEDCBA98 /* WeatherSkyReadableText.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -114,6 +115,7 @@
 		F5F16F8BAC2D25F9845A85FA /* AppCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCoordinator.swift; sourceTree = "<group>"; };
 		F623C0F47A87C8087C574EC0 /* WeatherBackgroundAssetFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherBackgroundAssetFactory.swift; sourceTree = "<group>"; };
 		F7DF9AAD1297FA426933546D /* ProxyConfigurationLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProxyConfigurationLoader.swift; sourceTree = "<group>"; };
+		ABCDEF0123456789FEDCBA98 /* WeatherSkyReadableText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherSkyReadableText.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -155,6 +157,7 @@
 				23F4F401954BA5591A0F158E /* LoadingView.swift */,
 				31004CBFD78B3A0EA4757620 /* LocationPermissionView.swift */,
 				DB77667642743F9356F83456 /* OfflineBannerView.swift */,
+				ABCDEF0123456789FEDCBA98 /* WeatherSkyReadableText.swift */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -467,6 +470,7 @@
 				E5EF8AC469C3A5E0FFC14C41 /* WeatherParticleEmitterBuilder.swift in Sources */,
 				FDCC39C6B8EAF7CFA370AC4A /* WeatherStormFlashView.swift in Sources */,
 				1835B6372518624C2124F092 /* WeatherSummaryView.swift in Sources */,
+				FEDCBA9876543210ABCDEF01 /* WeatherSkyReadableText.swift in Sources */,
 				EDA5CC13DB84A6A450CE5B34 /* WeatherTileView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

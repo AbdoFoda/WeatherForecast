@@ -33,5 +33,6 @@ final class WeatherSummaryViewTests: XCTestCase {
         sut.configure(with: data)
 
         XCTAssertTrue(sut.subviews.count > 0)
+        XCTAssertEqual(sut.backgroundColor, .clear)
     }
 }
