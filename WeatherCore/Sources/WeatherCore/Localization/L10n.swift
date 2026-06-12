@@ -81,6 +81,20 @@ public enum L10n {
         public static var offline: String { tr("notice.offline") }
     }
 
+    public enum Locations {
+        public static var currentLocation: String { tr("locations.current") }
+        public static var searchPlaceholder: String { tr("locations.search_placeholder") }
+        public static var emptyDetail: String { tr("locations.empty_detail") }
+        public static var title: String { tr("locations.title") }
+        public static var savedHeader: String { tr("locations.saved_header") }
+    }
+
+    public enum Tiles {
+        public static var reorderHint: String { tr("tiles.reorder_hint") }
+        public static var remove: String { tr("tiles.remove") }
+        public static var showAll: String { tr("tiles.show_all") }
+    }
+
     private static func tr(_ key: String, _ arguments: CVarArg...) -> String {
         let format = String(localized: String.LocalizationValue(key), bundle: bundle)
         guard !arguments.isEmpty else { return format }
