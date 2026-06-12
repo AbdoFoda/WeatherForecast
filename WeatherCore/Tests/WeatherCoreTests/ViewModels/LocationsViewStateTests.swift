@@ -2,57 +2,23 @@ import XCTest
 @testable import WeatherCore
 
 final class LocationsViewStateTests: XCTestCase {
-    func test_sectionCount_withoutSearchQuery_isTwo() {
+    func test_sectionCount_isAlwaysTwo() {
         let sut = LocationsViewState.initial
         XCTAssertEqual(sut.sectionCount, 2)
     }
 
-    func test_sectionCount_withSearchQuery_isOne() {
-        let sut = LocationsViewState(
-            savedLocations: [],
-            selectedLocationID: LocationModel.currentLocationID,
-            searchQuery: "Lon",
-            searchResults: []
-        )
-        XCTAssertEqual(sut.sectionCount, 1)
-    }
+    func test_numberOfRows_currentSectionHasSingleRow() {
+        let paris = LocationModel(id: "paris", name: "Paris", lat: 48.85, lon: 2.35, country: "FR")
+        let sut = LocationsViewState(savedLocations: [paris], selectedLocationID: "paris")
 
-    func test_clearingSearchQuery_dropsSearchSection() {
-        let searching = LocationsViewState(
-            savedLocations: [],
-            selectedLocationID: LocationModel.currentLocationID,
-            searchQuery: "Lon",
-            searchResults: [LocationModel(id: "1", name: "London", lat: 51.5, lon: -0.12, country: "GB")]
-        )
-        let cleared = LocationsViewState(
-            savedLocations: [],
-            selectedLocationID: LocationModel.currentLocationID,
-            searchQuery: "",
-            searchResults: []
-        )
-
-        XCTAssertEqual(searching.sectionCount, 1)
-        XCTAssertEqual(cleared.sectionCount, 2)
-    }
-
-    func test_searchResults_useFirstSectionWhileSearching() {
-        let london = LocationModel(id: "1", name: "London", lat: 51.5, lon: -0.12, country: "GB")
-        let sut = LocationsViewState(
-            savedLocations: [],
-            selectedLocationID: LocationModel.currentLocationID,
-            searchQuery: "Lon",
-            searchResults: [london]
-        )
-
-        XCTAssertEqual(sut.row(at: LocationsIndexPath(section: 0, row: 0)), .search(london))
+        XCTAssertEqual(sut.numberOfRows(in: 0), 1)
+        XCTAssertEqual(sut.numberOfRows(in: 1), 1)
     }
 
     func test_row_currentLocation_reflectsSelection() {
         let sut = LocationsViewState(
             savedLocations: [],
-            selectedLocationID: LocationModel.currentLocationID,
-            searchQuery: "",
-            searchResults: []
+            selectedLocationID: LocationModel.currentLocationID
         )
 
         XCTAssertEqual(
@@ -61,18 +27,33 @@ final class LocationsViewStateTests: XCTestCase {
         )
     }
 
+    func test_row_savedLocation_reflectsSelection() {
+        let paris = LocationModel(id: "paris", name: "Paris", lat: 48.85, lon: 2.35, country: "FR")
+        let sut = LocationsViewState(savedLocations: [paris], selectedLocationID: "paris")
+
+        XCTAssertEqual(
+            sut.row(at: LocationsIndexPath(section: 1, row: 0)),
+            .saved(paris, isSelected: true)
+        )
+    }
+
     func test_selection_savedRow_returnsSavedLocation() {
         let paris = LocationModel(id: "paris", name: "Paris", lat: 48.85, lon: 2.35, country: "FR")
-        let sut = LocationsViewState(
-            savedLocations: [paris],
-            selectedLocationID: "paris",
-            searchQuery: "",
-            searchResults: []
-        )
+        let sut = LocationsViewState(savedLocations: [paris], selectedLocationID: "paris")
 
         XCTAssertEqual(
             sut.selection(for: LocationsIndexPath(section: 1, row: 0)),
             .saved(paris)
         )
+    }
+
+    func test_editAndMove_allowedOnlyForSavedSection() {
+        let paris = LocationModel(id: "paris", name: "Paris", lat: 48.85, lon: 2.35, country: "FR")
+        let sut = LocationsViewState(savedLocations: [paris], selectedLocationID: "paris")
+
+        XCTAssertFalse(sut.canEditRow(at: LocationsIndexPath(section: 0, row: 0)))
+        XCTAssertFalse(sut.canMoveRow(at: LocationsIndexPath(section: 0, row: 0)))
+        XCTAssertTrue(sut.canEditRow(at: LocationsIndexPath(section: 1, row: 0)))
+        XCTAssertTrue(sut.canMoveRow(at: LocationsIndexPath(section: 1, row: 0)))
     }
 }

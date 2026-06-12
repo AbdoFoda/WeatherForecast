@@ -321,6 +321,26 @@
         }
       }
     },
+    "locations.add_location" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add location"
+          }
+        }
+      }
+    },
+    "locations.add_location.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add Location"
+          }
+        }
+      }
+    },
     "locations.current" : {
       "localizations" : {
         "en" : {

@@ -5,77 +5,29 @@ public final class LocationsViewModel: LocationsViewModelProtocol {
     public var onStateChange: ((LocationsViewState) -> Void)?
     public private(set) var state = LocationsViewState.initial
 
-    private let weatherService: WeatherServiceProtocol
     private let store: SavedLocationsStore
-    private var searchTask: Task<Void, Never>?
 
-    public init(weatherService: WeatherServiceProtocol, store: SavedLocationsStore) {
-        self.weatherService = weatherService
+    public init(store: SavedLocationsStore) {
         self.store = store
     }
 
     public func load() {
         state = LocationsViewState(
             savedLocations: store.loadLocations(),
-            selectedLocationID: store.loadSelectedLocationID(),
-            searchQuery: state.searchQuery,
-            searchResults: state.searchResults
+            selectedLocationID: store.loadSelectedLocationID()
         )
         publish()
-    }
-
-    public func setSearchQuery(_ query: String) async {
-        state = LocationsViewState(
-            savedLocations: state.savedLocations,
-            selectedLocationID: state.selectedLocationID,
-            searchQuery: query,
-            searchResults: state.searchResults
-        )
-        publish()
-
-        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
-        searchTask?.cancel()
-
-        guard trimmed.count >= 2 else {
-            if !state.searchResults.isEmpty {
-                clearSearchResults()
-            }
-            return
-        }
-
-        searchTask = Task {
-            do {
-                try await Task.sleep(nanoseconds: 300_000_000)
-                guard !Task.isCancelled else { return }
-                let results = try await weatherService.fetchGeocodingDirect(query: trimmed)
-                guard !Task.isCancelled else { return }
-                guard state.searchQuery.trimmingCharacters(in: .whitespacesAndNewlines) == trimmed else { return }
-                applySearchResults(results.map(LocationModel.init(geocodingResult:)))
-            } catch {
-                guard !Task.isCancelled else { return }
-                clearSearchResults()
-            }
-        }
-        await searchTask?.value
     }
 
     public func addLocation(_ location: LocationModel) {
         if state.savedLocations.contains(where: { $0.id == location.id }) {
             persistSelection(id: location.id, savedLocations: state.savedLocations)
-            clearSearchResultsAndQuery()
             return
         }
 
         var savedLocations = state.savedLocations
         savedLocations.append(location)
         persistSelection(id: location.id, savedLocations: savedLocations)
-        clearSearchResultsAndQuery()
-    }
-
-    public func addSearchResult(at indexPath: LocationsIndexPath) -> LocationSelection? {
-        guard case .search(let location) = state.row(at: indexPath) else { return nil }
-        addLocation(location)
-        return selection(for: state.selectedLocationID)
     }
 
     public func removeLocation(at index: Int) {
@@ -89,9 +41,7 @@ public final class LocationsViewModel: LocationsViewModelProtocol {
         } else {
             state = LocationsViewState(
                 savedLocations: savedLocations,
-                selectedLocationID: state.selectedLocationID,
-                searchQuery: state.searchQuery,
-                searchResults: state.searchResults
+                selectedLocationID: state.selectedLocationID
             )
             publish()
         }
@@ -109,9 +59,7 @@ public final class LocationsViewModel: LocationsViewModelProtocol {
 
         state = LocationsViewState(
             savedLocations: savedLocations,
-            selectedLocationID: state.selectedLocationID,
-            searchQuery: state.searchQuery,
-            searchResults: state.searchResults
+            selectedLocationID: state.selectedLocationID
         )
         publish()
     }
@@ -156,40 +104,7 @@ public final class LocationsViewModel: LocationsViewModelProtocol {
         store.saveSelectedLocationID(id)
         state = LocationsViewState(
             savedLocations: savedLocations,
-            selectedLocationID: id,
-            searchQuery: state.searchQuery,
-            searchResults: state.searchResults
-        )
-        publish()
-    }
-
-    private func applySearchResults(_ results: [LocationModel]) {
-        state = LocationsViewState(
-            savedLocations: state.savedLocations,
-            selectedLocationID: state.selectedLocationID,
-            searchQuery: state.searchQuery,
-            searchResults: results
-        )
-        publish()
-    }
-
-    private func clearSearchResults() {
-        guard !state.searchResults.isEmpty else { return }
-        state = LocationsViewState(
-            savedLocations: state.savedLocations,
-            selectedLocationID: state.selectedLocationID,
-            searchQuery: state.searchQuery,
-            searchResults: []
-        )
-        publish()
-    }
-
-    private func clearSearchResultsAndQuery() {
-        state = LocationsViewState(
-            savedLocations: state.savedLocations,
-            selectedLocationID: state.selectedLocationID,
-            searchQuery: "",
-            searchResults: []
+            selectedLocationID: id
         )
         publish()
     }

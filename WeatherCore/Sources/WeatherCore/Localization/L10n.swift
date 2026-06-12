@@ -87,6 +87,8 @@ public enum L10n {
         public static var emptyDetail: String { tr("locations.empty_detail") }
         public static var title: String { tr("locations.title") }
         public static var savedHeader: String { tr("locations.saved_header") }
+        public static var addLocation: String { tr("locations.add_location") }
+        public static var addLocationTitle: String { tr("locations.add_location.title") }
     }
 
     public enum Tiles {
