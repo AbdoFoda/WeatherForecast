@@ -10,6 +10,7 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
     weak var delegate: LocationManagerDelegate?
     private let coreLocationManager = CLLocationManager()
     private var didDeliverLocation = false
+    private var isRequestingLocation = false
 
     override init() {
         super.init()
@@ -18,6 +19,7 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
     }
 
     func requestLocation() {
+        isRequestingLocation = true
         didDeliverLocation = false
         switch coreLocationManager.authorizationStatus {
         case .notDetermined:
@@ -37,6 +39,8 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
     }
 
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        guard isRequestingLocation else { return }
+
         switch manager.authorizationStatus {
         case .authorizedWhenInUse, .authorizedAlways:
             beginLocationUpdates()

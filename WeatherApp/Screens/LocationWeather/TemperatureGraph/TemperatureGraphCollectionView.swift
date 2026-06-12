@@ -87,6 +87,7 @@ final class TemperatureGraphCollectionView: UIView {
         }
         graphLayout.invalidateLayout()
         collectionView.reloadData()
+        collectionView.layoutIfNeeded()
         invalidateIntrinsicContentSize()
     }
 

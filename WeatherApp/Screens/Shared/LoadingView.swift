@@ -5,6 +5,8 @@ final class LoadingView: UIView {
 
     override init(frame: CGRect) {
         super.init(frame: frame)
+        isHidden = true
+        isUserInteractionEnabled = false
         backgroundColor = UIColor.systemBackground.withAlphaComponent(WeatherDesignSystem.Overlay.loadingScrimAlpha)
         spinner.translatesAutoresizingMaskIntoConstraints = false
         addSubview(spinner)
@@ -20,11 +22,13 @@ final class LoadingView: UIView {
 
     func startAnimating() {
         isHidden = false
+        isUserInteractionEnabled = true
         spinner.startAnimating()
     }
 
     func stopAnimating() {
         spinner.stopAnimating()
         isHidden = true
+        isUserInteractionEnabled = false
     }
 }

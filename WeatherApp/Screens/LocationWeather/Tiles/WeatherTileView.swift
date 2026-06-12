@@ -2,6 +2,8 @@ import UIKit
 import WeatherCore
 
 final class WeatherTileView: UIView {
+    var tileKind: TileKind?
+
     private let titleLabel = UILabel()
     private let valueLabel = UILabel()
     private let subtitleLabel = UILabel()

@@ -6,6 +6,7 @@ final class LocationPermissionView: UIView {
 
     override init(frame: CGRect) {
         super.init(frame: frame)
+        isUserInteractionEnabled = false
         setup()
     }
 
@@ -56,6 +57,11 @@ final class LocationPermissionView: UIView {
 
     func configure(message: String) {
         messageLabel.text = message
+    }
+
+    func setVisible(_ visible: Bool) {
+        isHidden = !visible
+        isUserInteractionEnabled = visible
     }
 
     @objc private func openSettings() {

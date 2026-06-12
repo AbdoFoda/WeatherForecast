@@ -2,6 +2,8 @@ import UIKit
 import WeatherCore
 
 enum TemperatureGraphRenderer {
+    private static let graphInset: CGFloat = 10
+
     static func curvePath(
         cellWidth: CGFloat,
         graphTop: CGFloat,
@@ -10,9 +12,8 @@ enum TemperatureGraphRenderer {
         currentNormalizedY: CGFloat,
         nextNormalizedY: CGFloat
     ) -> UIBezierPath {
-        let inset: CGFloat = 10
         let yInGraph: (CGFloat) -> CGFloat = {
-            TemperatureGraphGeometry.dotY(normalized: $0, graphHeight: graphHeight, inset: inset)
+            TemperatureGraphGeometry.dotY(normalized: $0, graphHeight: graphHeight, inset: graphInset)
         }
 
         let centerX = cellWidth / 2
@@ -35,12 +36,11 @@ enum TemperatureGraphRenderer {
         graphHeight: CGFloat,
         normalizedY: CGFloat
     ) -> CGPoint {
-        let inset: CGFloat = 10
         let y = graphTop + TemperatureGraphGeometry.dotY(
             normalized: normalizedY,
             graphHeight: graphHeight,
-            inset: inset
-        )
+            inset: graphInset
+        ) - (WeatherDesignSystem.Graph.Cell.curveLineWidth / 2)
         return CGPoint(x: cellWidth / 2, y: y)
     }
 }

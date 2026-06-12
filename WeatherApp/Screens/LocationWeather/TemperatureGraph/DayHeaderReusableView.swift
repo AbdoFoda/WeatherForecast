@@ -7,6 +7,7 @@ final class DayHeaderReusableView: UICollectionReusableView {
 
     override init(frame: CGRect) {
         super.init(frame: frame)
+        isUserInteractionEnabled = false
         backgroundColor = .systemBackground
         layer.cornerRadius = WeatherDesignSystem.Graph.DayHeader.cornerRadius
         layer.borderWidth = WeatherDesignSystem.Graph.DayHeader.borderWidth
