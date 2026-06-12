@@ -1,4 +1,4 @@
-public enum WeatherScene: String, Sendable, Equatable {
+public enum WeatherScene: String, Sendable, Equatable, Codable {
     case neutral
     case clearDay
     case clearNight
