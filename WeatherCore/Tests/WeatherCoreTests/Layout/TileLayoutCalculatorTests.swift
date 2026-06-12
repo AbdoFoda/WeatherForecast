@@ -35,4 +35,44 @@ final class TileLayoutCalculatorTests: XCTestCase {
         XCTAssertEqual(output.frames[0].width, 380)
         XCTAssertEqual(output.frames[1].minY, 10 + 120 + 10)
     }
+
+    func test_targetTotalHeight_expandsRowHeight() {
+        let tiles = [
+            TileDisplayItem(id: "1", title: "", value: "", subtitle: nil, tileSize: .standard),
+            TileDisplayItem(id: "2", title: "", value: "", subtitle: nil, tileSize: .standard),
+            TileDisplayItem(id: "3", title: "", value: "", subtitle: nil, tileSize: .standard),
+            TileDisplayItem(id: "4", title: "", value: "", subtitle: nil, tileSize: .standard),
+        ]
+        let input = TileLayoutCalculator.Input(
+            containerSize: CGSize(width: 400, height: 500),
+            tiles: tiles,
+            horizontalPadding: 16,
+            verticalPadding: 16,
+            spacing: 16,
+            targetTotalHeight: 500
+        )
+        let output = TileLayoutCalculator.calculate(input: input)
+
+        XCTAssertEqual(output.totalHeight, 500, accuracy: 0.5)
+        XCTAssertGreaterThan(output.rowHeight, WeatherConstants.TileLayout.rowHeight)
+    }
+
+    func test_targetTotalHeight_belowNatural_usesMinimumRowHeight() {
+        let tiles = [
+            TileDisplayItem(id: "1", title: "", value: "", subtitle: nil, tileSize: .standard),
+            TileDisplayItem(id: "2", title: "", value: "", subtitle: nil, tileSize: .standard),
+        ]
+        let input = TileLayoutCalculator.Input(
+            containerSize: CGSize(width: 400, height: 120),
+            tiles: tiles,
+            horizontalPadding: 10,
+            verticalPadding: 10,
+            spacing: 10,
+            targetTotalHeight: 120
+        )
+        let output = TileLayoutCalculator.calculate(input: input)
+
+        XCTAssertEqual(output.rowHeight, WeatherConstants.TileLayout.rowHeight)
+        XCTAssertGreaterThan(output.totalHeight, 120)
+    }
 }
