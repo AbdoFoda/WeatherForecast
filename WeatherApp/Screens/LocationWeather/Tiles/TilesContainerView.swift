@@ -13,9 +13,9 @@ final class TilesContainerView: UIView {
         let input = TileLayoutCalculator.Input(
             containerSize: CGSize(width: width, height: .greatestFiniteMagnitude),
             tiles: visible,
-            horizontalPadding: 16,
-            verticalPadding: 16,
-            spacing: 16
+            horizontalPadding: WeatherDesignSystem.Tile.gridSpacing,
+            verticalPadding: WeatherDesignSystem.Tile.gridSpacing,
+            spacing: WeatherDesignSystem.Tile.gridSpacing
         )
         let output = TileLayoutCalculator.calculate(input: input)
         return CGSize(width: UIView.noIntrinsicMetric, height: output.totalHeight)
@@ -34,9 +34,9 @@ final class TilesContainerView: UIView {
         let input = TileLayoutCalculator.Input(
             containerSize: bounds.size,
             tiles: visibleTileItems,
-            horizontalPadding: 16,
-            verticalPadding: 16,
-            spacing: 16
+            horizontalPadding: WeatherDesignSystem.Tile.gridSpacing,
+            verticalPadding: WeatherDesignSystem.Tile.gridSpacing,
+            spacing: WeatherDesignSystem.Tile.gridSpacing
         )
 
         let output = TileLayoutCalculator.calculate(input: input)

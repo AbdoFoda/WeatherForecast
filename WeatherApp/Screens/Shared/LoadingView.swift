@@ -5,12 +5,12 @@ final class LoadingView: UIView {
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        backgroundColor = UIColor.systemBackground.withAlphaComponent(0.7)
+        backgroundColor = UIColor.systemBackground.withAlphaComponent(WeatherDesignSystem.Overlay.loadingScrimAlpha)
         spinner.translatesAutoresizingMaskIntoConstraints = false
         addSubview(spinner)
         NSLayoutConstraint.activate([
             spinner.centerXAnchor.constraint(equalTo: centerXAnchor),
-            spinner.centerYAnchor.constraint(equalTo: centerYAnchor)
+            spinner.centerYAnchor.constraint(equalTo: centerYAnchor),
         ])
     }
 

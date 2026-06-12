@@ -72,7 +72,7 @@ final class LocationWeatherViewController: UIViewController {
         offlineBanner.isHidden = true
 
         attributionLabel.text = AppL10n.attribution
-        attributionLabel.font = UIFont.preferredFont(forTextStyle: .caption2)
+        attributionLabel.font = WeatherDesignSystem.Typography.preferred(.caption2)
         attributionLabel.textColor = .tertiaryLabel
         attributionLabel.textAlignment = .center
 
@@ -91,10 +91,10 @@ final class LocationWeatherViewController: UIViewController {
         view.addSubview(offlineBanner)
 
         graphHeightConstraint = graphView.heightAnchor.constraint(
-            equalToConstant: 232
+            equalToConstant: WeatherDesignSystem.Layout.graphHeight
         )
         tilesHeightConstraint = tilesView.heightAnchor.constraint(
-            equalToConstant: 200
+            equalToConstant: WeatherDesignSystem.Layout.tilesInitialHeight
         )
 
         NSLayoutConstraint.activate([
@@ -119,7 +119,7 @@ final class LocationWeatherViewController: UIViewController {
 
             graphView.topAnchor.constraint(
                 equalTo: topView.bottomAnchor,
-                constant: 24
+                constant: WeatherDesignSystem.Layout.sectionSpacing
             ),
             graphView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             graphView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
@@ -127,7 +127,7 @@ final class LocationWeatherViewController: UIViewController {
 
             tilesView.topAnchor.constraint(
                 equalTo: graphView.bottomAnchor,
-                constant: 24
+                constant: WeatherDesignSystem.Layout.sectionSpacing
             ),
             tilesView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             tilesView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
@@ -135,19 +135,19 @@ final class LocationWeatherViewController: UIViewController {
 
             attributionLabel.topAnchor.constraint(
                 equalTo: tilesView.bottomAnchor,
-                constant: 20
+                constant: WeatherDesignSystem.Layout.attributionBottomInset
             ),
             attributionLabel.leadingAnchor.constraint(
                 equalTo: contentView.leadingAnchor,
-                constant: 16
+                constant: WeatherDesignSystem.Layout.screenHorizontalInset
             ),
             attributionLabel.trailingAnchor.constraint(
                 equalTo: contentView.trailingAnchor,
-                constant: -16
+                constant: -WeatherDesignSystem.Layout.screenHorizontalInset
             ),
             attributionLabel.bottomAnchor.constraint(
                 equalTo: contentView.bottomAnchor,
-                constant: -20
+                constant: -WeatherDesignSystem.Layout.attributionBottomInset
             ),
 
             loadingView.topAnchor.constraint(equalTo: view.topAnchor),
@@ -162,28 +162,28 @@ final class LocationWeatherViewController: UIViewController {
 
             offlineBanner.leadingAnchor.constraint(
                 equalTo: view.leadingAnchor,
-                constant: 16
+                constant: WeatherDesignSystem.Layout.screenHorizontalInset
             ),
             offlineBanner.trailingAnchor.constraint(
                 equalTo: view.trailingAnchor,
-                constant: -16
+                constant: -WeatherDesignSystem.Layout.screenHorizontalInset
             ),
             offlineBanner.bottomAnchor.constraint(
                 equalTo: view.safeAreaLayoutGuide.bottomAnchor,
-                constant: -12
+                constant: -WeatherDesignSystem.Layout.offlineBannerBottomInset
             ),
         ])
 
         summaryTopConstraint = topView.topAnchor.constraint(
             equalTo: contentView.topAnchor,
-            constant: 16
+            constant: WeatherDesignSystem.Layout.summaryTopInset
         )
         summaryTopConstraint?.isActive = true
     }
 
     override func viewSafeAreaInsetsDidChange() {
         super.viewSafeAreaInsetsDidChange()
-        summaryTopConstraint?.constant = view.safeAreaInsets.top + 12
+        summaryTopConstraint?.constant = view.safeAreaInsets.top + WeatherDesignSystem.Layout.summarySafeAreaExtra
     }
 
     private func bindViewModel() {

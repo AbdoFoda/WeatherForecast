@@ -17,13 +17,13 @@ final class LocationPermissionView: UIView {
         backgroundColor = .systemBackground
 
         messageLabel.text = AppL10n.locationPermissionMessage
-        messageLabel.font = UIFont.preferredFont(forTextStyle: .body)
+        messageLabel.font = WeatherDesignSystem.Typography.preferred(.body)
         messageLabel.adjustsFontForContentSizeCategory = true
         messageLabel.textAlignment = .center
         messageLabel.numberOfLines = 0
 
         settingsButton.setTitle(AppL10n.openSettings, for: .normal)
-        settingsButton.titleLabel?.font = UIFont.preferredFont(forTextStyle: .headline)
+        settingsButton.titleLabel?.font = WeatherDesignSystem.Typography.preferred(.headline)
         settingsButton.addTarget(self, action: #selector(openSettings), for: .touchUpInside)
 
         [messageLabel, settingsButton].forEach {
@@ -33,12 +33,24 @@ final class LocationPermissionView: UIView {
 
         NSLayoutConstraint.activate([
             messageLabel.centerXAnchor.constraint(equalTo: centerXAnchor),
-            messageLabel.centerYAnchor.constraint(equalTo: centerYAnchor, constant: -40),
-            messageLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 32),
-            messageLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -32),
+            messageLabel.centerYAnchor.constraint(
+                equalTo: centerYAnchor,
+                constant: -WeatherDesignSystem.Layout.permissionMessageVerticalOffset
+            ),
+            messageLabel.leadingAnchor.constraint(
+                equalTo: leadingAnchor,
+                constant: WeatherDesignSystem.Layout.permissionHorizontalInset
+            ),
+            messageLabel.trailingAnchor.constraint(
+                equalTo: trailingAnchor,
+                constant: -WeatherDesignSystem.Layout.permissionHorizontalInset
+            ),
 
-            settingsButton.topAnchor.constraint(equalTo: messageLabel.bottomAnchor, constant: 24),
-            settingsButton.centerXAnchor.constraint(equalTo: centerXAnchor)
+            settingsButton.topAnchor.constraint(
+                equalTo: messageLabel.bottomAnchor,
+                constant: WeatherDesignSystem.Layout.permissionButtonTopSpacing
+            ),
+            settingsButton.centerXAnchor.constraint(equalTo: centerXAnchor),
         ])
     }
 

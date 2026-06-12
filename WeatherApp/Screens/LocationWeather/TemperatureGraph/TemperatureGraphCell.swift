@@ -4,14 +4,6 @@ import WeatherCore
 final class TemperatureGraphCell: UICollectionViewCell {
     static let reuseIdentifier = "TemperatureGraphCell"
 
-    private enum Metrics {
-        static let horizontalPadding: CGFloat = 6
-        static let timeHeight: CGFloat = 16
-        static let iconSize: CGFloat = 28
-        static let temperatureHeight: CGFloat = 18
-        static let sectionSpacing: CGFloat = 6
-    }
-
     private let timeLabel = UILabel()
     private let temperatureLabel = UILabel()
     private let iconView = UIImageView()
@@ -36,15 +28,15 @@ final class TemperatureGraphCell: UICollectionViewCell {
         super.prepareForReuse()
         imageTask?.cancel()
         iconView.image = nil
-        timeLabel.font = UIFont.preferredFont(forTextStyle: .caption1)
+        timeLabel.font = WeatherDesignSystem.Typography.preferred(.caption1)
     }
 
     private func setup() {
-        timeLabel.font = UIFont.preferredFont(forTextStyle: .caption1)
+        timeLabel.font = WeatherDesignSystem.Typography.preferred(.caption1)
         timeLabel.adjustsFontForContentSizeCategory = true
         timeLabel.textAlignment = .center
 
-        temperatureLabel.font = UIFont.preferredFont(forTextStyle: .caption1)
+        temperatureLabel.font = WeatherDesignSystem.Typography.preferred(.caption1)
         temperatureLabel.adjustsFontForContentSizeCategory = true
         temperatureLabel.textAlignment = .center
         temperatureLabel.textColor = .secondaryLabel
@@ -53,15 +45,15 @@ final class TemperatureGraphCell: UICollectionViewCell {
 
         [timeLabel, iconView, temperatureLabel].forEach { addSubview($0) }
 
-        curveLayer.strokeColor = UIColor.systemOrange.cgColor
+        curveLayer.strokeColor = WeatherDesignSystem.Graph.Cell.curveColor.cgColor
         curveLayer.fillColor = UIColor.clear.cgColor
-        curveLayer.lineWidth = 2.5
+        curveLayer.lineWidth = WeatherDesignSystem.Graph.Cell.curveLineWidth
         curveLayer.lineCap = .round
         curveLayer.lineJoin = .round
 
-        dotLayer.fillColor = UIColor.systemOrange.cgColor
+        dotLayer.fillColor = WeatherDesignSystem.Graph.Cell.curveColor.cgColor
         dotLayer.strokeColor = UIColor.systemBackground.cgColor
-        dotLayer.lineWidth = 2
+        dotLayer.lineWidth = WeatherDesignSystem.Graph.Cell.dotBorderWidth
 
         layer.addSublayer(curveLayer)
         layer.addSublayer(dotLayer)
@@ -74,32 +66,42 @@ final class TemperatureGraphCell: UICollectionViewCell {
     }
 
     private var graphTop: CGFloat {
-        Metrics.timeHeight
-            + Metrics.sectionSpacing
-            + Metrics.iconSize
-            + Metrics.sectionSpacing
-            + Metrics.temperatureHeight
-            + Metrics.sectionSpacing
+        WeatherDesignSystem.Graph.Cell.timeHeight
+            + WeatherDesignSystem.Graph.Cell.sectionSpacing
+            + WeatherDesignSystem.Icon.graphCell
+            + WeatherDesignSystem.Graph.Cell.sectionSpacing
+            + WeatherDesignSystem.Graph.Cell.temperatureHeight
+            + WeatherDesignSystem.Graph.Cell.sectionSpacing
     }
 
     private func layoutLabels() {
         let width = bounds.width
-        let padding = Metrics.horizontalPadding
+        let padding = WeatherDesignSystem.Graph.Cell.horizontalPadding
         let contentWidth = width - padding * 2
         var y: CGFloat = 0
 
-        timeLabel.frame = CGRect(x: padding, y: y, width: contentWidth, height: Metrics.timeHeight)
-        y += Metrics.timeHeight + Metrics.sectionSpacing
+        timeLabel.frame = CGRect(
+            x: padding,
+            y: y,
+            width: contentWidth,
+            height: WeatherDesignSystem.Graph.Cell.timeHeight
+        )
+        y += WeatherDesignSystem.Graph.Cell.timeHeight + WeatherDesignSystem.Graph.Cell.sectionSpacing
 
         iconView.frame = CGRect(
-            x: (width - Metrics.iconSize) / 2,
+            x: (width - WeatherDesignSystem.Icon.graphCell) / 2,
             y: y,
-            width: Metrics.iconSize,
-            height: Metrics.iconSize
+            width: WeatherDesignSystem.Icon.graphCell,
+            height: WeatherDesignSystem.Icon.graphCell
         )
-        y += Metrics.iconSize + Metrics.sectionSpacing
+        y += WeatherDesignSystem.Icon.graphCell + WeatherDesignSystem.Graph.Cell.sectionSpacing
 
-        temperatureLabel.frame = CGRect(x: padding, y: y, width: contentWidth, height: Metrics.temperatureHeight)
+        temperatureLabel.frame = CGRect(
+            x: padding,
+            y: y,
+            width: contentWidth,
+            height: WeatherDesignSystem.Graph.Cell.temperatureHeight
+        )
     }
 
     func configure(
@@ -114,7 +116,7 @@ final class TemperatureGraphCell: UICollectionViewCell {
         self.nextNormalizedY = nextNormalizedY
 
         if item.isCurrentHour {
-            timeLabel.font = UIFont.preferredFont(forTextStyle: .caption1).bold()
+            timeLabel.font = WeatherDesignSystem.Typography.preferred(.caption1).bold()
             temperatureLabel.textColor = .label
         } else {
             temperatureLabel.textColor = .secondaryLabel
@@ -141,7 +143,7 @@ final class TemperatureGraphCell: UICollectionViewCell {
 
     private func drawGraph() {
         let top = graphTop
-        let graphHeight = max(0, bounds.height - top - 8)
+        let graphHeight = max(0, bounds.height - top - WeatherDesignSystem.Graph.Cell.graphBottomInset)
         let cellWidth = bounds.width
 
         let path = TemperatureGraphRenderer.curvePath(
@@ -163,7 +165,7 @@ final class TemperatureGraphCell: UICollectionViewCell {
         )
         let dotPath = UIBezierPath(
             arcCenter: dotCenter,
-            radius: 5,
+            radius: WeatherDesignSystem.Graph.Cell.dotRadius,
             startAngle: 0,
             endAngle: .pi * 2,
             clockwise: true

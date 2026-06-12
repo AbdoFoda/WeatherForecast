@@ -16,19 +16,19 @@ final class WeatherTileView: UIView {
     }
 
     private func setup() {
-        backgroundColor = .secondarySystemGroupedBackground
-        layer.cornerRadius = 16
+        backgroundColor = WeatherDesignSystem.Tile.backgroundColor
+        layer.cornerRadius = WeatherDesignSystem.Tile.cornerRadius
         layer.cornerCurve = .continuous
         clipsToBounds = true
 
-        titleLabel.font = UIFont.preferredFont(forTextStyle: .headline)
+        titleLabel.font = WeatherDesignSystem.Typography.preferred(.headline)
         titleLabel.adjustsFontForContentSizeCategory = true
         titleLabel.textColor = .secondaryLabel
 
-        valueLabel.font = UIFont.preferredFont(forTextStyle: .title1)
+        valueLabel.font = WeatherDesignSystem.Typography.preferred(.title1)
         valueLabel.adjustsFontForContentSizeCategory = true
 
-        subtitleLabel.font = UIFont.preferredFont(forTextStyle: .subheadline)
+        subtitleLabel.font = WeatherDesignSystem.Typography.preferred(.subheadline)
         subtitleLabel.adjustsFontForContentSizeCategory = true
         subtitleLabel.textColor = .secondaryLabel
         subtitleLabel.numberOfLines = 0
@@ -38,13 +38,20 @@ final class WeatherTileView: UIView {
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        let padding: CGFloat = 16
+        let padding = WeatherDesignSystem.Tile.padding
         let width = bounds.width - padding * 2
 
-        titleLabel.frame = CGRect(x: padding, y: padding, width: width, height: 22)
-        valueLabel.frame = CGRect(x: padding, y: titleLabel.frame.maxY + 8, width: width, height: 28)
+        titleLabel.frame = CGRect(x: padding, y: padding, width: width, height: WeatherDesignSystem.Tile.titleHeight)
+        valueLabel.frame = CGRect(
+            x: padding,
+            y: titleLabel.frame.maxY + WeatherDesignSystem.Tile.valueTopSpacing,
+            width: width,
+            height: WeatherDesignSystem.Tile.valueHeight
+        )
 
-        let subtitleHeight = subtitleLabel.text?.isEmpty == false ? 20.0 : 0.0
+        let subtitleHeight = subtitleLabel.text?.isEmpty == false
+            ? WeatherDesignSystem.Tile.subtitleHeight
+            : 0
         subtitleLabel.frame = CGRect(
             x: padding,
             y: bounds.height - padding - subtitleHeight,

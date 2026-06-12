@@ -8,13 +8,18 @@ final class TemperatureGraphCollectionView: UIView {
 
     private lazy var collectionView: UICollectionView = {
         let view = UICollectionView(frame: .zero, collectionViewLayout: graphLayout)
-        view.backgroundColor = .secondarySystemGroupedBackground
-        view.layer.cornerRadius = 12
+        view.backgroundColor = WeatherDesignSystem.Graph.Container.backgroundColor
+        view.layer.cornerRadius = WeatherDesignSystem.Graph.Container.cornerRadius
         view.clipsToBounds = true
         view.showsHorizontalScrollIndicator = false
         view.dataSource = self
         view.delegate = self
-        view.contentInset = UIEdgeInsets(top: 0, left: 8, bottom: 0, right: 8)
+        view.contentInset = UIEdgeInsets(
+            top: 0,
+            left: WeatherDesignSystem.Graph.Container.contentInsetHorizontal,
+            bottom: 0,
+            right: WeatherDesignSystem.Graph.Container.contentInsetHorizontal
+        )
         view.register(
             TemperatureGraphCell.self,
             forCellWithReuseIdentifier: TemperatureGraphCell.reuseIdentifier
@@ -30,7 +35,7 @@ final class TemperatureGraphCollectionView: UIView {
     override init(frame: CGRect) {
         super.init(frame: frame)
         sectionLabel.text = "Hourly Forecast"
-        sectionLabel.font = UIFont.preferredFont(forTextStyle: .headline)
+        sectionLabel.font = WeatherDesignSystem.Typography.preferred(.headline)
         sectionLabel.adjustsFontForContentSizeCategory = true
         sectionLabel.translatesAutoresizingMaskIntoConstraints = false
         collectionView.translatesAutoresizingMaskIntoConstraints = false
@@ -38,13 +43,28 @@ final class TemperatureGraphCollectionView: UIView {
         addSubview(collectionView)
         NSLayoutConstraint.activate([
             sectionLabel.topAnchor.constraint(equalTo: topAnchor),
-            sectionLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
-            sectionLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
+            sectionLabel.leadingAnchor.constraint(
+                equalTo: leadingAnchor,
+                constant: WeatherDesignSystem.Layout.screenHorizontalInset
+            ),
+            sectionLabel.trailingAnchor.constraint(
+                equalTo: trailingAnchor,
+                constant: -WeatherDesignSystem.Layout.screenHorizontalInset
+            ),
 
-            collectionView.topAnchor.constraint(equalTo: sectionLabel.bottomAnchor, constant: 8),
-            collectionView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
-            collectionView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
-            collectionView.bottomAnchor.constraint(equalTo: bottomAnchor)
+            collectionView.topAnchor.constraint(
+                equalTo: sectionLabel.bottomAnchor,
+                constant: WeatherDesignSystem.Graph.Container.labelTopSpacing
+            ),
+            collectionView.leadingAnchor.constraint(
+                equalTo: leadingAnchor,
+                constant: WeatherDesignSystem.Layout.screenHorizontalInset
+            ),
+            collectionView.trailingAnchor.constraint(
+                equalTo: trailingAnchor,
+                constant: -WeatherDesignSystem.Layout.screenHorizontalInset
+            ),
+            collectionView.bottomAnchor.constraint(equalTo: bottomAnchor),
         ])
     }
 
@@ -53,7 +73,10 @@ final class TemperatureGraphCollectionView: UIView {
     }
 
     override var intrinsicContentSize: CGSize {
-        CGSize(width: UIView.noIntrinsicMetric, height: graphLayout.totalHeight + 36)
+        CGSize(
+            width: UIView.noIntrinsicMetric,
+            height: graphLayout.totalHeight + WeatherDesignSystem.Graph.Container.intrinsicLabelHeight
+        )
     }
 
     func configure(with items: [HourlyDisplayItem]) {

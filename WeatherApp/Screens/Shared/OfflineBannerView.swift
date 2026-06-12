@@ -14,12 +14,12 @@ final class OfflineBannerView: UIView {
     }
 
     private func setup() {
-        backgroundColor = .secondarySystemBackground
-        layer.cornerRadius = 12
+        backgroundColor = WeatherDesignSystem.Banner.backgroundColor
+        layer.cornerRadius = WeatherDesignSystem.Banner.cornerRadius
         layer.masksToBounds = true
 
         label.text = L10n.Notice.offline
-        label.font = UIFont.preferredFont(forTextStyle: .footnote)
+        label.font = WeatherDesignSystem.Typography.preferred(.footnote)
         label.textColor = .label
         label.numberOfLines = 0
         label.textAlignment = .center
@@ -27,10 +27,10 @@ final class OfflineBannerView: UIView {
         addSubview(label)
 
         NSLayoutConstraint.activate([
-            label.topAnchor.constraint(equalTo: topAnchor, constant: 12),
-            label.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -12),
-            label.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
-            label.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
+            label.topAnchor.constraint(equalTo: topAnchor, constant: WeatherDesignSystem.Banner.verticalPadding),
+            label.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -WeatherDesignSystem.Banner.verticalPadding),
+            label.leadingAnchor.constraint(equalTo: leadingAnchor, constant: WeatherDesignSystem.Banner.horizontalPadding),
+            label.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -WeatherDesignSystem.Banner.horizontalPadding),
         ])
     }
 }

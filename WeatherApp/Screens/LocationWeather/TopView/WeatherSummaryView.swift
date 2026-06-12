@@ -27,27 +27,27 @@ final class WeatherSummaryView: UIView {
     private func setup() {
         backgroundColor = .clear
 
-        cityLabel.font = UIFont.preferredFont(forTextStyle: .title1)
+        cityLabel.font = WeatherDesignSystem.Typography.preferred(.title1)
         cityLabel.adjustsFontForContentSizeCategory = true
         cityLabel.textAlignment = .center
         WeatherSkyReadableText.applyPrimary(to: cityLabel)
 
-        temperatureLabel.font = UIFontMetrics(forTextStyle: .largeTitle).scaledFont(for: UIFont.systemFont(ofSize: 72, weight: .thin))
+        temperatureLabel.font = WeatherDesignSystem.Typography.scaledTemperatureDisplay()
         temperatureLabel.adjustsFontForContentSizeCategory = true
         temperatureLabel.textAlignment = .center
         WeatherSkyReadableText.applyPrimary(to: temperatureLabel)
 
-        descriptionLabel.font = UIFont.preferredFont(forTextStyle: .title3)
+        descriptionLabel.font = WeatherDesignSystem.Typography.preferred(.title3)
         descriptionLabel.adjustsFontForContentSizeCategory = true
         descriptionLabel.textAlignment = .center
         WeatherSkyReadableText.applySecondary(to: descriptionLabel)
 
-        highLowLabel.font = UIFont.preferredFont(forTextStyle: .body)
+        highLowLabel.font = WeatherDesignSystem.Typography.preferred(.body)
         highLowLabel.adjustsFontForContentSizeCategory = true
         highLowLabel.textAlignment = .center
         WeatherSkyReadableText.applySecondary(to: highLowLabel)
 
-        feelsLikeLabel.font = UIFont.preferredFont(forTextStyle: .subheadline)
+        feelsLikeLabel.font = WeatherDesignSystem.Typography.preferred(.subheadline)
         feelsLikeLabel.adjustsFontForContentSizeCategory = true
         feelsLikeLabel.textAlignment = .center
         WeatherSkyReadableText.applySecondary(to: feelsLikeLabel)
@@ -55,7 +55,7 @@ final class WeatherSummaryView: UIView {
         iconView.contentMode = .scaleAspectFit
 
         detailsStack.axis = .vertical
-        detailsStack.spacing = 4
+        detailsStack.spacing = WeatherDesignSystem.Spacing.xxs
         detailsStack.alignment = .center
         detailsStack.isHidden = true
 
@@ -64,23 +64,23 @@ final class WeatherSummaryView: UIView {
         ])
         stack.axis = .vertical
         stack.alignment = .center
-        stack.spacing = 10
+        stack.spacing = WeatherDesignSystem.Spacing.sm
         stack.translatesAutoresizingMaskIntoConstraints = false
 
         addSubview(stack)
         NSLayoutConstraint.activate([
-            stack.topAnchor.constraint(equalTo: topAnchor, constant: 8),
+            stack.topAnchor.constraint(equalTo: topAnchor, constant: WeatherDesignSystem.Spacing.xs),
             stack.leadingAnchor.constraint(
                 equalTo: leadingAnchor,
-                constant: 20
+                constant: WeatherDesignSystem.Layout.summaryHorizontalInset
             ),
             stack.trailingAnchor.constraint(
                 equalTo: trailingAnchor,
-                constant: -20
+                constant: -WeatherDesignSystem.Layout.summaryHorizontalInset
             ),
-            stack.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8),
-            iconView.heightAnchor.constraint(equalToConstant: 56),
-            iconView.widthAnchor.constraint(equalToConstant: 56),
+            stack.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -WeatherDesignSystem.Spacing.xs),
+            iconView.heightAnchor.constraint(equalToConstant: WeatherDesignSystem.Icon.summaryWeather),
+            iconView.widthAnchor.constraint(equalToConstant: WeatherDesignSystem.Icon.summaryWeather),
         ])
 
         applyLayout(for: traitCollection)

@@ -8,12 +8,12 @@ final class DayHeaderReusableView: UICollectionReusableView {
     override init(frame: CGRect) {
         super.init(frame: frame)
         backgroundColor = .systemBackground
-        layer.cornerRadius = 8
-        layer.borderWidth = 1
+        layer.cornerRadius = WeatherDesignSystem.Graph.DayHeader.cornerRadius
+        layer.borderWidth = WeatherDesignSystem.Graph.DayHeader.borderWidth
         layer.borderColor = UIColor.separator.cgColor
         clipsToBounds = true
 
-        label.font = UIFont.preferredFont(forTextStyle: .footnote)
+        label.font = WeatherDesignSystem.Typography.preferred(.footnote)
         label.adjustsFontForContentSizeCategory = true
         label.textColor = .label
         addSubview(label)
@@ -25,7 +25,10 @@ final class DayHeaderReusableView: UICollectionReusableView {
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        label.frame = bounds.insetBy(dx: 10, dy: 4)
+        label.frame = bounds.insetBy(
+            dx: WeatherDesignSystem.Graph.DayHeader.horizontalInset,
+            dy: WeatherDesignSystem.Graph.DayHeader.verticalInset
+        )
     }
 
     func configure(with text: String) {

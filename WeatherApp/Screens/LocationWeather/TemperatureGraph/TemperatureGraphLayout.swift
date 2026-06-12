@@ -3,11 +3,11 @@ import UIKit
 final class TemperatureGraphLayout: UICollectionViewLayout {
     static let dayHeaderKind = "DayHeader"
 
-    var itemWidth: CGFloat = 88
-    var cellContentHeight: CGFloat = 160
-    var headerBandHeight: CGFloat = 36
-    var headerWidth: CGFloat = 110
-    var headerHeight: CGFloat = 28
+    var itemWidth: CGFloat = WeatherDesignSystem.Graph.Layout.itemWidth
+    var cellContentHeight: CGFloat = WeatherDesignSystem.Graph.Layout.cellContentHeight
+    var headerBandHeight: CGFloat = WeatherDesignSystem.Graph.Layout.headerBandHeight
+    var headerWidth: CGFloat = WeatherDesignSystem.Graph.Layout.headerWidth
+    var headerHeight: CGFloat = WeatherDesignSystem.Graph.Layout.headerHeight
     var dayHeaders: [(itemIndex: Int, label: String)] = []
 
     private var cache: [UICollectionViewLayoutAttributes] = []
