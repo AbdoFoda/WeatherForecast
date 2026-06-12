@@ -89,9 +89,6 @@ final class WeatherCloudParallaxView: UIView {
             width: textureWidth,
             height: bounds.height
         )
-
-        appliedMotionSignature = nil
-        applyMotionIfNeeded()
     }
 
     private func refreshTexturesIfNeeded() {
@@ -127,9 +124,6 @@ final class WeatherCloudParallaxView: UIView {
 
         backBand.alpha = configuredOpacity * WeatherBackgroundCloudPolicy.bandOpacityMultiplier(wide: isWideLayout, layer: .back)
         frontBand.alpha = configuredOpacity * WeatherBackgroundCloudPolicy.bandOpacityMultiplier(wide: isWideLayout, layer: .front)
-
-        appliedMotionSignature = nil
-        applyMotionIfNeeded()
     }
 
     private func applyMotionIfNeeded() {
@@ -152,14 +146,14 @@ final class WeatherCloudParallaxView: UIView {
         view.layer.removeAllAnimations()
         view.transform = .identity
 
-        UIView.animate(
-            withDuration: duration,
-            delay: 0,
-            options: [.autoreverse, .repeat, .curveEaseInOut, .allowUserInteraction],
-            animations: {
-                view.transform = CGAffineTransform(translationX: distance, y: 0)
-            }
-        )
+        let drift = CABasicAnimation(keyPath: "transform.translation.x")
+        drift.fromValue = 0
+        drift.toValue = distance
+        drift.duration = duration
+        drift.autoreverses = true
+        drift.repeatCount = .infinity
+        drift.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+        view.layer.add(drift, forKey: "cloudDrift")
     }
 
     private func stopMotion() {

@@ -1,13 +1,12 @@
 import UIKit
 import WeatherCore
 
-final class WeatherSummaryView: UIView {
+class WeatherSummaryView: UIView {
     private let cityLabel = UILabel()
     private let temperatureLabel = UILabel()
     private let descriptionLabel = UILabel()
     private let highLowLabel = UILabel()
     private let feelsLikeLabel = UILabel()
-    private let detailsStack = UIStackView()
     private let iconView = UIImageView()
 
     override init(frame: CGRect) {
@@ -17,11 +16,6 @@ final class WeatherSummaryView: UIView {
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-    }
-
-    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
-        super.traitCollectionDidChange(previousTraitCollection)
-        applyLayout(for: traitCollection)
     }
 
     private func setup() {
@@ -54,13 +48,13 @@ final class WeatherSummaryView: UIView {
 
         iconView.contentMode = .scaleAspectFit
 
-        detailsStack.axis = .vertical
-        detailsStack.spacing = WeatherDesignSystem.Spacing.xxs
-        detailsStack.alignment = .center
-        detailsStack.isHidden = true
-
         let stack = UIStackView(arrangedSubviews: [
-            cityLabel, iconView, temperatureLabel, descriptionLabel, highLowLabel, feelsLikeLabel, detailsStack
+            cityLabel,
+            iconView,
+            temperatureLabel,
+            descriptionLabel,
+            highLowLabel,
+            feelsLikeLabel,
         ])
         stack.axis = .vertical
         stack.alignment = .center
@@ -82,14 +76,6 @@ final class WeatherSummaryView: UIView {
             iconView.heightAnchor.constraint(equalToConstant: WeatherDesignSystem.Icon.summaryWeather),
             iconView.widthAnchor.constraint(equalToConstant: WeatherDesignSystem.Icon.summaryWeather),
         ])
-
-        applyLayout(for: traitCollection)
-    }
-
-    private func applyLayout(for traits: UITraitCollection) {
-        let isRegular = traits.horizontalSizeClass == .regular
-        detailsStack.isHidden = true
-        feelsLikeLabel.isHidden = isRegular
     }
 
     func configure(with data: LocationWeatherDisplayData) {

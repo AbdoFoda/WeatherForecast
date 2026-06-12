@@ -109,6 +109,7 @@ final class WeatherBackgroundView: UIView {
     }
 
     private func setup() {
+        isUserInteractionEnabled = false
         backGradient.startPoint = WeatherBackgroundConstants.Layout.gradientStartPoint
         backGradient.endPoint = WeatherBackgroundConstants.Layout.gradientEndPoint
         frontGradient.startPoint = WeatherBackgroundConstants.Layout.gradientStartPoint

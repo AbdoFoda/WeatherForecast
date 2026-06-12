@@ -84,17 +84,19 @@ final class WeatherCelestialGlowView: UIView {
     }
 
     private func applyMotionIfNeeded() {
-        glowLayer.removeAnimation(forKey: WeatherBackgroundConstants.Animation.Key.pulse)
-        motionContainer.removeAnimation(forKey: WeatherBackgroundConstants.Animation.Key.sway)
-
         guard allowsAnimation, !isHidden else {
+            glowLayer.removeAnimation(forKey: WeatherBackgroundConstants.Animation.Key.pulse)
+            motionContainer.removeAnimation(forKey: WeatherBackgroundConstants.Animation.Key.sway)
             glowLayer.opacity = 1
             return
         }
 
-        let signature = "\(configuredWindSpeed)-\(bounds.width)"
+        let signature = "\(configuredWindSpeed)"
         guard signature != appliedMotionSignature else { return }
         appliedMotionSignature = signature
+
+        glowLayer.removeAnimation(forKey: WeatherBackgroundConstants.Animation.Key.pulse)
+        motionContainer.removeAnimation(forKey: WeatherBackgroundConstants.Animation.Key.sway)
 
         let pulse = CABasicAnimation(keyPath: "opacity")
         pulse.fromValue = WeatherBackgroundConstants.Animation.pulseOpacityMin
