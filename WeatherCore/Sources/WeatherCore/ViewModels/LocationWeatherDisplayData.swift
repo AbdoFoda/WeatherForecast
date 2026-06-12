@@ -1,7 +1,7 @@
 import CoreGraphics
 import Foundation
 
-public struct LocationWeatherDisplayData: Sendable {
+public struct LocationWeatherDisplayData: Sendable, Codable {
     public let cityName: String
     public let countryCode: String
     public let currentTemperature: String
@@ -70,9 +70,35 @@ public struct LocationWeatherDisplayData: Sendable {
         self.hourlyItems = hourlyItems
         self.tiles = tiles
     }
+
+    public func withTiles(_ tiles: [TileDisplayItem]) -> LocationWeatherDisplayData {
+        LocationWeatherDisplayData(
+            cityName: cityName,
+            countryCode: countryCode,
+            currentTemperature: currentTemperature,
+            feelsLike: feelsLike,
+            tempRange: tempRange,
+            weatherDescription: weatherDescription,
+            iconURL: iconURL,
+            humidity: humidity,
+            pressure: pressure,
+            windSpeed: windSpeed,
+            visibility: visibility,
+            sunrise: sunrise,
+            sunset: sunset,
+            aqi: aqi,
+            pm25: pm25,
+            cloudCoverage: cloudCoverage,
+            backgroundScene: backgroundScene,
+            cloudCoveragePercent: cloudCoveragePercent,
+            windSpeedMetersPerSecond: windSpeedMetersPerSecond,
+            hourlyItems: hourlyItems,
+            tiles: tiles
+        )
+    }
 }
 
-public struct HourlyDisplayItem: Sendable {
+public struct HourlyDisplayItem: Sendable, Codable {
     public let time: String
     public let temperature: String
     public let iconURL: URL?
@@ -100,14 +126,14 @@ public struct HourlyDisplayItem: Sendable {
     }
 }
 
-public struct TileDisplayItem: Sendable {
+public struct TileDisplayItem: Sendable, Codable {
     public let id: String
     public let title: String
     public let value: String
     public let subtitle: String?
     public let tileSize: TileSize
 
-    public enum TileSize: Sendable {
+    public enum TileSize: String, Sendable, Codable {
         case standard, wide, tall
     }
 

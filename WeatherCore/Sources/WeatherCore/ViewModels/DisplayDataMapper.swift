@@ -4,7 +4,8 @@ public struct DisplayDataMapper {
     public static func map(
         weather: CurrentWeatherResponse,
         forecast: ForecastResponse,
-        airPollution: AirPollutionResponse
+        airPollution: AirPollutionResponse,
+        tileOrder: [TileKind] = TileKind.allCases
     ) -> LocationWeatherDisplayData {
         let (hourlyItems, _, _) = HourlyForecastGrouper.process(forecast: forecast)
         let todayRange = HourlyForecastGrouper.todayTemperatureRange(forecast: forecast)
@@ -130,10 +131,17 @@ public struct DisplayDataMapper {
         let iconURL = WeatherIconURL.make(iconID: weather.weather.first?.icon)
 
         let tempRange: String = {
-            if let todayRange {
+            if let todayRange,
+               Int(round(todayRange.max)) != Int(round(todayRange.min)) {
                 return L10n.Format.tempHighLow(
                     high: Int(round(todayRange.max)),
                     low: Int(round(todayRange.min))
+                )
+            }
+            if let periodRange {
+                return L10n.Format.tempHighLow(
+                    high: Int(round(periodRange.max)),
+                    low: Int(round(periodRange.min))
                 )
             }
             return L10n.Format.tempHighLow(
@@ -143,6 +151,8 @@ public struct DisplayDataMapper {
         }()
 
         let cloudCoveragePercent = weather.clouds?.all ?? 0
+
+        let orderedTiles = TileOrderApplier.apply(order: tileOrder, to: tiles)
 
         return LocationWeatherDisplayData(
             cityName: weather.name,
@@ -165,7 +175,7 @@ public struct DisplayDataMapper {
             cloudCoveragePercent: cloudCoveragePercent,
             windSpeedMetersPerSecond: windSpeed,
             hourlyItems: hourlyItems,
-            tiles: tiles
+            tiles: orderedTiles
         )
     }
 }

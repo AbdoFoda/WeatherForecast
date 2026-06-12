@@ -40,9 +40,29 @@ final class MockWeatherService: WeatherServiceProtocol, @unchecked Sendable {
 
 @MainActor
 final class LocationWeatherViewModelTests: XCTestCase {
+    private var cacheDirectory: URL!
+
+    override func setUp() {
+        super.setUp()
+        cacheDirectory = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    }
+
+    override func tearDown() {
+        try? FileManager.default.removeItem(at: cacheDirectory)
+        super.tearDown()
+    }
+
+    private func makeViewModel(service: MockWeatherService = MockWeatherService()) -> LocationWeatherViewModel {
+        LocationWeatherViewModel(
+            weatherService: service,
+            diskCache: WeatherDiskCache(directoryURL: cacheDirectory)
+        )
+    }
+
     func test_loadWeather_successStateTransition() async {
         let mockService = MockWeatherService()
-        let sut = LocationWeatherViewModel(weatherService: mockService)
+        let sut = makeViewModel(service: mockService)
 
         var states: [String] = []
         let expectation = XCTestExpectation(description: "Wait for loaded state")
@@ -68,7 +88,7 @@ final class LocationWeatherViewModelTests: XCTestCase {
     func test_loadWeather_withoutCache_becomesUnavailable() async {
         let mockService = MockWeatherService()
         mockService.shouldFail = true
-        let sut = LocationWeatherViewModel(weatherService: mockService)
+        let sut = makeViewModel(service: mockService)
 
         var states: [String] = []
         let expectation = XCTestExpectation(description: "Wait for unavailable state")
@@ -93,7 +113,7 @@ final class LocationWeatherViewModelTests: XCTestCase {
 
     func test_refresh_withCacheAndServerError_keepsCachedData() async {
         let mockService = MockWeatherService()
-        let sut = LocationWeatherViewModel(weatherService: mockService)
+        let sut = makeViewModel(service: mockService)
 
         let loadExpectation = XCTestExpectation(description: "Wait for initial load")
         sut.onStateChange = { state in
@@ -120,7 +140,7 @@ final class LocationWeatherViewModelTests: XCTestCase {
 
     func test_refresh_withCacheAndOffline_showsOfflineNotice() async {
         let mockService = MockWeatherService()
-        let sut = LocationWeatherViewModel(weatherService: mockService)
+        let sut = makeViewModel(service: mockService)
 
         let loadExpectation = XCTestExpectation(description: "Wait for initial load")
         sut.onStateChange = { state in
@@ -145,5 +165,97 @@ final class LocationWeatherViewModelTests: XCTestCase {
 
         await sut.refresh(lat: 0, lon: 0)
         await fulfillment(of: [refreshExpectation], timeout: 1.0)
+    }
+
+    func test_saveTileOrder_persistsWithoutRepublishingLoadedState() async {
+        let suiteName = "LocationWeatherViewModelTileOrderTests"
+        UserDefaults(suiteName: suiteName)?.removePersistentDomain(forName: suiteName)
+
+        let mockService = MockWeatherService()
+        let store = TileOrderStore(defaultsSuiteName: suiteName)
+        let sut = LocationWeatherViewModel(
+            weatherService: mockService,
+            tileOrderStore: store,
+            diskCache: WeatherDiskCache(directoryURL: cacheDirectory)
+        )
+
+        let loadExpectation = XCTestExpectation(description: "Wait for initial load")
+        var loadedTiles: [TileDisplayItem] = []
+        sut.onStateChange = { state in
+            if case .loaded(let displayData, nil) = state {
+                loadedTiles = displayData.tiles
+                loadExpectation.fulfill()
+            }
+        }
+
+        await sut.loadWeather(lat: 0, lon: 0)
+        await fulfillment(of: [loadExpectation], timeout: 1.0)
+
+        let existingKinds = loadedTiles.compactMap { TileKind(rawValue: $0.id) }
+        let customOrder: [TileKind] = [.wind, .humidity, .feelsLike] + existingKinds.filter {
+            ![.wind, .humidity, .feelsLike].contains($0)
+        }
+
+        var publishCount = 0
+        sut.onStateChange = { _ in
+            publishCount += 1
+        }
+
+        sut.saveTileOrder(customOrder)
+
+        XCTAssertEqual(publishCount, 0)
+        XCTAssertEqual(store.loadOrder().prefix(customOrder.count).map { $0 }, customOrder)
+    }
+
+    func test_loadWeather_showsDiskCacheBeforeFetchCompletes() async {
+        let cacheDirectory = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: cacheDirectory) }
+
+        let diskCache = WeatherDiskCache(directoryURL: cacheDirectory)
+        diskCache.save(
+            lat: 10,
+            lon: 20,
+            displayData: LocationWeatherDisplayData(
+                cityName: "Cached City",
+                countryCode: "DE",
+                currentTemperature: "10°",
+                feelsLike: "Feels like 9°",
+                tempRange: "H:12° L:8°",
+                weatherDescription: "Cloudy",
+                iconURL: nil,
+                humidity: "40%",
+                pressure: "1010 hPa",
+                windSpeed: "2.0 m/s N",
+                visibility: "8 km",
+                sunrise: "07:00",
+                sunset: "19:00",
+                aqi: "Good",
+                pm25: "4.0 μg/m³",
+                cloudCoverage: "50%",
+                backgroundScene: .cloudy,
+                cloudCoveragePercent: 50,
+                windSpeedMetersPerSecond: 2,
+                hourlyItems: [],
+                tiles: []
+            )
+        )
+
+        let mockService = MockWeatherService()
+        mockService.shouldFail = true
+        let sut = LocationWeatherViewModel(weatherService: mockService, diskCache: diskCache)
+
+        var firstLoadedCity: String?
+        let expectation = XCTestExpectation(description: "Wait for cached load")
+        sut.onStateChange = { state in
+            guard firstLoadedCity == nil, case .loaded(let display, _) = state else { return }
+            firstLoadedCity = display.cityName
+            expectation.fulfill()
+        }
+
+        await sut.loadWeather(lat: 10, lon: 20)
+
+        await fulfillment(of: [expectation], timeout: 1.0)
+        XCTAssertEqual(firstLoadedCity, "Cached City")
     }
 }
