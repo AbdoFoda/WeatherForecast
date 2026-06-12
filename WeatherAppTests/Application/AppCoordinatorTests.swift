@@ -28,7 +28,4 @@ private final class MockWeatherServiceForApp: WeatherServiceProtocol, @unchecked
     func fetchAirPollution(lat: Double, lon: Double) async throws -> AirPollutionResponse {
         throw WeatherError.invalidResponse
     }
-
-    func fetchGeocodingDirect(query: String) async throws -> [GeocodingResult] { [] }
-    func fetchGeocodingReverse(lat: Double, lon: Double) async throws -> [GeocodingResult] { [] }
 }

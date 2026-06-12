@@ -36,32 +36,6 @@ public extension Endpoint {
         coordinateEndpoint(route: .airPollution, lat: lat, lon: lon)
     }
 
-    static func geocodingDirect(
-        query: String,
-        limit: Int = WeatherAPI.Defaults.geocodingDirectLimit
-    ) -> Endpoint {
-        Endpoint(
-            path: WeatherAPI.Route.geocodingDirect.rawValue,
-            queryItems: [
-                URLQueryItem(name: WeatherAPI.QueryKey.q.rawValue, value: query),
-                URLQueryItem(name: WeatherAPI.QueryKey.limit.rawValue, value: String(limit)),
-            ]
-        )
-    }
-
-    static func geocodingReverse(
-        lat: Double,
-        lon: Double,
-        limit: Int = WeatherAPI.Defaults.geocodingReverseLimit
-    ) -> Endpoint {
-        Endpoint(
-            path: WeatherAPI.Route.geocodingReverse.rawValue,
-            queryItems: coordinateQueryItems(lat: lat, lon: lon) + [
-                URLQueryItem(name: WeatherAPI.QueryKey.limit.rawValue, value: String(limit)),
-            ]
-        )
-    }
-
     private static func coordinateEndpoint(route: WeatherAPI.Route, lat: Double, lon: Double) -> Endpoint {
         Endpoint(
             path: route.rawValue,

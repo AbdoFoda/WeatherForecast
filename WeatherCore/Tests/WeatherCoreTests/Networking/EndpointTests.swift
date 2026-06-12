@@ -38,18 +38,4 @@ final class EndpointTests: XCTestCase {
         XCTAssertNil(URLComponents(url: url, resolvingAgainstBaseURL: false)!
             .queryItems!.first(where: { $0.name == "appid" }))
     }
-
-    func test_geocodingDirect_encodesQueryString() throws {
-        let endpoint = Endpoint.geocodingDirect(query: "New York", limit: 3)
-        let url = try endpoint.url(baseURL: base)
-        let components = URLComponents(url: url, resolvingAgainstBaseURL: false)!
-
-        XCTAssertEqual(components.path, "/\(WeatherAPI.Route.geocodingDirect.rawValue)")
-        XCTAssertTrue(components.queryItems!.contains(
-            URLQueryItem(name: WeatherAPI.QueryKey.q.rawValue, value: "New York")
-        ))
-        XCTAssertTrue(components.queryItems!.contains(
-            URLQueryItem(name: WeatherAPI.QueryKey.limit.rawValue, value: "3")
-        ))
-    }
 }

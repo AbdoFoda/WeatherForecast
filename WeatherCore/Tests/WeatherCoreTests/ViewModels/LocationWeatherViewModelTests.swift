@@ -33,9 +33,6 @@ final class MockWeatherService: WeatherServiceProtocol, @unchecked Sendable {
         if shouldFail { throw failure }
         return AirPollutionResponse(coord: Coordinate(lat: lat, lon: lon), list: [])
     }
-
-    func fetchGeocodingDirect(query: String) async throws -> [GeocodingResult] { [] }
-    func fetchGeocodingReverse(lat: Double, lon: Double) async throws -> [GeocodingResult] { [] }
 }
 
 @MainActor

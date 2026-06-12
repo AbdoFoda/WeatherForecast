@@ -18,23 +18,6 @@ public extension LocationModel {
         return "\(name), \(country)"
     }
 
-    init(geocodingResult: GeocodingResult) {
-        let displayName: String
-        if let state = geocodingResult.state, !state.isEmpty {
-            displayName = "\(geocodingResult.name), \(state)"
-        } else {
-            displayName = geocodingResult.name
-        }
-
-        self.init(
-            id: Self.id(lat: geocodingResult.lat, lon: geocodingResult.lon),
-            name: displayName,
-            lat: geocodingResult.lat,
-            lon: geocodingResult.lon,
-            country: geocodingResult.country
-        )
-    }
-
     static func id(lat: Double, lon: Double) -> String {
         String(format: "%.4f,%.4f", lat, lon)
     }
