@@ -1,0 +1,22 @@
+{
+  "canvasSize" : {
+    "height" : 844,
+    "width" : 390
+  },
+  "cloudCoveragePercent" : 85,
+  "effects" : {
+    "celestialKind" : "none",
+    "cloudOpacity" : 0.4675000309944153,
+    "hasParticleEmitter" : false,
+    "precipitationOverlay" : "rain",
+    "showsCelestialGlow" : false,
+    "showsCloudParallax" : true,
+    "showsStormFlash" : false
+  },
+  "gradient" : {
+    "bottom" : "#738294",
+    "top" : "#47576B"
+  },
+  "scene" : "rain",
+  "windSpeedMetersPerSecond" : 8
+}

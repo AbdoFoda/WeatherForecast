@@ -1,0 +1,22 @@
+{
+  "canvasSize" : {
+    "height" : 844,
+    "width" : 390
+  },
+  "cloudCoveragePercent" : 90,
+  "effects" : {
+    "celestialKind" : "none",
+    "cloudOpacity" : 0.4950000047683716,
+    "hasParticleEmitter" : false,
+    "precipitationOverlay" : "snow",
+    "showsCelestialGlow" : false,
+    "showsCloudParallax" : true,
+    "showsStormFlash" : false
+  },
+  "gradient" : {
+    "bottom" : "#D6E0F0",
+    "top" : "#9EB3D1"
+  },
+  "scene" : "snow",
+  "windSpeedMetersPerSecond" : 4
+}

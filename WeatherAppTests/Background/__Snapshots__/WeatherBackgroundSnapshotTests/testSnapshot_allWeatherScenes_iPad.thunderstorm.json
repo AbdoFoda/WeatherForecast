@@ -1,0 +1,22 @@
+{
+  "canvasSize" : {
+    "height" : 834,
+    "width" : 1194
+  },
+  "cloudCoveragePercent" : 95,
+  "effects" : {
+    "celestialKind" : "none",
+    "cloudOpacity" : 0.5224999785423279,
+    "hasParticleEmitter" : false,
+    "precipitationOverlay" : "storm",
+    "showsCelestialGlow" : false,
+    "showsCloudParallax" : true,
+    "showsStormFlash" : true
+  },
+  "gradient" : {
+    "bottom" : "#474D61",
+    "top" : "#24293D"
+  },
+  "scene" : "thunderstorm",
+  "windSpeedMetersPerSecond" : 12
+}

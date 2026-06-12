@@ -1,0 +1,21 @@
+{
+  "canvasSize" : {
+    "height" : 834,
+    "width" : 1194
+  },
+  "cloudCoveragePercent" : 5,
+  "effects" : {
+    "celestialKind" : "moon",
+    "cloudOpacity" : 0,
+    "hasParticleEmitter" : false,
+    "showsCelestialGlow" : true,
+    "showsCloudParallax" : false,
+    "showsStormFlash" : false
+  },
+  "gradient" : {
+    "bottom" : "#1F2952",
+    "top" : "#0D1438"
+  },
+  "scene" : "clearNight",
+  "windSpeedMetersPerSecond" : 2
+}

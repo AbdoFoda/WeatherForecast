@@ -1,0 +1,21 @@
+{
+  "canvasSize" : {
+    "height" : 844,
+    "width" : 390
+  },
+  "cloudCoveragePercent" : 35,
+  "effects" : {
+    "celestialKind" : "sun",
+    "cloudOpacity" : 0.19249999523162842,
+    "hasParticleEmitter" : false,
+    "showsCelestialGlow" : true,
+    "showsCloudParallax" : true,
+    "showsStormFlash" : false
+  },
+  "gradient" : {
+    "bottom" : "#B8D1F0",
+    "top" : "#6199E0"
+  },
+  "scene" : "partlyCloudyDay",
+  "windSpeedMetersPerSecond" : 4
+}

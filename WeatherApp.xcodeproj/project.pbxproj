@@ -54,6 +54,11 @@
 		EE3137953FEB5329A2DFACBA /* MockCollectionViewDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C780EB4AE0D826BEF8BCBE /* MockCollectionViewDataSource.swift */; };
 		FDCC39C6B8EAF7CFA370AC4A /* WeatherStormFlashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B778195BF3409CD5CA75C3C /* WeatherStormFlashView.swift */; };
 		FEDCBA9876543210ABCDEF01 /* WeatherSkyReadableText.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABCDEF0123456789FEDCBA98 /* WeatherSkyReadableText.swift */; };
+		DESIGNSYS001BUILD00001 /* WeatherDesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = DESIGNSYS001FILE00001 /* WeatherDesignSystem.swift */; };
+		E5F60718293A4B5C6D7E8F90 /* WeatherBackgroundSnapshotFixtures.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60718293A4B5C6D7E8F9012 /* WeatherBackgroundSnapshotFixtures.swift */; };
+		0718293A4B5C6D7E8F901234 /* WeatherBackgroundSnapshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18293A4B5C6D7E8F90123456 /* WeatherBackgroundSnapshotTests.swift */; };
+		JSONSNAP001BUILD00001 /* JSONSnapshotTesting.swift in Sources */ = {isa = PBXBuildFile; fileRef = JSONSNAP001FILE00001 /* JSONSnapshotTesting.swift */; };
+		SNAPREP001BUILD000001 /* WeatherBackgroundSnapshotRepresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = SNAPREP001FILE000001 /* WeatherBackgroundSnapshotRepresentation.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -116,6 +121,11 @@
 		F623C0F47A87C8087C574EC0 /* WeatherBackgroundAssetFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherBackgroundAssetFactory.swift; sourceTree = "<group>"; };
 		F7DF9AAD1297FA426933546D /* ProxyConfigurationLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProxyConfigurationLoader.swift; sourceTree = "<group>"; };
 		ABCDEF0123456789FEDCBA98 /* WeatherSkyReadableText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherSkyReadableText.swift; sourceTree = "<group>"; };
+		DESIGNSYS001FILE00001 /* WeatherDesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherDesignSystem.swift; sourceTree = "<group>"; };
+		18293A4B5C6D7E8F90123456 /* WeatherBackgroundSnapshotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherBackgroundSnapshotTests.swift; sourceTree = "<group>"; };
+		F60718293A4B5C6D7E8F9012 /* WeatherBackgroundSnapshotFixtures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherBackgroundSnapshotFixtures.swift; sourceTree = "<group>"; };
+		JSONSNAP001FILE00001 /* JSONSnapshotTesting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONSnapshotTesting.swift; sourceTree = "<group>"; };
+		SNAPREP001FILE000001 /* WeatherBackgroundSnapshotRepresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherBackgroundSnapshotRepresentation.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -124,6 +134,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				9841B5C08DF4A7CC5B922B23 /* WeatherCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9F8E7D6C5B4A392817161514 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -185,6 +202,7 @@
 				2792CE6B32EEAE063DE09107 /* AppDelegate.swift */,
 				479A9310E47A2328CE1CE168 /* SceneDelegate.swift */,
 				9B35CCDB871D8B7F6C07CDED /* Application */,
+				DESIGNSYS000GROUP00001 /* DesignSystem */,
 				D8851AA99DF2E8E5E4EA88B7 /* Resources */,
 				AFF23EB9C72525D253CDAF25 /* Screens */,
 				BC202C9FA5C68CFA5D3CEF8A /* Support */,
@@ -192,9 +210,18 @@
 			path = WeatherApp;
 			sourceTree = "<group>";
 		};
+		DESIGNSYS000GROUP00001 /* DesignSystem */ = {
+			isa = PBXGroup;
+			children = (
+				DESIGNSYS001FILE00001 /* WeatherDesignSystem.swift */,
+			);
+			path = DesignSystem;
+			sourceTree = "<group>";
+		};
 		6446B85457E2DC3704538978 /* Support */ = {
 			isa = PBXGroup;
 			children = (
+				JSONSNAP001FILE00001 /* JSONSnapshotTesting.swift */,
 				A6C780EB4AE0D826BEF8BCBE /* MockCollectionViewDataSource.swift */,
 			);
 			path = Support;
@@ -306,6 +333,8 @@
 			children = (
 				1505F3EB62C744A68E4C8288 /* WeatherBackgroundEffectsPolicyTests.swift */,
 				8423875CEF0246FD99FEB247 /* WeatherBackgroundPaletteTests.swift */,
+				F60718293A4B5C6D7E8F9012 /* WeatherBackgroundSnapshotFixtures.swift */,
+				18293A4B5C6D7E8F90123456 /* WeatherBackgroundSnapshotTests.swift */,
 				21A695A06A5BD659D85FE4C2 /* WeatherBackgroundViewTests.swift */,
 				M0T10NP0L1CY002FILE00001 /* WeatherBackgroundMotionPolicyTests.swift */,
 				CLOUDPOLICY002FILE00001 /* WeatherBackgroundCloudPolicyTests.swift */,
@@ -325,6 +354,7 @@
 				M0T10NP0L1CY001FILE00001 /* WeatherBackgroundMotionPolicy.swift */,
 				6CE99F6C0A1390E69D5B98ED /* WeatherBackgroundPalette.swift */,
 				92E2720920BC78A7D671760A /* WeatherBackgroundView.swift */,
+				SNAPREP001FILE000001 /* WeatherBackgroundSnapshotRepresentation.swift */,
 				0EDE72CC84A27F2F747CCB46 /* WeatherCelestialGlowView.swift */,
 				B056633315EA361DE34259EB /* WeatherCloudParallaxView.swift */,
 				4AEF72E637E94AE673DEF732 /* WeatherParticleEmitterBuilder.swift */,
@@ -353,6 +383,7 @@
 			buildConfigurationList = 1C79A82F40E9AA142493B8CF /* Build configuration list for PBXNativeTarget "WeatherAppTests" */;
 			buildPhases = (
 				26080A309AAFE7169D629762 /* Sources */,
+				9F8E7D6C5B4A392817161514 /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -465,11 +496,13 @@
 				5D23F0B8DB2F6FDA21E5E88A /* WeatherBackgroundEffectsPolicy.swift in Sources */,
 				38806E99E616E24CF5BBE733 /* WeatherBackgroundPalette.swift in Sources */,
 				0EA1676FCC9ED3D7A435EB48 /* WeatherBackgroundView.swift in Sources */,
+				SNAPREP001BUILD000001 /* WeatherBackgroundSnapshotRepresentation.swift in Sources */,
 				B5065348E869F1CB43CEE0B1 /* WeatherCelestialGlowView.swift in Sources */,
 				34AB649F8D23B383774B7D8C /* WeatherCloudParallaxView.swift in Sources */,
 				E5EF8AC469C3A5E0FFC14C41 /* WeatherParticleEmitterBuilder.swift in Sources */,
 				FDCC39C6B8EAF7CFA370AC4A /* WeatherStormFlashView.swift in Sources */,
 				1835B6372518624C2124F092 /* WeatherSummaryView.swift in Sources */,
+				DESIGNSYS001BUILD00001 /* WeatherDesignSystem.swift in Sources */,
 				FEDCBA9876543210ABCDEF01 /* WeatherSkyReadableText.swift in Sources */,
 				EDA5CC13DB84A6A450CE5B34 /* WeatherTileView.swift in Sources */,
 			);
@@ -482,6 +515,7 @@
 				A6E8F5456C4F51FCF2646140 /* AppCoordinatorTests.swift in Sources */,
 				44F3C71C8DB92191914835F9 /* LocationWeatherViewControllerTests.swift in Sources */,
 				EE3137953FEB5329A2DFACBA /* MockCollectionViewDataSource.swift in Sources */,
+				JSONSNAP001BUILD00001 /* JSONSnapshotTesting.swift in Sources */,
 				5B5533BF1D9C08DBB3B98F55 /* TemperatureGraphLayoutTests.swift in Sources */,
 				E56B1BB070843944C201072F /* TemperatureGraphRendererTests.swift in Sources */,
 				97A3CD9579BA387B613B0C93 /* TilesContainerViewTests.swift in Sources */,
@@ -492,6 +526,8 @@
 				CLOUDPOLICY002BUILD00001 /* WeatherBackgroundCloudPolicyTests.swift in Sources */,
 				5FA8D4546B1DF0B679050ED4 /* WeatherParticleEmitterBuilderTests.swift in Sources */,
 				CD9F7D1DB7050C89DD83DF4D /* WeatherSummaryViewTests.swift in Sources */,
+				E5F60718293A4B5C6D7E8F90 /* WeatherBackgroundSnapshotFixtures.swift in Sources */,
+				0718293A4B5C6D7E8F901234 /* WeatherBackgroundSnapshotTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -735,6 +771,7 @@
 			relativePath = WeatherCore;
 		};
 /* End XCLocalSwiftPackageReference section */
+
 
 /* Begin XCSwiftPackageProductDependency section */
 		1D1B40654C6EAB9985EBD431 /* WeatherCore */ = {

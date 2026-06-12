@@ -261,6 +261,75 @@ final class WeatherBackgroundView: UIView {
             return nil
         }
     }
+
+    func snapshotRepresentation() -> WeatherBackgroundSnapshotRepresentation {
+        let palette = WeatherBackgroundPalette.colors(for: currentConfiguration.scene)
+        let showsClouds = WeatherBackgroundEffectsPolicy.shouldShowClouds(
+            scene: currentConfiguration.scene,
+            cloudCoveragePercent: currentConfiguration.cloudCoveragePercent
+        )
+        let cloudOpacity = showsClouds
+            ? Double(min(
+                WeatherBackgroundConstants.Cloud.maxOpacity,
+                Float(currentConfiguration.cloudCoveragePercent)
+                    / WeatherBackgroundConstants.Cloud.coverageScale
+                    * WeatherBackgroundConstants.Cloud.maxOpacity
+            ))
+            : 0
+
+        return WeatherBackgroundSnapshotRepresentation(
+            scene: currentConfiguration.scene.rawValue,
+            cloudCoveragePercent: currentConfiguration.cloudCoveragePercent,
+            windSpeedMetersPerSecond: currentConfiguration.windSpeedMetersPerSecond,
+            canvasSize: .init(
+                width: Double(bounds.width),
+                height: Double(bounds.height)
+            ),
+            gradient: .init(
+                top: palette.top.rgbaHex,
+                bottom: palette.bottom.rgbaHex
+            ),
+            effects: .init(
+                showsCloudParallax: isCloudParallaxVisible,
+                cloudOpacity: cloudOpacity,
+                celestialKind: snapshotCelestialKindName(for: currentConfiguration.scene),
+                showsCelestialGlow: isCelestialGlowVisible,
+                showsStormFlash: isStormFlashActive,
+                precipitationOverlay: snapshotPrecipitationOverlayKind(
+                    for: currentConfiguration.scene
+                ),
+                hasParticleEmitter: hasActiveParticleEmitter
+            )
+        )
+    }
+
+    private func snapshotCelestialKindName(for scene: WeatherScene) -> String {
+        switch WeatherBackgroundEffectsPolicy.celestialKind(for: scene) {
+        case .none:
+            return "none"
+        case .sun:
+            return "sun"
+        case .moon:
+            return "moon"
+        }
+    }
+
+    private func snapshotPrecipitationOverlayKind(for scene: WeatherScene) -> String? {
+        guard snapshotOverlayLayer != nil else { return nil }
+
+        switch scene {
+        case .drizzle:
+            return "drizzle"
+        case .rain:
+            return "rain"
+        case .thunderstorm:
+            return "storm"
+        case .snow:
+            return "snow"
+        default:
+            return nil
+        }
+    }
 }
 
 extension WeatherBackgroundView {

@@ -1,0 +1,21 @@
+{
+  "canvasSize" : {
+    "height" : 834,
+    "width" : 1194
+  },
+  "cloudCoveragePercent" : 0,
+  "effects" : {
+    "celestialKind" : "none",
+    "cloudOpacity" : 0,
+    "hasParticleEmitter" : false,
+    "showsCelestialGlow" : false,
+    "showsCloudParallax" : false,
+    "showsStormFlash" : false
+  },
+  "gradient" : {
+    "bottom" : "#E6E8ED",
+    "top" : "#BFC7D6"
+  },
+  "scene" : "unknown",
+  "windSpeedMetersPerSecond" : 0
+}

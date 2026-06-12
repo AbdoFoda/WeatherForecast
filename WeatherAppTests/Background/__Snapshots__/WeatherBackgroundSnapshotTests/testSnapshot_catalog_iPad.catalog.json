@@ -1,0 +1,261 @@
+{
+  "scenes" : [
+    {
+      "canvasSize" : {
+        "height" : 834,
+        "width" : 1194
+      },
+      "cloudCoveragePercent" : 5,
+      "effects" : {
+        "celestialKind" : "sun",
+        "cloudOpacity" : 0,
+        "hasParticleEmitter" : false,
+        "showsCelestialGlow" : true,
+        "showsCloudParallax" : false,
+        "showsStormFlash" : false
+      },
+      "gradient" : {
+        "bottom" : "#8CC7FA",
+        "top" : "#4094F2"
+      },
+      "scene" : "clearDay",
+      "windSpeedMetersPerSecond" : 2
+    },
+    {
+      "canvasSize" : {
+        "height" : 834,
+        "width" : 1194
+      },
+      "cloudCoveragePercent" : 5,
+      "effects" : {
+        "celestialKind" : "moon",
+        "cloudOpacity" : 0,
+        "hasParticleEmitter" : false,
+        "showsCelestialGlow" : true,
+        "showsCloudParallax" : false,
+        "showsStormFlash" : false
+      },
+      "gradient" : {
+        "bottom" : "#1F2952",
+        "top" : "#0D1438"
+      },
+      "scene" : "clearNight",
+      "windSpeedMetersPerSecond" : 2
+    },
+    {
+      "canvasSize" : {
+        "height" : 834,
+        "width" : 1194
+      },
+      "cloudCoveragePercent" : 35,
+      "effects" : {
+        "celestialKind" : "sun",
+        "cloudOpacity" : 0.19249999523162842,
+        "hasParticleEmitter" : false,
+        "showsCelestialGlow" : true,
+        "showsCloudParallax" : true,
+        "showsStormFlash" : false
+      },
+      "gradient" : {
+        "bottom" : "#B8D1F0",
+        "top" : "#6199E0"
+      },
+      "scene" : "partlyCloudyDay",
+      "windSpeedMetersPerSecond" : 4
+    },
+    {
+      "canvasSize" : {
+        "height" : 834,
+        "width" : 1194
+      },
+      "cloudCoveragePercent" : 35,
+      "effects" : {
+        "celestialKind" : "moon",
+        "cloudOpacity" : 0.19249999523162842,
+        "hasParticleEmitter" : false,
+        "showsCelestialGlow" : true,
+        "showsCloudParallax" : true,
+        "showsStormFlash" : false
+      },
+      "gradient" : {
+        "bottom" : "#333D61",
+        "top" : "#1A2447"
+      },
+      "scene" : "partlyCloudyNight",
+      "windSpeedMetersPerSecond" : 4
+    },
+    {
+      "canvasSize" : {
+        "height" : 834,
+        "width" : 1194
+      },
+      "cloudCoveragePercent" : 85,
+      "effects" : {
+        "celestialKind" : "none",
+        "cloudOpacity" : 0.4675000309944153,
+        "hasParticleEmitter" : false,
+        "showsCelestialGlow" : false,
+        "showsCloudParallax" : true,
+        "showsStormFlash" : false
+      },
+      "gradient" : {
+        "bottom" : "#A8B3BD",
+        "top" : "#73808F"
+      },
+      "scene" : "cloudy",
+      "windSpeedMetersPerSecond" : 5
+    },
+    {
+      "canvasSize" : {
+        "height" : 834,
+        "width" : 1194
+      },
+      "cloudCoveragePercent" : 100,
+      "effects" : {
+        "celestialKind" : "none",
+        "cloudOpacity" : 0.550000011920929,
+        "hasParticleEmitter" : false,
+        "showsCelestialGlow" : false,
+        "showsCloudParallax" : true,
+        "showsStormFlash" : false
+      },
+      "gradient" : {
+        "bottom" : "#C2C7CC",
+        "top" : "#949EA8"
+      },
+      "scene" : "fog",
+      "windSpeedMetersPerSecond" : 1
+    },
+    {
+      "canvasSize" : {
+        "height" : 834,
+        "width" : 1194
+      },
+      "cloudCoveragePercent" : 70,
+      "effects" : {
+        "celestialKind" : "none",
+        "cloudOpacity" : 0.38499999046325684,
+        "hasParticleEmitter" : false,
+        "precipitationOverlay" : "drizzle",
+        "showsCelestialGlow" : false,
+        "showsCloudParallax" : true,
+        "showsStormFlash" : false
+      },
+      "gradient" : {
+        "bottom" : "#738294",
+        "top" : "#47576B"
+      },
+      "scene" : "drizzle",
+      "windSpeedMetersPerSecond" : 3
+    },
+    {
+      "canvasSize" : {
+        "height" : 834,
+        "width" : 1194
+      },
+      "cloudCoveragePercent" : 85,
+      "effects" : {
+        "celestialKind" : "none",
+        "cloudOpacity" : 0.4675000309944153,
+        "hasParticleEmitter" : false,
+        "precipitationOverlay" : "rain",
+        "showsCelestialGlow" : false,
+        "showsCloudParallax" : true,
+        "showsStormFlash" : false
+      },
+      "gradient" : {
+        "bottom" : "#738294",
+        "top" : "#47576B"
+      },
+      "scene" : "rain",
+      "windSpeedMetersPerSecond" : 8
+    },
+    {
+      "canvasSize" : {
+        "height" : 834,
+        "width" : 1194
+      },
+      "cloudCoveragePercent" : 95,
+      "effects" : {
+        "celestialKind" : "none",
+        "cloudOpacity" : 0.5224999785423279,
+        "hasParticleEmitter" : false,
+        "precipitationOverlay" : "storm",
+        "showsCelestialGlow" : false,
+        "showsCloudParallax" : true,
+        "showsStormFlash" : true
+      },
+      "gradient" : {
+        "bottom" : "#474D61",
+        "top" : "#24293D"
+      },
+      "scene" : "thunderstorm",
+      "windSpeedMetersPerSecond" : 12
+    },
+    {
+      "canvasSize" : {
+        "height" : 834,
+        "width" : 1194
+      },
+      "cloudCoveragePercent" : 90,
+      "effects" : {
+        "celestialKind" : "none",
+        "cloudOpacity" : 0.4950000047683716,
+        "hasParticleEmitter" : false,
+        "precipitationOverlay" : "snow",
+        "showsCelestialGlow" : false,
+        "showsCloudParallax" : true,
+        "showsStormFlash" : false
+      },
+      "gradient" : {
+        "bottom" : "#D6E0F0",
+        "top" : "#9EB3D1"
+      },
+      "scene" : "snow",
+      "windSpeedMetersPerSecond" : 4
+    },
+    {
+      "canvasSize" : {
+        "height" : 834,
+        "width" : 1194
+      },
+      "cloudCoveragePercent" : 0,
+      "effects" : {
+        "celestialKind" : "none",
+        "cloudOpacity" : 0,
+        "hasParticleEmitter" : false,
+        "showsCelestialGlow" : false,
+        "showsCloudParallax" : false,
+        "showsStormFlash" : false
+      },
+      "gradient" : {
+        "bottom" : "#E6E8ED",
+        "top" : "#BFC7D6"
+      },
+      "scene" : "neutral",
+      "windSpeedMetersPerSecond" : 0
+    },
+    {
+      "canvasSize" : {
+        "height" : 834,
+        "width" : 1194
+      },
+      "cloudCoveragePercent" : 0,
+      "effects" : {
+        "celestialKind" : "none",
+        "cloudOpacity" : 0,
+        "hasParticleEmitter" : false,
+        "showsCelestialGlow" : false,
+        "showsCloudParallax" : false,
+        "showsStormFlash" : false
+      },
+      "gradient" : {
+        "bottom" : "#E6E8ED",
+        "top" : "#BFC7D6"
+      },
+      "scene" : "unknown",
+      "windSpeedMetersPerSecond" : 0
+    }
+  ],
+  "variant" : "iPad"
+}
