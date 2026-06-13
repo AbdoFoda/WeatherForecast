@@ -16,10 +16,8 @@ public struct TileOrderStore: Sendable {
     }
 
     public func loadOrder() -> [TileKind] {
-        guard let data = defaults.data(forKey: orderKey),
-              let rawValues = try? JSONDecoder().decode([String].self, from: data) else {
-            return TileKind.allCases
-        }
+        guard let data = defaults.data(forKey: orderKey) else { return TileKind.allCases }
+        guard let rawValues = decodeRawValues(from: data) else { return TileKind.allCases }
 
         let stored = rawValues.compactMap(TileKind.init(rawValue:))
         guard !stored.isEmpty else { return TileKind.allCases }
@@ -27,23 +25,35 @@ public struct TileOrderStore: Sendable {
     }
 
     public func saveOrder(_ order: [TileKind]) {
-        let rawValues = order.map(\.rawValue)
-        guard let data = try? JSONEncoder().encode(rawValues) else { return }
-        defaults.set(data, forKey: orderKey)
+        encodeAndStore(order.map(\.rawValue), forKey: orderKey)
     }
 
     public func loadHiddenKinds() -> Set<TileKind> {
-        guard let data = defaults.data(forKey: hiddenKey),
-              let rawValues = try? JSONDecoder().decode([String].self, from: data) else {
-            return []
-        }
+        guard let data = defaults.data(forKey: hiddenKey) else { return [] }
+        guard let rawValues = decodeRawValues(from: data) else { return [] }
         return Set(rawValues.compactMap(TileKind.init(rawValue:)))
     }
 
     public func saveHiddenKinds(_ kinds: Set<TileKind>) {
-        let rawValues = kinds.map(\.rawValue).sorted()
-        guard let data = try? JSONEncoder().encode(rawValues) else { return }
-        defaults.set(data, forKey: hiddenKey)
+        encodeAndStore(kinds.map(\.rawValue).sorted(), forKey: hiddenKey)
+    }
+
+    private func decodeRawValues(from data: Data) -> [String]? {
+        do {
+            return try JSONDecoder().decode([String].self, from: data)
+        } catch {
+            WeatherLogger.log(error)
+            return nil
+        }
+    }
+
+    private func encodeAndStore(_ rawValues: [String], forKey key: String) {
+        do {
+            let data = try JSONEncoder().encode(rawValues)
+            defaults.set(data, forKey: key)
+        } catch {
+            WeatherLogger.log(error)
+        }
     }
 
     private func mergeMissingKinds(into stored: [TileKind]) -> [TileKind] {

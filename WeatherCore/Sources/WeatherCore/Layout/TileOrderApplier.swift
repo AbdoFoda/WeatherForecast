@@ -3,12 +3,10 @@ import Foundation
 
 public enum TileOrderApplier {
     public static func apply(order: [TileKind], to tiles: [TileDisplayItem]) -> [TileDisplayItem] {
-        let tilesByKind = Dictionary(
-            uniqueKeysWithValues: tiles.compactMap { tile -> (TileKind, TileDisplayItem)? in
-                guard let kind = TileKind(rawValue: tile.id) else { return nil }
-                return (kind, tile)
-            }
-        )
+        let tilesByKind = tiles.reduce(into: [TileKind: TileDisplayItem]()) { partialResult, tile in
+            guard let kind = TileKind(rawValue: tile.id), partialResult[kind] == nil else { return }
+            partialResult[kind] = tile
+        }
 
         var result: [TileDisplayItem] = []
         var seen = Set<TileKind>()

@@ -7,8 +7,8 @@ final class TilesContainerView: UIView {
     var onTileMenuRequested: ((TileKind, UIView) -> Void)?
     var layoutTargetHeight: CGFloat = 0
 
-    var currentTileIDs: [String] {
-        allTileItems.map(\.id)
+    var currentTileIDs: Set<String> {
+        Set(allTileItems.map(\.id))
     }
 
     private var allTileItems: [TileDisplayItem] = []
@@ -23,28 +23,53 @@ final class TilesContainerView: UIView {
     private var draggedTileView: WeatherTileView?
     private var dragStartLocation: CGPoint?
     private var dragDidMove = false
+    private var dragSnapshotItems: [TileDisplayItem] = []
+    private var dragSnapshotViews: [WeatherTileView] = []
+
+    private struct LayoutCacheKey: Equatable {
+        let width: CGFloat
+        let targetHeight: CGFloat
+        let ids: [String]
+        let dragging: Bool
+    }
+    private var layoutCache: (key: LayoutCacheKey, output: TileLayoutCalculator.Output)?
+    private var lastNonZeroWidth: CGFloat = 0
+
+    private static let fallbackWidth: CGFloat = 320
+
+    private func resolvedWidth(_ width: CGFloat) -> CGFloat {
+        if width > 0 {
+            lastNonZeroWidth = width
+            return width
+        }
+        if lastNonZeroWidth > 0 {
+            return lastNonZeroWidth
+        }
+        return window?.windowScene?.screen.bounds.width ?? Self.fallbackWidth
+    }
 
     override var intrinsicContentSize: CGSize {
-        let width = bounds.width > 0 ? bounds.width : UIScreen.main.bounds.width
-        let output = layoutOutput(forWidth: width)
+        let output = layoutOutput(forWidth: resolvedWidth(bounds.width))
         return CGSize(width: UIView.noIntrinsicMetric, height: output.totalHeight)
     }
 
     func configure(with items: [TileDisplayItem]) {
         guard draggedTileView == nil else { return }
         allTileItems = items
-        let width = bounds.width > 0 ? bounds.width : UIScreen.main.bounds.width
-        syncVisibleTiles(for: width)
+        syncVisibleTiles(for: resolvedWidth(bounds.width))
         refreshVisibleTileContent()
     }
 
     func prepareForContainerSizeChange() {
         appliedSizeClass = nil
+        layoutCache = nil
         invalidateIntrinsicContentSize()
     }
 
     private func refreshVisibleTileContent() {
-        let itemsByID = Dictionary(uniqueKeysWithValues: allTileItems.map { ($0.id, $0) })
+        let itemsByID = allTileItems.reduce(into: [String: TileDisplayItem]()) { result, item in
+            if result[item.id] == nil { result[item.id] = item }
+        }
         for (index, view) in tileViews.enumerated() {
             guard visibleTileItems.indices.contains(index),
                   let updated = itemsByID[visibleTileItems[index].id] else { continue }
@@ -63,7 +88,7 @@ final class TilesContainerView: UIView {
     private func syncVisibleTiles(for width: CGFloat) {
         guard draggedTileView == nil else { return }
 
-        let effectiveWidth = width > 0 ? width : UIScreen.main.bounds.width
+        let effectiveWidth = resolvedWidth(width)
         let sizeClass = TileLayoutSizeClass.from(containerWidth: effectiveWidth)
         let visible = TileVisibilityPolicy.visibleTiles(
             from: allTileItems,
@@ -82,6 +107,7 @@ final class TilesContainerView: UIView {
     }
 
     private func rebuildTileViews() {
+        layoutCache = nil
         tileViews.forEach { $0.removeFromSuperview() }
         tileViews.removeAll()
 
@@ -156,6 +182,8 @@ final class TilesContainerView: UIView {
         dragDestinationVisibleIndex = sourceIndex
         draggedKind = tileView.tileKind
         draggedTileView = tileView
+        dragSnapshotItems = visibleTileItems
+        dragSnapshotViews = tileViews
 
         applyLayout(animated: false)
 
@@ -216,11 +244,10 @@ final class TilesContainerView: UIView {
     }
 
     private func cancelDragging() {
-        visibleTileItems = TileVisibilityPolicy.visibleTiles(
-            from: allTileItems,
-            containerWidth: bounds.width
-        )
-        rebuildTileViews()
+        if !dragSnapshotItems.isEmpty {
+            visibleTileItems = dragSnapshotItems
+            tileViews = dragSnapshotViews
+        }
         cleanupDragState()
     }
 
@@ -237,6 +264,8 @@ final class TilesContainerView: UIView {
         draggedKind = nil
         dragStartLocation = nil
         dragDidMove = false
+        dragSnapshotItems = []
+        dragSnapshotViews = []
         onDragStateChanged?(false)
         applyLayout(animated: true)
     }
@@ -278,9 +307,22 @@ final class TilesContainerView: UIView {
     }
 
     private func layoutOutput(forWidth width: CGFloat) -> TileLayoutCalculator.Output {
-        let effectiveWidth = width > 0 ? width : UIScreen.main.bounds.width
-        let visible = TileVisibilityPolicy.visibleTiles(from: allTileItems, containerWidth: effectiveWidth)
-        let tiles = draggedTileView == nil ? visible : visibleTileItems
+        let effectiveWidth = resolvedWidth(width)
+        let dragging = draggedTileView != nil
+        let tiles = dragging
+            ? visibleTileItems
+            : TileVisibilityPolicy.visibleTiles(from: allTileItems, containerWidth: effectiveWidth)
+
+        let key = LayoutCacheKey(
+            width: effectiveWidth,
+            targetHeight: layoutTargetHeight,
+            ids: tiles.map(\.id),
+            dragging: dragging
+        )
+        if let layoutCache, layoutCache.key == key {
+            return layoutCache.output
+        }
+
         let targetHeight = layoutTargetHeight > 0 ? layoutTargetHeight : nil
         let input = TileLayoutCalculator.Input(
             containerSize: CGSize(width: effectiveWidth, height: layoutTargetHeight),
@@ -290,7 +332,9 @@ final class TilesContainerView: UIView {
             spacing: WeatherDesignSystem.Tile.gridSpacing,
             targetTotalHeight: targetHeight
         )
-        return TileLayoutCalculator.calculate(input: input)
+        let output = TileLayoutCalculator.calculate(input: input)
+        layoutCache = (key, output)
+        return output
     }
 }
 
@@ -300,11 +344,5 @@ extension TilesContainerView: UIGestureRecognizerDelegate {
         shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer
     ) -> Bool {
         true
-    }
-}
-
-private extension Array {
-    subscript(safe index: Int) -> Element? {
-        indices.contains(index) ? self[index] : nil
     }
 }
