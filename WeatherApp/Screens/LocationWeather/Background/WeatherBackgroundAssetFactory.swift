@@ -14,7 +14,10 @@ enum WeatherBackgroundAssetFactory {
             ).setFill()
             context.fill(CGRect(x: 0, y: 0, width: size.width, height: size.height))
         }
-        return image.cgImage!
+        guard let cgImage = image.cgImage else {
+            preconditionFailure("UIGraphicsImageRenderer failed to produce a CGImage")
+        }
+        return cgImage
     }
 
     static func snowflakeImage() -> CGImage {
@@ -28,7 +31,10 @@ enum WeatherBackgroundAssetFactory {
             ).setFill()
             context.cgContext.fillEllipse(in: CGRect(origin: .zero, size: size))
         }
-        return image.cgImage!
+        guard let cgImage = image.cgImage else {
+            preconditionFailure("UIGraphicsImageRenderer failed to produce a CGImage")
+        }
+        return cgImage
     }
 
     static func cloudSkyTexture(
@@ -300,14 +306,14 @@ enum WeatherBackgroundAssetFactory {
             WeatherBackgroundConstants.Asset.CloudTexture.hazeMidLocation,
             WeatherBackgroundConstants.Asset.CloudTexture.hazeEndLocation,
         ]
-        let gradient = CGGradient(
+        guard let gradient = CGGradient(
             colorsSpace: CGColorSpaceCreateDeviceRGB(),
             colors: colors,
             locations: locations
-        )
+        ) else { return }
         context.saveGState()
         context.drawLinearGradient(
-            gradient!,
+            gradient,
             start: CGPoint(x: size.width * 0.5, y: 0),
             end: CGPoint(
                 x: size.width * 0.5,

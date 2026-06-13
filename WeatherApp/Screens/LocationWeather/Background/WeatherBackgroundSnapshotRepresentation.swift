@@ -29,11 +29,6 @@ struct WeatherBackgroundSnapshotRepresentation: Codable, Equatable {
     let effects: Effects
 }
 
-struct WeatherBackgroundCatalogSnapshot: Codable, Equatable {
-    let variant: String
-    let scenes: [WeatherBackgroundSnapshotRepresentation]
-}
-
 extension UIColor {
     var rgbaHex: String {
         var red: CGFloat = 0

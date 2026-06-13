@@ -39,14 +39,14 @@ final class WeatherStormFlashView: UIView {
     private func playFlash() {
         UIView.animate(
             withDuration: WeatherBackgroundConstants.Storm.flashPeakDuration,
-            animations: {
-                self.backgroundColor = UIColor.white.withAlphaComponent(
+            animations: { [weak self] in
+                self?.backgroundColor = UIColor.white.withAlphaComponent(
                     WeatherBackgroundConstants.Storm.flashPeakAlpha
                 )
             },
-            completion: { _ in
+            completion: { [weak self] _ in
                 UIView.animate(withDuration: WeatherBackgroundConstants.Storm.flashFadeDuration) {
-                    self.backgroundColor = UIColor.white.withAlphaComponent(0)
+                    self?.backgroundColor = UIColor.white.withAlphaComponent(0)
                 }
             }
         )

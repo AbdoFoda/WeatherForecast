@@ -29,6 +29,10 @@ final class WeatherCloudParallaxView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
+    deinit {
+        stopMotion()
+    }
+
     override func layoutSubviews() {
         super.layoutSubviews()
         layoutBands()

@@ -23,6 +23,32 @@ final class WeatherBackgroundView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
+    deinit {
+        particleEmitter?.removeFromSuperlayer()
+        snapshotOverlayLayer?.removeFromSuperlayer()
+        backGradient.removeAllAnimations()
+        frontGradient.removeAllAnimations()
+    }
+
+    func pauseAnimations() {
+        guard layer.speed != 0 else { return }
+        let pausedTime = layer.convertTime(CACurrentMediaTime(), from: nil)
+        layer.speed = 0
+        layer.timeOffset = pausedTime
+        particleEmitter?.birthRate = 0
+    }
+
+    func resumeAnimations() {
+        guard layer.speed == 0 else { return }
+        let pausedTime = layer.timeOffset
+        layer.speed = 1
+        layer.timeOffset = 0
+        layer.beginTime = 0
+        let timeSincePause = layer.convertTime(CACurrentMediaTime(), from: nil) - pausedTime
+        layer.beginTime = timeSincePause
+        particleEmitter?.birthRate = 1
+    }
+
     override func layoutSubviews() {
         super.layoutSubviews()
         backGradient.frame = bounds
@@ -182,19 +208,15 @@ final class WeatherBackgroundView: UIView {
         fade.fromValue = 0
         fade.toValue = 1
         fade.duration = WeatherBackgroundConstants.Animation.gradientCrossfadeDuration
-        fade.fillMode = .forwards
-        fade.isRemovedOnCompletion = false
-        incoming.add(fade, forKey: WeatherBackgroundConstants.Animation.Key.fadeIn)
         incoming.opacity = 1
+        incoming.add(fade, forKey: WeatherBackgroundConstants.Animation.Key.fadeIn)
 
         let fadeOut = CABasicAnimation(keyPath: "opacity")
         fadeOut.fromValue = 1
         fadeOut.toValue = 0
         fadeOut.duration = WeatherBackgroundConstants.Animation.gradientCrossfadeDuration
-        fadeOut.fillMode = .forwards
-        fadeOut.isRemovedOnCompletion = false
-        outgoing.add(fadeOut, forKey: WeatherBackgroundConstants.Animation.Key.fadeOut)
         outgoing.opacity = 0
+        outgoing.add(fadeOut, forKey: WeatherBackgroundConstants.Animation.Key.fadeOut)
 
         activeIsFront.toggle()
     }

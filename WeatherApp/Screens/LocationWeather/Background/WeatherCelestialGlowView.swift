@@ -22,6 +22,10 @@ final class WeatherCelestialGlowView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
+    deinit {
+        stopMotion()
+    }
+
     override func layoutSubviews() {
         super.layoutSubviews()
         let diameter = WeatherBackgroundConstants.Celestial.bodyDiameter
