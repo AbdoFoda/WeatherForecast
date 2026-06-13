@@ -1,11 +1,5 @@
 import CoreLocation
 
-protocol LocationManagerDelegate: AnyObject {
-    func locationManager(_ manager: LocationManager, didUpdateLocation location: CLLocation)
-    func locationManager(_ manager: LocationManager, didFailWithError error: Error)
-    func locationManagerDidDenyPermission(_ manager: LocationManager)
-}
-
 final class LocationManager: NSObject, CLLocationManagerDelegate {
     weak var delegate: LocationManagerDelegate?
     private let coreLocationManager = CLLocationManager()
@@ -27,15 +21,17 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
         case .authorizedWhenInUse, .authorizedAlways:
             beginLocationUpdates()
         case .denied, .restricted:
-            delegate?.locationManagerDidDenyPermission(self)
+            notifyOnMain { [weak self] in
+                guard let self else { return }
+                self.delegate?.locationManagerDidDenyPermission(self)
+            }
         @unknown default:
             break
         }
     }
 
     private func beginLocationUpdates() {
-        coreLocationManager.stopUpdatingLocation()
-        coreLocationManager.startUpdatingLocation()
+        coreLocationManager.requestLocation()
     }
 
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
@@ -45,8 +41,10 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
         case .authorizedWhenInUse, .authorizedAlways:
             beginLocationUpdates()
         case .denied, .restricted:
-            coreLocationManager.stopUpdatingLocation()
-            delegate?.locationManagerDidDenyPermission(self)
+            notifyOnMain { [weak self] in
+                guard let self else { return }
+                self.delegate?.locationManagerDidDenyPermission(self)
+            }
         default:
             break
         }
@@ -59,12 +57,26 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
               location.horizontalAccuracy <= 5_000 else { return }
 
         didDeliverLocation = true
-        coreLocationManager.stopUpdatingLocation()
-        delegate?.locationManager(self, didUpdateLocation: location)
+        notifyOnMain { [weak self] in
+            guard let self else { return }
+            self.delegate?.locationManager(self, didUpdateLocation: location)
+        }
     }
 
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        coreLocationManager.stopUpdatingLocation()
-        delegate?.locationManager(self, didFailWithError: error)
+        notifyOnMain { [weak self] in
+            guard let self else { return }
+            self.delegate?.locationManager(self, didFailWithError: error)
+        }
+    }
+
+    private func notifyOnMain(_ work: @escaping @MainActor () -> Void) {
+        if Thread.isMainThread {
+            MainActor.assumeIsolated(work)
+        } else {
+            DispatchQueue.main.async {
+                MainActor.assumeIsolated(work)
+            }
+        }
     }
 }

@@ -25,6 +25,7 @@ final class LocationPermissionView: UIView {
 
         settingsButton.setTitle(AppL10n.openSettings, for: .normal)
         settingsButton.titleLabel?.font = WeatherDesignSystem.Typography.preferred(.headline)
+        settingsButton.titleLabel?.adjustsFontForContentSizeCategory = true
         settingsButton.addTarget(self, action: #selector(openSettings), for: .touchUpInside)
 
         [messageLabel, settingsButton].forEach {

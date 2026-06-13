@@ -130,6 +130,15 @@ final class WeatherPagerViewController: UIViewController {
             animated: animated
         )
         updatePageControl()
+        updateActivePageAnimations()
+    }
+
+    private func updateActivePageAnimations() {
+        guard selections.indices.contains(currentIndex) else { return }
+        let activeID = selections[currentIndex].pagerID
+        for (id, controller) in pagesByID {
+            controller.setBackgroundAnimationsActive(id == activeID)
+        }
     }
 
     private func page(at index: Int) -> LocationWeatherViewController {
@@ -181,6 +190,7 @@ final class WeatherPagerViewController: UIViewController {
             animated: false
         )
         relayoutAllWeatherPages()
+        updateActivePageAnimations()
     }
 
     private var pageContainerNeedsRefresh: Bool {
@@ -240,6 +250,7 @@ extension WeatherPagerViewController: UIPageViewControllerDelegate {
 
         currentIndex = index
         updatePageControl()
+        updateActivePageAnimations()
         locationsViewModel.selectLocation(at: index)
     }
 }

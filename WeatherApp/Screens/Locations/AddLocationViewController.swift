@@ -1,12 +1,6 @@
 import UIKit
 import WeatherCore
 
-@MainActor
-protocol AddLocationViewControllerDelegate: AnyObject {
-    func addLocationViewController(_ controller: AddLocationViewController, didSelect location: LocationModel)
-    func addLocationViewControllerDidCancel(_ controller: AddLocationViewController)
-}
-
 final class AddLocationViewController: UIViewController {
     weak var delegate: AddLocationViewControllerDelegate?
 
@@ -73,9 +67,26 @@ final class AddLocationViewController: UIViewController {
 
     private func bindViewModel() {
         viewModel.onStateChange = { [weak self] state in
-            self?.state = state
-            self?.tableView.reloadData()
+            guard let self else { return }
+            self.state = state
+            self.updateBackgroundMessage()
+            self.tableView.reloadData()
         }
+    }
+
+    private func updateBackgroundMessage() {
+        guard state.searchFailed, state.resultCount == 0 else {
+            tableView.backgroundView = nil
+            return
+        }
+        let label = UILabel()
+        label.text = L10n.Locations.searchFailed
+        label.font = WeatherDesignSystem.Typography.preferred(.body)
+        label.adjustsFontForContentSizeCategory = true
+        label.textColor = .secondaryLabel
+        label.numberOfLines = 0
+        label.textAlignment = .center
+        tableView.backgroundView = label
     }
 }
 

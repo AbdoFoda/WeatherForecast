@@ -1,13 +1,6 @@
 import UIKit
 import WeatherCore
 
-@MainActor
-protocol LocationsViewControllerDelegate: AnyObject {
-    func locationsViewController(_ controller: LocationsViewController, didSelect selection: LocationSelection)
-    func locationsViewControllerDidTapAdd(_ controller: LocationsViewController)
-    func locationsViewControllerDidRequestRefresh(_ controller: LocationsViewController)
-}
-
 final class LocationsViewController: UIViewController {
     weak var delegate: LocationsViewControllerDelegate?
 
@@ -182,6 +175,13 @@ extension LocationsViewController: UITableViewDataSource {
 
     func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         state.canEditRow(at: indexPath.locationsIndexPath)
+    }
+
+    func tableView(
+        _ tableView: UITableView,
+        editingStyleForRowAt indexPath: IndexPath
+    ) -> UITableViewCell.EditingStyle {
+        state.canEditRow(at: indexPath.locationsIndexPath) ? .delete : .none
     }
 }
 

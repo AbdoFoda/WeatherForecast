@@ -25,6 +25,9 @@ final class AppCoordinator: NSObject {
         self.locationSearchService = locationSearchService
     }
 
+    private static let fallbackBaseURL =
+        URL(string: "https://weather-proxy.invalid") ?? URL(fileURLWithPath: "/dev/null")
+
     static func live(bundle: Bundle = .main) -> AppCoordinator {
         do {
             let baseURL = try ProxyConfigurationLoader.loadBaseURL(bundle: bundle)
@@ -32,7 +35,11 @@ final class AppCoordinator: NSObject {
                 weatherService: WeatherService(client: HTTPClient(baseURL: baseURL))
             )
         } catch {
-            fatalError("Config.plist must define a valid WeatherProxyBaseURL string.")
+            WeatherLogger.log(error)
+            assertionFailure("Config.plist must define a valid WeatherProxyBaseURL string.")
+            return AppCoordinator(
+                weatherService: WeatherService(client: HTTPClient(baseURL: fallbackBaseURL))
+            )
         }
     }
 
@@ -43,6 +50,23 @@ final class AppCoordinator: NSObject {
         let summariesViewModel = LocationSummariesViewModel(weatherService: weatherService)
         self.summariesViewModel = summariesViewModel
 
+        bindViewModels(locationsViewModel: locationsViewModel, summariesViewModel: summariesViewModel)
+
+        let split = makeSplitViewController(locationsViewModel: locationsViewModel)
+        splitViewController = split
+        window.rootViewController = split
+        window.makeKeyAndVisible()
+
+        locationsViewModel.load()
+
+        deviceLocationManager.delegate = self
+        deviceLocationManager.requestLocation()
+    }
+
+    private func bindViewModels(
+        locationsViewModel: LocationsViewModel,
+        summariesViewModel: LocationSummariesViewModel
+    ) {
         locationsViewModel.onStateChange = { [weak self] state in
             self?.pagerViewController?.apply(state)
             self?.masterViewController?.render(state)
@@ -51,7 +75,9 @@ final class AppCoordinator: NSObject {
         summariesViewModel.onChange = { [weak self] summaries in
             self?.masterViewController?.renderSummaries(summaries)
         }
+    }
 
+    private func makeSplitViewController(locationsViewModel: LocationsViewModel) -> UISplitViewController {
         let master = LocationsViewController(viewModel: locationsViewModel)
         master.delegate = self
         masterViewController = master
@@ -78,15 +104,7 @@ final class AppCoordinator: NSObject {
         split.preferredDisplayMode = .oneBesideSecondary
         split.preferredSplitBehavior = .tile
         split.delegate = self
-        splitViewController = split
-
-        window.rootViewController = split
-        window.makeKeyAndVisible()
-
-        locationsViewModel.load()
-
-        deviceLocationManager.delegate = self
-        deviceLocationManager.requestLocation()
+        return split
     }
 
     private func configureTransparentNavigationBar(_ navigationBar: UINavigationBar) {
@@ -183,7 +201,13 @@ extension AppCoordinator: LocationManagerDelegate {
         refreshSummaries(for: state)
     }
 
-    func locationManager(_ manager: LocationManager, didFailWithError error: Error) {}
+    func locationManager(_ manager: LocationManager, didFailWithError error: Error) {
+        WeatherLogger.log(error)
+        deviceCoordinate = nil
+    }
 
-    func locationManagerDidDenyPermission(_ manager: LocationManager) {}
+    func locationManagerDidDenyPermission(_ manager: LocationManager) {
+        WeatherLogger.log("Device location permission denied; current-location summary unavailable.")
+        deviceCoordinate = nil
+    }
 }

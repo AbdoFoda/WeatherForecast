@@ -13,6 +13,10 @@ final class OfflineBannerView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
+    func setMessage(_ message: String) {
+        label.text = message
+    }
+
     private func setup() {
         backgroundColor = WeatherDesignSystem.Banner.backgroundColor
         layer.cornerRadius = WeatherDesignSystem.Banner.cornerRadius
@@ -21,6 +25,7 @@ final class OfflineBannerView: UIView {
         label.text = L10n.Notice.offline
         label.font = WeatherDesignSystem.Typography.preferred(.footnote)
         label.textColor = .label
+        label.adjustsFontForContentSizeCategory = true
         label.numberOfLines = 0
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false

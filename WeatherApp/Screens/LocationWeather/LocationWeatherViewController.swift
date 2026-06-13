@@ -2,29 +2,13 @@ import UIKit
 import CoreLocation
 import WeatherCore
 
-enum LocationWeatherSource {
-    case device
-    case saved(LocationModel)
-}
-
-private final class VerticalOnlyScrollView: UIScrollView {
-    override func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
-        if gestureRecognizer === panGestureRecognizer {
-            let velocity = panGestureRecognizer.velocity(in: self)
-            if abs(velocity.x) > abs(velocity.y) {
-                return false
-            }
-        }
-        return super.gestureRecognizerShouldBegin(gestureRecognizer)
-    }
-}
-
 final class LocationWeatherViewController: UIViewController {
     var onTileDragStateChanged: ((Bool) -> Void)?
 
     private let viewModel: LocationWeatherViewModelProtocol
     private let locationSource: LocationWeatherSource
     private let locationManager = LocationManager()
+    private let geocoder = CLGeocoder()
 
     private var currentLatitude: Double?
     private var currentLongitude: Double?
@@ -46,6 +30,7 @@ final class LocationWeatherViewController: UIViewController {
     private var graphHeightConstraint: NSLayoutConstraint?
     private var summaryTopConstraint: NSLayoutConstraint?
     private var lastTilesLayoutBounds: CGSize = .zero
+    private var weatherTask: Task<Void, Never>?
 
     init(
         viewModel: LocationWeatherViewModelProtocol,
@@ -62,6 +47,7 @@ final class LocationWeatherViewController: UIViewController {
 
     deinit {
         NotificationCenter.default.removeObserver(self)
+        weatherTask?.cancel()
     }
 
     override func viewDidLoad() {
@@ -104,29 +90,9 @@ final class LocationWeatherViewController: UIViewController {
         attributionLabel.textColor = .tertiaryLabel
         attributionLabel.textAlignment = .center
 
-        refreshControl.addTarget(self, action: #selector(handleRefresh), for: .valueChanged)
-        scrollView.refreshControl = refreshControl
-
-        refreshControl.tintColor = .clear
-        refreshSpinner.translatesAutoresizingMaskIntoConstraints = false
-        refreshSpinner.hidesWhenStopped = true
-        refreshSpinner.color = .white
-        refreshSpinner.layer.shadowColor = UIColor.black.cgColor
-        refreshSpinner.layer.shadowOpacity = 0.25
-        refreshSpinner.layer.shadowRadius = 3
-        refreshSpinner.layer.shadowOffset = .zero
-
-        tilesView.onOrderChanged = { [weak self] order in
-            self?.viewModel.saveTileOrder(order)
-        }
-        tilesView.onDragStateChanged = { [weak self] isDragging in
-            guard let self else { return }
-            self.scrollView.isScrollEnabled = !isDragging
-            self.onTileDragStateChanged?(isDragging)
-        }
-        tilesView.onTileMenuRequested = { [weak self] kind, sourceView in
-            self?.presentTileMenu(for: kind, from: sourceView)
-        }
+        scrollView.delaysContentTouches = false
+        configureRefreshControl()
+        configureTileCallbacks()
 
         view.addSubview(backgroundView)
         view.addSubview(scrollView)
@@ -140,12 +106,14 @@ final class LocationWeatherViewController: UIViewController {
         view.addSubview(offlineBanner)
         view.addSubview(refreshSpinner)
 
-        graphHeightConstraint = graphView.heightAnchor.constraint(
+        let graphHeightConstraint = graphView.heightAnchor.constraint(
             equalToConstant: WeatherDesignSystem.Layout.graphHeight
         )
-        tilesHeightConstraint = tilesView.heightAnchor.constraint(
+        self.graphHeightConstraint = graphHeightConstraint
+        let tilesHeightConstraint = tilesView.heightAnchor.constraint(
             equalToConstant: WeatherDesignSystem.Layout.tilesInitialHeight
         )
+        self.tilesHeightConstraint = tilesHeightConstraint
 
         NSLayoutConstraint.activate([
             backgroundView.topAnchor.constraint(equalTo: view.topAnchor),
@@ -177,7 +145,7 @@ final class LocationWeatherViewController: UIViewController {
             ),
             graphView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             graphView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            graphHeightConstraint!,
+            graphHeightConstraint,
 
             tilesView.topAnchor.constraint(
                 equalTo: graphView.bottomAnchor,
@@ -185,7 +153,7 @@ final class LocationWeatherViewController: UIViewController {
             ),
             tilesView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             tilesView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            tilesHeightConstraint!,
+            tilesHeightConstraint,
 
             attributionLabel.topAnchor.constraint(
                 greaterThanOrEqualTo: tilesView.bottomAnchor,
@@ -241,10 +209,45 @@ final class LocationWeatherViewController: UIViewController {
         summaryTopConstraint?.isActive = true
     }
 
+    private func configureRefreshControl() {
+        refreshControl.addTarget(self, action: #selector(handleRefresh), for: .valueChanged)
+        scrollView.refreshControl = refreshControl
+        refreshControl.tintColor = .clear
+        refreshSpinner.translatesAutoresizingMaskIntoConstraints = false
+        refreshSpinner.hidesWhenStopped = true
+        refreshSpinner.color = .white
+        refreshSpinner.layer.shadowColor = UIColor.black.cgColor
+        refreshSpinner.layer.shadowOpacity = 0.25
+        refreshSpinner.layer.shadowRadius = 3
+        refreshSpinner.layer.shadowOffset = .zero
+    }
+
+    private func configureTileCallbacks() {
+        tilesView.onOrderChanged = { [weak self] order in
+            self?.viewModel.saveTileOrder(order)
+        }
+        tilesView.onDragStateChanged = { [weak self] isDragging in
+            guard let self else { return }
+            self.scrollView.panGestureRecognizer.isEnabled = !isDragging
+            self.onTileDragStateChanged?(isDragging)
+        }
+        tilesView.onTileMenuRequested = { [weak self] kind, sourceView in
+            self?.presentTileMenu(for: kind, from: sourceView)
+        }
+    }
+
     private func updateTilesHeight() {
         tilesView.setNeedsLayout()
         tilesView.layoutIfNeeded()
         tilesHeightConstraint?.constant = tilesView.intrinsicContentSize.height
+    }
+
+    func setBackgroundAnimationsActive(_ active: Bool) {
+        if active {
+            backgroundView.resumeAnimations()
+        } else {
+            backgroundView.pauseAnimations()
+        }
     }
 
     func refreshLayoutAfterExternalTransition() {
@@ -300,6 +303,8 @@ final class LocationWeatherViewController: UIViewController {
     override func viewSafeAreaInsetsDidChange() {
         super.viewSafeAreaInsetsDidChange()
         summaryTopConstraint?.constant = view.safeAreaInsets.top + WeatherDesignSystem.Layout.summarySafeAreaExtra
+        scrollView.contentInset.bottom = view.safeAreaInsets.bottom
+        scrollView.verticalScrollIndicatorInsets.bottom = view.safeAreaInsets.bottom
         lastTilesLayoutBounds = .zero
         view.setNeedsLayout()
     }
@@ -321,12 +326,12 @@ final class LocationWeatherViewController: UIViewController {
                 self.setContentHidden(false)
                 self.topView.configure(with: displayData)
                 self.graphView.configure(with: displayData.hourlyItems)
-                let tileSetChanged = self.tilesView.currentTileIDs != displayData.tiles.map(\.id)
+                let tileSetChanged = self.tilesView.currentTileIDs != Set(displayData.tiles.map(\.id))
                 self.tilesView.configure(with: displayData.tiles)
                 if tileSetChanged {
                     self.updateTilesHeight()
                 }
-                self.setOfflineBannerVisible(notice == .offline)
+                self.apply(notice: notice)
                 self.backgroundView.configure(with: WeatherBackgroundConfiguration(displayData: displayData))
                 self.view.setNeedsLayout()
             case .unavailable(let notice):
@@ -335,7 +340,7 @@ final class LocationWeatherViewController: UIViewController {
                 self.refreshSpinner.stopAnimating()
                 self.permissionView.setVisible(false)
                 self.setContentHidden(true)
-                self.setOfflineBannerVisible(notice == .offline)
+                self.apply(notice: notice)
                 self.backgroundView.configure(with: .neutral)
             case .locationPermissionDenied:
                 self.loadingView.stopAnimating()
@@ -349,6 +354,19 @@ final class LocationWeatherViewController: UIViewController {
         scrollView.isHidden = hidden
     }
 
+    private func apply(notice: UserNotice?) {
+        switch notice {
+        case .offline:
+            offlineBanner.setMessage(L10n.Notice.offline)
+            offlineBanner.isHidden = false
+        case .unavailable:
+            offlineBanner.setMessage(L10n.Notice.unavailable)
+            offlineBanner.isHidden = false
+        case nil:
+            offlineBanner.isHidden = true
+        }
+    }
+
     private func setOfflineBannerVisible(_ visible: Bool) {
         offlineBanner.isHidden = !visible
     }
@@ -360,8 +378,26 @@ final class LocationWeatherViewController: UIViewController {
         case .saved(let location):
             currentLatitude = location.lat
             currentLongitude = location.lon
-            Task {
-                await viewModel.loadWeather(lat: location.lat, lon: location.lon)
+            viewModel.updateLocationDetails(
+                LocationDetails(postalCode: location.postalCode, altitudeMeters: location.altitude)
+            )
+            weatherTask?.cancel()
+            weatherTask = Task { [weak self] in
+                await self?.viewModel.loadWeather(lat: location.lat, lon: location.lon)
+            }
+        }
+    }
+
+    private func resolveDeviceLocationDetails(for location: CLLocation) {
+        let altitude = location.verticalAccuracy > 0 ? location.altitude : nil
+        viewModel.updateLocationDetails(LocationDetails(postalCode: nil, altitudeMeters: altitude))
+
+        geocoder.cancelGeocode()
+        geocoder.reverseGeocodeLocation(location) { [weak self] placemarks, _ in
+            let postalCode = placemarks?.first?.postalCode
+            let details = LocationDetails(postalCode: postalCode, altitudeMeters: altitude)
+            Task { @MainActor [weak self] in
+                self?.viewModel.updateLocationDetails(details)
             }
         }
     }
@@ -398,8 +434,9 @@ final class LocationWeatherViewController: UIViewController {
             return
         }
         refreshSpinner.startAnimating()
-        Task {
-            await viewModel.refresh(lat: lat, lon: lon)
+        weatherTask?.cancel()
+        weatherTask = Task { [weak self] in
+            await self?.viewModel.refresh(lat: lat, lon: lon)
         }
     }
 
@@ -416,8 +453,10 @@ extension LocationWeatherViewController: LocationManagerDelegate {
     func locationManager(_ manager: LocationManager, didUpdateLocation location: CLLocation) {
         currentLatitude = location.coordinate.latitude
         currentLongitude = location.coordinate.longitude
-        Task {
-            await viewModel.loadWeather(
+        resolveDeviceLocationDetails(for: location)
+        weatherTask?.cancel()
+        weatherTask = Task { [weak self] in
+            await self?.viewModel.loadWeather(
                 lat: location.coordinate.latitude,
                 lon: location.coordinate.longitude
             )
