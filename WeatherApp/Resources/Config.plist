@@ -3,6 +3,6 @@
 <plist version="1.0">
 <dict>
 	<key>WeatherProxyBaseURL</key>
-	<string>https://weather-proxy.cinescroll-abdofoda.workers.dev</string>
+	<string>https://weather-proxy.abdofoda.workers.dev</string>
 </dict>
 </plist>

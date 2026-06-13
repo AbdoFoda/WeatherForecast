@@ -3,6 +3,6 @@
 <plist version="1.0">
 <dict>
 	<key>WeatherProxyBaseURL</key>
-	<string>https://your-worker-subdomain.workers.dev</string>
+	<string>https://weather-proxy.example.domain</string>
 </dict>
 </plist>
