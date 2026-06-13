@@ -11,6 +11,7 @@ public final class LocationWeatherViewModel: LocationWeatherViewModelProtocol {
     private var cachedDisplayData: LocationWeatherDisplayData?
     private var lastLatitude: Double?
     private var lastLongitude: Double?
+    private var locationDetails: LocationDetails?
 
     public init(
         weatherService: WeatherServiceProtocol,
@@ -26,7 +27,7 @@ public final class LocationWeatherViewModel: LocationWeatherViewModelProtocol {
         lastLatitude = lat
         lastLongitude = lon
 
-        if let cached = cachedDisplayFromDisk(lat: lat, lon: lon) {
+        if let cached = await cachedDisplayFromDisk(lat: lat, lon: lon) {
             cachedDisplayData = cached
             publishLoaded(cached, notice: nil)
         } else {
@@ -42,6 +43,12 @@ public final class LocationWeatherViewModel: LocationWeatherViewModelProtocol {
         await fetchAndPublish(lat: lat, lon: lon)
     }
 
+    public func updateLocationDetails(_ details: LocationDetails) {
+        guard details != locationDetails else { return }
+        locationDetails = details
+        republishCached()
+    }
+
     public func saveTileOrder(_ order: [TileKind]) {
         var fullOrder = order
         for kind in tileOrderStore.loadOrder() where !fullOrder.contains(kind) {
@@ -53,7 +60,7 @@ public final class LocationWeatherViewModel: LocationWeatherViewModelProtocol {
         let tiles = TileOrderApplier.apply(order: fullOrder, to: cachedDisplayData.tiles)
         let updated = cachedDisplayData.withTiles(tiles)
         self.cachedDisplayData = updated
-        persistToDisk(updated)
+        Task { await persistToDisk(updated) }
     }
 
     public var hasHiddenTiles: Bool {
@@ -74,54 +81,57 @@ public final class LocationWeatherViewModel: LocationWeatherViewModelProtocol {
 
     private func fetchAndPublish(lat: Double, lon: Double) async {
         currentTask?.cancel()
-        currentTask = Task {
+        currentTask = Task { [weak self] in
+            guard let self else { return }
             do {
-                async let current = weatherService.fetchCurrentWeather(lat: lat, lon: lon)
-                async let forecast = weatherService.fetchForecast(lat: lat, lon: lon)
-                async let air = weatherService.fetchAirPollution(lat: lat, lon: lon)
+                async let current = self.weatherService.fetchCurrentWeather(lat: lat, lon: lon)
+                async let forecast = self.weatherService.fetchForecast(lat: lat, lon: lon)
+                async let air = self.weatherService.fetchAirPollution(lat: lat, lon: lon)
 
                 let (weather, forecastResponse, airPollution) = try await (current, forecast, air)
-                let display = DisplayDataMapper.map(
+                guard !Task.isCancelled else { return }
+
+                let display = await DisplayDataMapper.mapOffMainThread(
                     weather: weather,
                     forecast: forecastResponse,
                     airPollution: airPollution,
-                    tileOrder: tileOrderStore.loadOrder()
+                    tileOrder: self.tileOrderStore.loadOrder()
                 )
 
-                guard !Task.isCancelled else { return }
-                cachedDisplayData = display
-                persistToDisk(display)
-                publishLoaded(display, notice: nil)
+                guard !Task.isCancelled,
+                      self.lastLatitude == lat,
+                      self.lastLongitude == lon else { return }
+                self.cachedDisplayData = display
+                self.publishLoaded(display, notice: nil)
+                await self.persistToDisk(display)
             } catch {
                 guard !Task.isCancelled else { return }
-                handleFailure(error, lat: lat, lon: lon)
+                await self.handleFailure(error, lat: lat, lon: lon)
             }
         }
         await currentTask?.value
     }
 
-    private func handleFailure(_ error: Error, lat: Double, lon: Double) {
+    private func handleFailure(_ error: Error, lat: Double, lon: Double) async {
         WeatherLogger.log(error)
+        let notice: UserNotice = error.isOfflineWeatherError ? .offline : .unavailable
 
         if let cachedDisplayData {
-            let notice: UserNotice? = error.isOfflineWeatherError ? .offline : nil
             publishLoaded(cachedDisplayData, notice: notice)
             return
         }
 
-        if let cached = cachedDisplayFromDisk(lat: lat, lon: lon) {
+        if let cached = await cachedDisplayFromDisk(lat: lat, lon: lon) {
             cachedDisplayData = cached
-            let notice: UserNotice? = error.isOfflineWeatherError ? .offline : nil
             publishLoaded(cached, notice: notice)
             return
         }
 
-        let notice: UserNotice? = error.isOfflineWeatherError ? .offline : nil
         onStateChange?(.unavailable(notice: notice))
     }
 
-    private func cachedDisplayFromDisk(lat: Double, lon: Double) -> LocationWeatherDisplayData? {
-        guard let entry = diskCache.load(lat: lat, lon: lon) else { return nil }
+    private func cachedDisplayFromDisk(lat: Double, lon: Double) async -> LocationWeatherDisplayData? {
+        guard let entry = await diskCache.load(lat: lat, lon: lon) else { return nil }
         return applyTileOrder(to: entry.displayData)
     }
 
@@ -136,7 +146,14 @@ public final class LocationWeatherViewModel: LocationWeatherViewModelProtocol {
             guard let kind = TileKind(rawValue: tile.id) else { return true }
             return !hidden.contains(kind)
         }
-        onStateChange?(.loaded(display.withTiles(visibleTiles), notice: notice))
+        let detailed = applyLocationDetails(to: display.withTiles(visibleTiles))
+        onStateChange?(.loaded(detailed, notice: notice))
+    }
+
+    private func applyLocationDetails(to display: LocationWeatherDisplayData) -> LocationWeatherDisplayData {
+        guard let locationDetails, !locationDetails.isEmpty else { return display }
+        let altitude = locationDetails.altitudeMeters.map { L10n.Format.altitude(Int($0.rounded())) }
+        return display.withLocationDetails(postalCode: locationDetails.postalCode, altitude: altitude)
     }
 
     private func republishCached() {
@@ -144,8 +161,8 @@ public final class LocationWeatherViewModel: LocationWeatherViewModelProtocol {
         publishLoaded(cachedDisplayData, notice: nil)
     }
 
-    private func persistToDisk(_ display: LocationWeatherDisplayData) {
+    private func persistToDisk(_ display: LocationWeatherDisplayData) async {
         guard let lat = lastLatitude, let lon = lastLongitude else { return }
-        diskCache.save(lat: lat, lon: lon, displayData: display)
+        await diskCache.save(lat: lat, lon: lon, displayData: display)
     }
 }

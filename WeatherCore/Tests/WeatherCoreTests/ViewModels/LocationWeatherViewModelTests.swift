@@ -94,7 +94,7 @@ final class LocationWeatherViewModelTests: XCTestCase {
             switch state {
             case .loading:
                 states.append("loading")
-            case .unavailable(nil):
+            case .unavailable(.unavailable):
                 states.append("unavailable")
                 expectation.fulfill()
             default:
@@ -126,7 +126,7 @@ final class LocationWeatherViewModelTests: XCTestCase {
         let refreshExpectation = XCTestExpectation(description: "Wait for cached reload")
 
         sut.onStateChange = { state in
-            if case .loaded(_, nil) = state {
+            if case .loaded(_, .unavailable) = state {
                 refreshExpectation.fulfill()
             }
         }
@@ -150,7 +150,7 @@ final class LocationWeatherViewModelTests: XCTestCase {
         await fulfillment(of: [loadExpectation], timeout: 1.0)
 
         mockService.shouldFail = true
-        mockService.failure = WeatherError.offline(underlying: URLError(.notConnectedToInternet))
+        mockService.failure = WeatherError.offline
 
         let refreshExpectation = XCTestExpectation(description: "Wait for offline cached reload")
 
@@ -210,7 +210,7 @@ final class LocationWeatherViewModelTests: XCTestCase {
         defer { try? FileManager.default.removeItem(at: cacheDirectory) }
 
         let diskCache = WeatherDiskCache(directoryURL: cacheDirectory)
-        diskCache.save(
+        await diskCache.save(
             lat: 10,
             lon: 20,
             displayData: LocationWeatherDisplayData(
