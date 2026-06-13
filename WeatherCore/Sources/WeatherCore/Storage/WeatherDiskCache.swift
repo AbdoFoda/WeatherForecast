@@ -1,6 +1,6 @@
 import Foundation
 
-public struct WeatherDiskCache: Sendable {
+public actor WeatherDiskCache {
     public struct Entry: Codable, Sendable {
         public let latitude: Double
         public let longitude: Double
@@ -21,17 +21,19 @@ public struct WeatherDiskCache: Sendable {
     }
 
     private let directoryURL: URL
-    private let fileManager: FileManager
+    private let maxEntryCount: Int
+
+    private var fileManager: FileManager { .default }
 
     public init(
         directoryURL: URL? = nil,
-        fileManager: FileManager = .default
+        maxEntryCount: Int = 50
     ) {
-        self.fileManager = fileManager
+        self.maxEntryCount = max(1, maxEntryCount)
         if let directoryURL {
             self.directoryURL = directoryURL
         } else {
-            let caches = fileManager.urls(for: .cachesDirectory, in: .userDomainMask).first
+            let caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first
             self.directoryURL = caches?.appendingPathComponent("weather-display-cache", isDirectory: true)
                 ?? URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("weather-display-cache", isDirectory: true)
         }
@@ -64,10 +66,29 @@ public struct WeatherDiskCache: Sendable {
         }
 
         do {
-            try data.write(to: fileURL, options: .atomic)
+            try data.write(to: fileURL, options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
+            evictIfNeeded()
             return true
         } catch {
             return false
+        }
+    }
+
+    private func evictIfNeeded() {
+        guard let urls = try? fileManager.contentsOfDirectory(
+            at: directoryURL,
+            includingPropertiesForKeys: [.contentModificationDateKey],
+            options: [.skipsHiddenFiles]
+        ), urls.count > maxEntryCount else { return }
+
+        let sorted = urls.sorted { lhs, rhs in
+            let lhsDate = (try? lhs.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate ?? .distantPast
+            let rhsDate = (try? rhs.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate ?? .distantPast
+            return lhsDate < rhsDate
+        }
+
+        for url in sorted.prefix(sorted.count - maxEntryCount) {
+            try? fileManager.removeItem(at: url)
         }
     }
 
@@ -92,6 +113,10 @@ public struct WeatherDiskCache: Sendable {
 
         do {
             try fileManager.createDirectory(at: directoryURL, withIntermediateDirectories: true)
+            var values = URLResourceValues()
+            values.isExcludedFromBackup = true
+            var mutableURL = directoryURL
+            try? mutableURL.setResourceValues(values)
             return true
         } catch {
             return false

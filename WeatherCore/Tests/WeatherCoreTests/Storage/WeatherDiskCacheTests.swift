@@ -15,30 +15,33 @@ final class WeatherDiskCacheTests: XCTestCase {
         super.tearDown()
     }
 
-    func test_load_returnsNilWhenMissing() {
+    func test_load_returnsNilWhenMissing() async {
         let sut = WeatherDiskCache(directoryURL: cacheDirectory)
-        XCTAssertNil(sut.load(lat: 52.52, lon: 13.40))
+        let entry = await sut.load(lat: 52.52, lon: 13.40)
+        XCTAssertNil(entry)
     }
 
-    func test_saveAndLoad_roundTrip() {
+    func test_saveAndLoad_roundTrip() async {
         let sut = WeatherDiskCache(directoryURL: cacheDirectory)
         let display = sampleDisplayData()
 
-        XCTAssertTrue(sut.save(lat: 52.52, lon: 13.40, displayData: display))
+        let didSave = await sut.save(lat: 52.52, lon: 13.40, displayData: display)
+        XCTAssertTrue(didSave)
 
-        let entry = sut.load(lat: 52.52, lon: 13.40)
+        let entry = await sut.load(lat: 52.52, lon: 13.40)
         XCTAssertEqual(entry?.displayData.cityName, "Berlin")
         XCTAssertEqual(entry?.displayData.tiles.count, 1)
         XCTAssertEqual(entry?.latitude, 52.52)
     }
 
-    func test_remove_deletesCachedEntry() {
+    func test_remove_deletesCachedEntry() async {
         let sut = WeatherDiskCache(directoryURL: cacheDirectory)
-        sut.save(lat: 48.85, lon: 2.35, displayData: sampleDisplayData())
+        await sut.save(lat: 48.85, lon: 2.35, displayData: sampleDisplayData())
 
-        sut.remove(lat: 48.85, lon: 2.35)
+        await sut.remove(lat: 48.85, lon: 2.35)
 
-        XCTAssertNil(sut.load(lat: 48.85, lon: 2.35))
+        let entry = await sut.load(lat: 48.85, lon: 2.35)
+        XCTAssertNil(entry)
     }
 
     private func sampleDisplayData() -> LocationWeatherDisplayData {
