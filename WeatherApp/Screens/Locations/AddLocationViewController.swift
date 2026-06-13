@@ -45,6 +45,8 @@ final class AddLocationViewController: UIViewController {
         searchController.obscuresBackgroundDuringPresentation = false
         searchController.searchBar.autocapitalizationType = .words
         searchController.searchBar.placeholder = L10n.Locations.searchPlaceholder
+        searchController.searchBar.searchTextField.accessibilityIdentifier =
+            AccessibilityIdentifier.AddLocation.searchField
         navigationItem.searchController = searchController
         navigationItem.hidesSearchBarWhenScrolling = false
         definesPresentationContext = true
@@ -61,7 +63,7 @@ final class AddLocationViewController: UIViewController {
             tableView.topAnchor.constraint(equalTo: view.topAnchor),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
     }
 
@@ -101,6 +103,7 @@ extension AddLocationViewController: UITableViewDataSource {
         if let location = state.result(at: indexPath.row) {
             content.text = location.displayTitle
             content.image = UIImage(systemName: "plus.circle")
+            cell.accessibilityIdentifier = AccessibilityIdentifier.AddLocation.result(id: location.id)
         }
         cell.contentConfiguration = content
         return cell

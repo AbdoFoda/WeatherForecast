@@ -2,23 +2,21 @@ import Foundation
 
 enum WeatherFormatters {
     static func time(timezoneOffset: TimeInterval) -> DateFormatter {
-        let formatter = DateFormatter()
-        formatter.timeZone = TimeZone(secondsFromGMT: 0)
-        formatter.dateFormat = WeatherConstants.DateFormat.time
-        return formatter
+        formatter(format: WeatherConstants.DateFormat.time, timezoneOffset: timezoneOffset)
     }
 
     static func dayKey(timezoneOffset: TimeInterval) -> DateFormatter {
-        let formatter = DateFormatter()
-        formatter.timeZone = TimeZone(secondsFromGMT: 0)
-        formatter.dateFormat = WeatherConstants.DateFormat.dayKey
-        return formatter
+        formatter(format: WeatherConstants.DateFormat.dayKey, timezoneOffset: timezoneOffset)
     }
 
     static func dayHeader(timezoneOffset: TimeInterval) -> DateFormatter {
+        formatter(format: WeatherConstants.DateFormat.dayHeader, timezoneOffset: timezoneOffset)
+    }
+
+    private static func formatter(format: String, timezoneOffset: TimeInterval) -> DateFormatter {
         let formatter = DateFormatter()
-        formatter.timeZone = TimeZone(secondsFromGMT: 0)
-        formatter.dateFormat = WeatherConstants.DateFormat.dayHeader
+        formatter.timeZone = TimeZone(secondsFromGMT: Int(timezoneOffset)) ?? TimeZone(secondsFromGMT: 0)
+        formatter.dateFormat = format
         return formatter
     }
 

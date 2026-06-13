@@ -81,15 +81,35 @@ public struct LocationWeatherDisplayData: Sendable, Codable {
         copy(tiles: tiles)
     }
 
-    public func withLocationDetails(postalCode: String?, altitude: String?) -> LocationWeatherDisplayData {
-        copy(postalCode: postalCode, altitude: altitude)
+    public func mergingLocationDetails(postalCode: String?, altitude: String?) -> LocationWeatherDisplayData {
+        LocationWeatherDisplayData(
+            cityName: cityName,
+            countryCode: countryCode,
+            currentTemperature: currentTemperature,
+            feelsLike: feelsLike,
+            tempRange: tempRange,
+            weatherDescription: weatherDescription,
+            iconURL: iconURL,
+            humidity: humidity,
+            pressure: pressure,
+            windSpeed: windSpeed,
+            visibility: visibility,
+            sunrise: sunrise,
+            sunset: sunset,
+            aqi: aqi,
+            pm25: pm25,
+            cloudCoverage: cloudCoverage,
+            backgroundScene: backgroundScene,
+            cloudCoveragePercent: cloudCoveragePercent,
+            windSpeedMetersPerSecond: windSpeedMetersPerSecond,
+            hourlyItems: hourlyItems,
+            tiles: tiles,
+            postalCode: postalCode ?? self.postalCode,
+            altitude: altitude ?? self.altitude
+        )
     }
 
-    private func copy(
-        tiles: [TileDisplayItem]? = nil,
-        postalCode: String?? = nil,
-        altitude: String?? = nil
-    ) -> LocationWeatherDisplayData {
+    private func copy(tiles: [TileDisplayItem]? = nil) -> LocationWeatherDisplayData {
         LocationWeatherDisplayData(
             cityName: cityName,
             countryCode: countryCode,
@@ -112,8 +132,8 @@ public struct LocationWeatherDisplayData: Sendable, Codable {
             windSpeedMetersPerSecond: windSpeedMetersPerSecond,
             hourlyItems: hourlyItems,
             tiles: tiles ?? self.tiles,
-            postalCode: postalCode ?? self.postalCode,
-            altitude: altitude ?? self.altitude
+            postalCode: postalCode,
+            altitude: altitude
         )
     }
 }

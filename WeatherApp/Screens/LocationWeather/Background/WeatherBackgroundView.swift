@@ -70,7 +70,7 @@ final class WeatherBackgroundView: UIView {
         backGradient.colors = [palette.top.cgColor, palette.bottom.cgColor]
         backGradient.locations = [
             WeatherBackgroundConstants.Layout.gradientLocationStart,
-            WeatherBackgroundConstants.Layout.gradientLocationEnd,
+            WeatherBackgroundConstants.Layout.gradientLocationEnd
         ]
         backGradient.opacity = 1
         frontGradient.opacity = 0
@@ -146,11 +146,11 @@ final class WeatherBackgroundView: UIView {
         frontGradient.colors = [neutral.top.cgColor, neutral.bottom.cgColor]
         backGradient.locations = [
             WeatherBackgroundConstants.Layout.gradientLocationStart,
-            WeatherBackgroundConstants.Layout.gradientLocationEnd,
+            WeatherBackgroundConstants.Layout.gradientLocationEnd
         ]
         frontGradient.locations = [
             WeatherBackgroundConstants.Layout.gradientLocationStart,
-            WeatherBackgroundConstants.Layout.gradientLocationEnd,
+            WeatherBackgroundConstants.Layout.gradientLocationEnd
         ]
 
         layer.addSublayer(backGradient)
@@ -177,7 +177,7 @@ final class WeatherBackgroundView: UIView {
             stormFlash.topAnchor.constraint(equalTo: topAnchor),
             stormFlash.bottomAnchor.constraint(equalTo: bottomAnchor),
             stormFlash.leadingAnchor.constraint(equalTo: leadingAnchor),
-            stormFlash.trailingAnchor.constraint(equalTo: trailingAnchor),
+            stormFlash.trailingAnchor.constraint(equalTo: trailingAnchor)
         ])
 
         frontGradient.opacity = 0
@@ -191,7 +191,7 @@ final class WeatherBackgroundView: UIView {
         incoming.colors = [palette.top.cgColor, palette.bottom.cgColor]
         incoming.locations = [
             WeatherBackgroundConstants.Layout.gradientLocationStart,
-            WeatherBackgroundConstants.Layout.gradientLocationEnd,
+            WeatherBackgroundConstants.Layout.gradientLocationEnd
         ]
         incoming.opacity = 0
 
@@ -253,6 +253,9 @@ final class WeatherBackgroundView: UIView {
         )
     }
 
+}
+
+extension WeatherBackgroundView {
     private func updateSnapshotOverlay(for configuration: WeatherBackgroundConfiguration) {
         guard bounds.width > 0, bounds.height > 0 else { return }
         guard let density = snapshotPrecipitationDensity(for: configuration.scene) else { return }

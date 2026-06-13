@@ -41,8 +41,8 @@ public struct DisplayDataMapper {
         init(weather: CurrentWeatherResponse, forecast: ForecastResponse, airPollution: AirPollutionResponse) {
             let tzOffset = TimeInterval(weather.timezone)
             timeFormatter = WeatherFormatters.time(timezoneOffset: tzOffset)
-            sunriseDate = Date(timeIntervalSince1970: weather.sys.sunrise ?? 0).addingTimeInterval(tzOffset)
-            sunsetDate = Date(timeIntervalSince1970: weather.sys.sunset ?? 0).addingTimeInterval(tzOffset)
+            sunriseDate = Date(timeIntervalSince1970: weather.sys.sunrise ?? 0)
+            sunsetDate = Date(timeIntervalSince1970: weather.sys.sunset ?? 0)
 
             let aqiValue = airPollution.list.first?.main.aqi ?? AirQualityIndex.good.rawValue
             aqiLabel = AirQualityIndex.label(for: aqiValue)
@@ -55,8 +55,18 @@ public struct DisplayDataMapper {
 
             todayRange = HourlyForecastGrouper.todayTemperatureRange(forecast: forecast)
             periodRange = HourlyForecastGrouper.forecastPeriodTemperatureRange(forecast: forecast)
-            hourlyItems = HourlyForecastGrouper.process(forecast: forecast).0
+            hourlyItems = HourlyForecastGrouper.process(forecast: forecast).items
         }
+    }
+
+    private static func tile(
+        _ kind: TileKind,
+        title: String,
+        value: String,
+        subtitle: String? = nil,
+        size: TileDisplayItem.TileSize = .standard
+    ) -> TileDisplayItem {
+        TileDisplayItem(id: kind.rawValue, title: title, value: value, subtitle: subtitle, tileSize: size)
     }
 
     private static func makeTiles(
@@ -64,38 +74,35 @@ public struct DisplayDataMapper {
         forecast: ForecastResponse,
         metrics: Metrics
     ) -> [TileDisplayItem] {
+        let sunset = L10n.Format.sunsetSubtitle(metrics.timeFormatter.string(from: metrics.sunsetDate))
         var tiles: [TileDisplayItem] = [
-            TileDisplayItem(id: TileKind.feelsLike.rawValue, title: L10n.Tile.feelsLike, value: L10n.Format.temperature(Int(round(weather.main.feelsLike))), subtitle: nil, tileSize: .standard),
-            TileDisplayItem(id: TileKind.humidity.rawValue, title: L10n.Tile.humidity, value: L10n.Format.percentage(weather.main.humidity), subtitle: nil, tileSize: .standard),
-            TileDisplayItem(id: TileKind.wind.rawValue, title: L10n.Tile.wind, value: L10n.Format.windSpeedValue(metrics.windSpeed), subtitle: metrics.windDir, tileSize: .standard),
-            TileDisplayItem(id: TileKind.pressure.rawValue, title: L10n.Tile.pressure, value: L10n.Format.pressure(weather.main.pressure), subtitle: nil, tileSize: .standard),
-            TileDisplayItem(id: TileKind.visibility.rawValue, title: L10n.Tile.visibility, value: L10n.Format.visibilityKilometers(metrics.visibilityKm), subtitle: nil, tileSize: .standard),
-            TileDisplayItem(id: TileKind.sun.rawValue, title: L10n.Tile.sunrise, value: metrics.timeFormatter.string(from: metrics.sunriseDate), subtitle: L10n.Format.sunsetSubtitle(metrics.timeFormatter.string(from: metrics.sunsetDate)), tileSize: .standard),
-            TileDisplayItem(id: TileKind.air.rawValue, title: L10n.Tile.airQuality, value: metrics.aqiLabel, subtitle: L10n.Format.pm25(metrics.pm25Value), tileSize: .wide),
-            TileDisplayItem(id: TileKind.clouds.rawValue, title: L10n.Tile.cloudCover, value: L10n.Format.percentage(metrics.cloudCoveragePercent), subtitle: nil, tileSize: .standard)
+            tile(.feelsLike, title: L10n.Tile.feelsLike,
+                 value: L10n.Format.temperature(Int(round(weather.main.feelsLike)))),
+            tile(.humidity, title: L10n.Tile.humidity,
+                 value: L10n.Format.percentage(weather.main.humidity)),
+            tile(.wind, title: L10n.Tile.wind,
+                 value: L10n.Format.windSpeedValue(metrics.windSpeed), subtitle: metrics.windDir),
+            tile(.pressure, title: L10n.Tile.pressure,
+                 value: L10n.Format.pressure(weather.main.pressure)),
+            tile(.visibility, title: L10n.Tile.visibility,
+                 value: L10n.Format.visibilityKilometers(metrics.visibilityKm)),
+            tile(.sun, title: L10n.Tile.sunrise,
+                 value: metrics.timeFormatter.string(from: metrics.sunriseDate), subtitle: sunset),
+            tile(.air, title: L10n.Tile.airQuality,
+                 value: metrics.aqiLabel, subtitle: L10n.Format.pm25(metrics.pm25Value), size: .wide),
+            tile(.clouds, title: L10n.Tile.cloudCover,
+                 value: L10n.Format.percentage(metrics.cloudCoveragePercent))
         ]
 
         if let periodRange = metrics.periodRange {
-            tiles.append(
-                TileDisplayItem(
-                    id: TileKind.fiveDay.rawValue,
-                    title: L10n.Tile.fiveDaySummary,
-                    value: L10n.Format.tempHighLow(high: Int(round(periodRange.max)), low: Int(round(periodRange.min))),
-                    subtitle: nil,
-                    tileSize: .wide
-                )
-            )
+            let value = L10n.Format.tempHighLow(high: Int(round(periodRange.max)), low: Int(round(periodRange.min)))
+            tiles.append(tile(.fiveDay, title: L10n.Tile.fiveDaySummary, value: value, size: .wide))
         }
 
         if let firstPop = forecast.list.first?.pop {
             tiles.append(
-                TileDisplayItem(
-                    id: TileKind.precipitation.rawValue,
-                    title: L10n.Tile.precipitation,
-                    value: L10n.Format.percentage(Int(firstPop * 100)),
-                    subtitle: L10n.Tile.nextThreeHours,
-                    tileSize: .standard
-                )
+                tile(.precipitation, title: L10n.Tile.precipitation,
+                     value: L10n.Format.percentage(Int(firstPop * 100)), subtitle: L10n.Tile.nextThreeHours)
             )
         }
 

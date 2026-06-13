@@ -44,7 +44,7 @@ __pycache__/
 .wrangler/
 .dev.vars
 
-# App configuration (inject per-environment; commit Config.plist.example instead)
+# App configuration
 WeatherApp/Resources/Config.plist
 
 # CocoaPods

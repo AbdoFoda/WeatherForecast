@@ -5,17 +5,18 @@ public final class LocationWeatherViewModel: LocationWeatherViewModelProtocol {
     public var onStateChange: ((LocationWeatherViewState) -> Void)?
 
     private let weatherService: WeatherServiceProtocol
-    private let tileOrderStore: TileOrderStore
+    private let tileOrderStore: any TileOrderStoring
     private let diskCache: WeatherDiskCache
-    private var currentTask: Task<Void, Never>?
-    private var cachedDisplayData: LocationWeatherDisplayData?
+    private var fullDisplayData: LocationWeatherDisplayData?
     private var lastLatitude: Double?
     private var lastLongitude: Double?
     private var locationDetails: LocationDetails?
+    private var resolvedPostalCode: String?
+    private var barometricAltitudeMeters: Double?
 
     public init(
         weatherService: WeatherServiceProtocol,
-        tileOrderStore: TileOrderStore = TileOrderStore(),
+        tileOrderStore: any TileOrderStoring = TileOrderStore(),
         diskCache: WeatherDiskCache = WeatherDiskCache()
     ) {
         self.weatherService = weatherService
@@ -28,8 +29,8 @@ public final class LocationWeatherViewModel: LocationWeatherViewModelProtocol {
         lastLongitude = lon
 
         if let cached = await cachedDisplayFromDisk(lat: lat, lon: lon) {
-            cachedDisplayData = cached
-            publishLoaded(cached, notice: nil)
+            fullDisplayData = cached
+            publishLoaded(notice: nil)
         } else {
             onStateChange?(.loading)
         }
@@ -44,8 +45,12 @@ public final class LocationWeatherViewModel: LocationWeatherViewModelProtocol {
     }
 
     public func updateLocationDetails(_ details: LocationDetails) {
-        guard details != locationDetails else { return }
-        locationDetails = details
+        let merged = (locationDetails ?? LocationDetails()).merged(with: details)
+        guard !merged.isEmpty, merged != locationDetails else { return }
+        if let postalCode = merged.postalCode, !postalCode.isEmpty {
+            resolvedPostalCode = postalCode
+        }
+        locationDetails = merged
         republishCached()
     }
 
@@ -55,11 +60,11 @@ public final class LocationWeatherViewModel: LocationWeatherViewModelProtocol {
             fullOrder.append(kind)
         }
         tileOrderStore.saveOrder(fullOrder)
-        guard let cachedDisplayData else { return }
+        guard let fullDisplayData else { return }
 
-        let tiles = TileOrderApplier.apply(order: fullOrder, to: cachedDisplayData.tiles)
-        let updated = cachedDisplayData.withTiles(tiles)
-        self.cachedDisplayData = updated
+        let tiles = TileOrderApplier.apply(order: fullOrder, to: fullDisplayData.tiles)
+        let updated = fullDisplayData.withTiles(tiles)
+        self.fullDisplayData = updated
         Task { await persistToDisk(updated) }
     }
 
@@ -80,50 +85,47 @@ public final class LocationWeatherViewModel: LocationWeatherViewModelProtocol {
     }
 
     private func fetchAndPublish(lat: Double, lon: Double) async {
-        currentTask?.cancel()
-        currentTask = Task { [weak self] in
-            guard let self else { return }
-            do {
-                async let current = self.weatherService.fetchCurrentWeather(lat: lat, lon: lon)
-                async let forecast = self.weatherService.fetchForecast(lat: lat, lon: lon)
-                async let air = self.weatherService.fetchAirPollution(lat: lat, lon: lon)
+        do {
+            async let current = weatherService.fetchCurrentWeather(lat: lat, lon: lon)
+            async let forecast = weatherService.fetchForecast(lat: lat, lon: lon)
+            async let air = weatherService.fetchAirPollution(lat: lat, lon: lon)
 
-                let (weather, forecastResponse, airPollution) = try await (current, forecast, air)
-                guard !Task.isCancelled else { return }
+            let (weather, forecastResponse, airPollution) = try await (current, forecast, air)
+            guard !Task.isCancelled else { return }
 
-                let display = await DisplayDataMapper.mapOffMainThread(
-                    weather: weather,
-                    forecast: forecastResponse,
-                    airPollution: airPollution,
-                    tileOrder: self.tileOrderStore.loadOrder()
-                )
+            barometricAltitudeMeters = ElevationEstimator.metersAboveSeaLevel(from: weather.main)
 
-                guard !Task.isCancelled,
-                      self.lastLatitude == lat,
-                      self.lastLongitude == lon else { return }
-                self.cachedDisplayData = display
-                self.publishLoaded(display, notice: nil)
-                await self.persistToDisk(display)
-            } catch {
-                guard !Task.isCancelled else { return }
-                await self.handleFailure(error, lat: lat, lon: lon)
-            }
+            let display = await DisplayDataMapper.mapOffMainThread(
+                weather: weather,
+                forecast: forecastResponse,
+                airPollution: airPollution,
+                tileOrder: tileOrderStore.loadOrder()
+            )
+
+            guard !Task.isCancelled,
+                  lastLatitude == lat,
+                  lastLongitude == lon else { return }
+            fullDisplayData = display
+            publishLoaded(notice: nil)
+            await persistToDisk(display)
+        } catch {
+            guard !Task.isCancelled else { return }
+            await handleFailure(error, lat: lat, lon: lon)
         }
-        await currentTask?.value
     }
 
     private func handleFailure(_ error: Error, lat: Double, lon: Double) async {
         WeatherLogger.log(error)
         let notice: UserNotice = error.isOfflineWeatherError ? .offline : .unavailable
 
-        if let cachedDisplayData {
-            publishLoaded(cachedDisplayData, notice: notice)
+        if fullDisplayData != nil {
+            publishLoaded(notice: notice)
             return
         }
 
         if let cached = await cachedDisplayFromDisk(lat: lat, lon: lon) {
-            cachedDisplayData = cached
-            publishLoaded(cached, notice: notice)
+            fullDisplayData = cached
+            publishLoaded(notice: notice)
             return
         }
 
@@ -140,25 +142,29 @@ public final class LocationWeatherViewModel: LocationWeatherViewModelProtocol {
         return display.withTiles(tiles)
     }
 
-    private func publishLoaded(_ display: LocationWeatherDisplayData, notice: UserNotice?) {
+    private func publishLoaded(notice: UserNotice?) {
+        guard let fullDisplayData else { return }
         let hidden = tileOrderStore.loadHiddenKinds()
-        let visibleTiles = display.tiles.filter { tile in
+        let visibleTiles = fullDisplayData.tiles.filter { tile in
             guard let kind = TileKind(rawValue: tile.id) else { return true }
             return !hidden.contains(kind)
         }
-        let detailed = applyLocationDetails(to: display.withTiles(visibleTiles))
+        let detailed = applyLocationDetails(to: fullDisplayData.withTiles(visibleTiles))
         onStateChange?(.loaded(detailed, notice: notice))
     }
 
     private func applyLocationDetails(to display: LocationWeatherDisplayData) -> LocationWeatherDisplayData {
-        guard let locationDetails, !locationDetails.isEmpty else { return display }
-        let altitude = locationDetails.altitudeMeters.map { L10n.Format.altitude(Int($0.rounded())) }
-        return display.withLocationDetails(postalCode: locationDetails.postalCode, altitude: altitude)
+        let postalCode = locationDetails?.postalCode ?? resolvedPostalCode
+        let altitudeMeters = locationDetails?.altitudeMeters ?? barometricAltitudeMeters
+        guard postalCode != nil || altitudeMeters != nil else { return display }
+
+        let altitude = altitudeMeters.map { L10n.Format.altitude(Int($0.rounded())) }
+        return display.mergingLocationDetails(postalCode: postalCode, altitude: altitude)
     }
 
     private func republishCached() {
-        guard let cachedDisplayData else { return }
-        publishLoaded(cachedDisplayData, notice: nil)
+        guard fullDisplayData != nil else { return }
+        publishLoaded(notice: nil)
     }
 
     private func persistToDisk(_ display: LocationWeatherDisplayData) async {

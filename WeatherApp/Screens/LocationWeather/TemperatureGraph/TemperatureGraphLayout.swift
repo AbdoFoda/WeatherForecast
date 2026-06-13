@@ -78,7 +78,7 @@ final class TemperatureGraphLayout: UICollectionViewLayout {
 
     override func layoutAttributesForItem(at indexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
         guard cache.indices.contains(indexPath.item) else { return nil }
-        return cache[indexPath.item]
+        return cache[indexPath.item].copy() as? UICollectionViewLayoutAttributes
     }
 
     override func layoutAttributesForSupplementaryView(

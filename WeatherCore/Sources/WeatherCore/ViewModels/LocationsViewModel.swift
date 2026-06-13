@@ -5,9 +5,9 @@ public final class LocationsViewModel: LocationsViewModelProtocol {
     public var onStateChange: ((LocationsViewState) -> Void)?
     public private(set) var state = LocationsViewState.initial
 
-    private let store: SavedLocationsStore
+    private let store: any SavedLocationsStoring
 
-    public init(store: SavedLocationsStore) {
+    public init(store: any SavedLocationsStoring) {
         self.store = store
     }
 
@@ -30,10 +30,11 @@ public final class LocationsViewModel: LocationsViewModelProtocol {
         persistSelection(id: location.id, savedLocations: savedLocations)
     }
 
-    public func removeLocation(at index: Int) {
-        guard state.savedLocations.indices.contains(index) else { return }
+    public func removeLocation(at indexPath: LocationsIndexPath) {
+        guard state.canEditRow(at: indexPath),
+              state.savedLocations.indices.contains(indexPath.row) else { return }
         var savedLocations = state.savedLocations
-        let removed = savedLocations.remove(at: index)
+        let removed = savedLocations.remove(at: indexPath.row)
         store.saveLocations(savedLocations)
 
         if state.selectedLocationID == removed.id {
@@ -47,13 +48,14 @@ public final class LocationsViewModel: LocationsViewModelProtocol {
         }
     }
 
-    public func moveLocation(from sourceIndex: Int, to destinationIndex: Int) {
-        guard sourceIndex != destinationIndex,
-              state.savedLocations.indices.contains(sourceIndex) else { return }
+    public func moveLocation(from source: LocationsIndexPath, to destination: LocationsIndexPath) {
+        guard state.canMoveRow(at: source),
+              source.row != destination.row,
+              state.savedLocations.indices.contains(source.row) else { return }
 
         var savedLocations = state.savedLocations
-        let item = savedLocations.remove(at: sourceIndex)
-        let clampedDestination = max(0, min(destinationIndex, savedLocations.count))
+        let item = savedLocations.remove(at: source.row)
+        let clampedDestination = max(0, min(destination.row, savedLocations.count))
         savedLocations.insert(item, at: clampedDestination)
         store.saveLocations(savedLocations)
 

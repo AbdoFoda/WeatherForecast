@@ -411,6 +411,16 @@
         }
       }
     },
+    "notice.back_online" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You're back online."
+          }
+        }
+      }
+    },
     "notice.offline" : {
       "localizations" : {
         "en" : {
@@ -436,7 +446,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Elevation"
+            "value" : "Above sea level"
           }
         }
       }

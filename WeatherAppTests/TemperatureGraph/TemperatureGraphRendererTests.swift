@@ -7,9 +7,11 @@ final class TemperatureGraphRendererTests: XCTestCase {
             cellWidth: 88,
             graphTop: 36,
             graphHeight: 120,
-            prevNormalizedY: 0.8,
-            currentNormalizedY: 0.5,
-            nextNormalizedY: 0.3
+            normalizedY: TemperatureGraphRenderer.NeighborNormalizedY(
+                previous: 0.8,
+                current: 0.5,
+                next: 0.3
+            )
         )
 
         XCTAssertFalse(path.isEmpty)

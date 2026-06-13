@@ -32,12 +32,12 @@ final class MapKitLocationSearchService: LocationSearchProviding {
             lon: coordinate.longitude,
             country: placemark.country,
             postalCode: placemark.postalCode,
-            altitude: resolvedAltitude(from: placemark.location)
+            altitude: Self.resolvedAltitude(from: placemark.location)
         )
     }
 
     private static func resolvedAltitude(from location: CLLocation?) -> Double? {
-        guard let location, location.verticalAccuracy > 0, location.altitude != 0 else { return nil }
+        guard let location, location.verticalAccuracy > 0 else { return nil }
         return location.altitude
     }
 }

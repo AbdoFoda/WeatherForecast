@@ -120,7 +120,7 @@ public struct TileLayoutCalculator {
         }
 
         for tile in tiles {
-            let colsNeeded = tile.tileSize == .wide ? 2 : 1
+            let colsNeeded = min(tile.tileSize == .wide ? 2 : 1, columns)
             let rowsNeeded = tile.tileSize == .tall ? 2 : 1
 
             var foundPos = false
@@ -130,10 +130,8 @@ public struct TileLayoutCalculator {
                 for searchCol in 0...(columns - colsNeeded) {
                     var spaceFree = true
                     for r in searchRow..<(searchRow + rowsNeeded) {
-                        for c in searchCol..<(searchCol + colsNeeded) {
-                            if isOccupied(row: r, col: c) {
-                                spaceFree = false
-                            }
+                        for c in searchCol..<(searchCol + colsNeeded) where isOccupied(row: r, col: c) {
+                            spaceFree = false
                         }
                     }
 

@@ -26,16 +26,17 @@ final class LocationCardCell: UITableViewCell {
         contentView.addSubview(shadowContainer)
         shadowContainer.addSubview(card)
 
+        let verticalInset = Metrics.verticalInset
         NSLayoutConstraint.activate([
-            shadowContainer.topAnchor.constraint(equalTo: contentView.topAnchor, constant: Metrics.verticalInset),
-            shadowContainer.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -Metrics.verticalInset),
+            shadowContainer.topAnchor.constraint(equalTo: contentView.topAnchor, constant: verticalInset),
+            shadowContainer.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -verticalInset),
             shadowContainer.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             shadowContainer.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
 
             card.topAnchor.constraint(equalTo: shadowContainer.topAnchor),
             card.bottomAnchor.constraint(equalTo: shadowContainer.bottomAnchor),
             card.leadingAnchor.constraint(equalTo: shadowContainer.leadingAnchor),
-            card.trailingAnchor.constraint(equalTo: shadowContainer.trailingAnchor),
+            card.trailingAnchor.constraint(equalTo: shadowContainer.trailingAnchor)
         ])
     }
 

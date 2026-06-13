@@ -12,30 +12,34 @@ final class WeatherSummaryViewTests: XCTestCase {
         XCTAssertEqual(sut.backgroundColor, .clear)
     }
 
-    func test_compactHorizontalSizeClass_hidesSecondaryDetails() {
-        let sut = TestableWeatherSummaryView(
-            frame: CGRect(x: 0, y: 0, width: 390, height: 300),
-            horizontalSizeClass: .compact
-        )
+    func test_compactSize_showsLocationDetailsButHidesMetricChips() {
+        let sut = WeatherSummaryView(frame: CGRect(x: 0, y: 0, width: 390, height: 300))
         sut.configure(with: sampleDisplayData())
 
         XCTAssertFalse(isEffectivelyHidden(label(containing: "H:20", in: sut), within: sut))
         XCTAssertTrue(isEffectivelyHidden(label(containing: "Feels Like", in: sut), within: sut))
-        XCTAssertTrue(isEffectivelyHidden(label(containing: "10115", in: sut), within: sut))
+        XCTAssertFalse(isEffectivelyHidden(label(containing: "10115", in: sut), within: sut))
+        XCTAssertFalse(isEffectivelyHidden(label(containing: "Above sea level", in: sut), within: sut))
     }
 
-    func test_regularHorizontalSizeClass_showsLocationAndBriefWeather() {
-        let sut = TestableWeatherSummaryView(
-            frame: CGRect(x: 0, y: 0, width: 820, height: 400),
-            horizontalSizeClass: .regular
-        )
+    func test_expandedSize_showsLocationDetailsAndMetricChips() {
+        let sut = WeatherSummaryView(frame: CGRect(x: 0, y: 0, width: 520, height: 400))
+        sut.configure(with: sampleDisplayData())
+
+        XCTAssertFalse(isEffectivelyHidden(label(containing: "10115", in: sut), within: sut))
+        XCTAssertFalse(isEffectivelyHidden(label(containing: "Above sea level", in: sut), within: sut))
+        XCTAssertFalse(isEffectivelyHidden(label(containing: "Feels Like", in: sut), within: sut))
+    }
+
+    func test_regularSize_showsLocationAndBriefWeather() {
+        let sut = WeatherSummaryView(frame: CGRect(x: 0, y: 0, width: 820, height: 400))
         sut.configure(with: sampleDisplayData())
 
         XCTAssertFalse(isEffectivelyHidden(label(containing: "H:20", in: sut), within: sut))
         XCTAssertFalse(isEffectivelyHidden(label(containing: "Feels Like", in: sut), within: sut))
         XCTAssertFalse(isEffectivelyHidden(label(containing: "Air Quality", in: sut), within: sut))
         XCTAssertFalse(isEffectivelyHidden(label(containing: "10115", in: sut), within: sut))
-        XCTAssertFalse(isEffectivelyHidden(label(containing: "Elevation", in: sut), within: sut))
+        XCTAssertFalse(isEffectivelyHidden(label(containing: "Above sea level", in: sut), within: sut))
     }
 
     private func isEffectivelyHidden(_ view: UIView?, within root: UIView) -> Bool {
@@ -85,34 +89,42 @@ final class WeatherSummaryViewTests: XCTestCase {
             cloudCoveragePercent: 20,
             windSpeedMetersPerSecond: 3,
             hourlyItems: [],
-            tiles: [
-                TileDisplayItem(id: TileKind.feelsLike.rawValue, title: "Feels Like", value: "17°", subtitle: nil, tileSize: .standard),
-                TileDisplayItem(id: TileKind.humidity.rawValue, title: "Humidity", value: "50%", subtitle: nil, tileSize: .standard),
-                TileDisplayItem(id: TileKind.pressure.rawValue, title: "Pressure", value: "1013 hPa", subtitle: nil, tileSize: .standard),
-                TileDisplayItem(id: TileKind.air.rawValue, title: "Air Quality", value: "Good", subtitle: "PM2.5 5.0", tileSize: .wide),
-            ],
+            tiles: sampleTiles(),
             postalCode: "10115",
             altitude: "34 m"
         )
     }
-}
 
-private final class TestableWeatherSummaryView: WeatherSummaryView {
-    private let forcedHorizontalSizeClass: UIUserInterfaceSizeClass
-
-    init(frame: CGRect, horizontalSizeClass: UIUserInterfaceSizeClass) {
-        forcedHorizontalSizeClass = horizontalSizeClass
-        super.init(frame: frame)
-    }
-
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
-    override var traitCollection: UITraitCollection {
-        UITraitCollection(traitsFrom: [
-            super.traitCollection,
-            UITraitCollection(horizontalSizeClass: forcedHorizontalSizeClass),
-        ])
+    private func sampleTiles() -> [TileDisplayItem] {
+        [
+            TileDisplayItem(
+                id: TileKind.feelsLike.rawValue,
+                title: "Feels Like",
+                value: "17°",
+                subtitle: nil,
+                tileSize: .standard
+            ),
+            TileDisplayItem(
+                id: TileKind.humidity.rawValue,
+                title: "Humidity",
+                value: "50%",
+                subtitle: nil,
+                tileSize: .standard
+            ),
+            TileDisplayItem(
+                id: TileKind.pressure.rawValue,
+                title: "Pressure",
+                value: "1013 hPa",
+                subtitle: nil,
+                tileSize: .standard
+            ),
+            TileDisplayItem(
+                id: TileKind.air.rawValue,
+                title: "Air Quality",
+                value: "Good",
+                subtitle: "PM2.5 5.0",
+                tileSize: .wide
+            )
+        ]
     }
 }

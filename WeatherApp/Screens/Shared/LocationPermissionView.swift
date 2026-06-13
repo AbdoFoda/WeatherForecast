@@ -52,7 +52,7 @@ final class LocationPermissionView: UIView {
                 equalTo: messageLabel.bottomAnchor,
                 constant: WeatherDesignSystem.Layout.permissionButtonTopSpacing
             ),
-            settingsButton.centerXAnchor.constraint(equalTo: centerXAnchor),
+            settingsButton.centerXAnchor.constraint(equalTo: centerXAnchor)
         ])
     }
 

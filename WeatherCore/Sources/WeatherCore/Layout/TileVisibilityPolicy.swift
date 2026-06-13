@@ -22,7 +22,7 @@ public enum TileVisibilityPolicy {
                 .wind,
                 .pressure,
                 .sun,
-                .air,
+                .air
             ]
         case .regular:
             return [
@@ -33,7 +33,7 @@ public enum TileVisibilityPolicy {
                 .sun,
                 .air,
                 .visibility,
-                .clouds,
+                .clouds
             ]
         case .large:
             return Set(TileKind.allCases)

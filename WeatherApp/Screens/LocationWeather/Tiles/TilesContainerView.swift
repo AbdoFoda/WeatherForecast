@@ -152,6 +152,9 @@ final class TilesContainerView: UIView {
         }
     }
 
+}
+
+extension TilesContainerView {
     @objc private func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
         guard let tileView = gesture.view as? WeatherTileView,
               let sourceIndex = tileViews.firstIndex(of: tileView) else { return }

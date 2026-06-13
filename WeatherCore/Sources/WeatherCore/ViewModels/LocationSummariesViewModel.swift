@@ -6,7 +6,7 @@ public final class LocationSummariesViewModel: LocationSummariesViewModelProtoco
     public private(set) var summaries: [String: LocationCardSummary] = [:]
 
     private let weatherService: WeatherServiceProtocol
-    private var inFlightIDs: Set<String> = []
+    private let taskBag = SummaryTaskBag()
     private var retryBlockedUntil: [String: Date] = [:]
     private let failureRetryInterval: TimeInterval = 60
 
@@ -14,64 +14,54 @@ public final class LocationSummariesViewModel: LocationSummariesViewModelProtoco
         self.weatherService = weatherService
     }
 
+    deinit {
+        taskBag.cancelAll()
+    }
+
     public func refresh(_ requests: [LocationSummaryRequest]) {
         let now = Date()
         let pending = requests.filter { request in
             guard summaries[request.id] == nil else { return false }
-            guard !inFlightIDs.contains(request.id) else { return false }
+            guard !taskBag.contains(request.id) else { return false }
             let nextRetry = retryBlockedUntil[request.id] ?? .distantPast
             return nextRetry <= now
         }
-        guard !pending.isEmpty else { return }
-        fetch(pending, forceRetry: false)
+        pending.forEach { startFetch(for: $0) }
     }
 
     public func reload(_ requests: [LocationSummaryRequest]) {
-        guard !requests.isEmpty else { return }
-        fetch(requests, forceRetry: true)
+        for request in requests {
+            retryBlockedUntil[request.id] = nil
+            startFetch(for: request)
+        }
     }
 
-    private func fetch(_ requests: [LocationSummaryRequest], forceRetry: Bool) {
-        let requested = forceRetry ? requests : requests.filter { !inFlightIDs.contains($0.id) }
-        guard !requested.isEmpty else { return }
-
-        if forceRetry {
-            requested.forEach { retryBlockedUntil[$0.id] = nil }
-        }
-        requested.forEach { inFlightIDs.insert($0.id) }
-
+    private func startFetch(for request: LocationSummaryRequest) {
         let weatherService = self.weatherService
-        let requestedIDs = requested.map(\.id)
-        Task { [weak self] in
-            await withTaskGroup(of: (String, LocationCardSummary?).self) { group in
-                for request in requested {
-                    group.addTask {
-                        do {
-                            let weather = try await weatherService.fetchCurrentWeather(
-                                lat: request.lat,
-                                lon: request.lon
-                            )
-                            return (request.id, WeatherCardSummaryMapper.map(weather: weather))
-                        } catch {
-                            return (request.id, nil)
-                        }
-                    }
-                }
-
-                for await (id, summary) in group {
-                    guard let self else { continue }
-                    self.inFlightIDs.remove(id)
-                    if let summary {
-                        self.retryBlockedUntil[id] = nil
-                        self.summaries[id] = summary
-                        self.onChange?(self.summaries)
-                    } else {
-                        self.retryBlockedUntil[id] = Date().addingTimeInterval(self.failureRetryInterval)
-                    }
-                }
+        let id = request.id
+        let task = Task { [weak self] in
+            let summary: LocationCardSummary?
+            do {
+                let weather = try await weatherService.fetchCurrentWeather(lat: request.lat, lon: request.lon)
+                summary = WeatherCardSummaryMapper.map(weather: weather)
+            } catch {
+                summary = nil
             }
-            guard let self else { return }
-            requestedIDs.forEach { self.inFlightIDs.remove($0) }
+
+            guard !Task.isCancelled, let self else { return }
+            self.complete(id: id, summary: summary)
+        }
+        taskBag.insert(task, for: id)
+    }
+
+    private func complete(id: String, summary: LocationCardSummary?) {
+        taskBag.removeValue(forKey: id)
+        if let summary {
+            retryBlockedUntil[id] = nil
+            summaries[id] = summary
+            onChange?(summaries)
+        } else {
+            retryBlockedUntil[id] = Date().addingTimeInterval(failureRetryInterval)
         }
     }
 }

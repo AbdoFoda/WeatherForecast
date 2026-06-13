@@ -13,14 +13,42 @@ final class OfflineBannerView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
+    var displayedMessage: String? { label.text }
+
     func setMessage(_ message: String) {
         label.text = message
+        accessibilityLabel = message
+    }
+
+    func setHidden(_ hidden: Bool, animated: Bool) {
+        guard animated else {
+            alpha = hidden ? 0 : 1
+            isHidden = hidden
+            return
+        }
+
+        if hidden {
+            UIView.animate(
+                withDuration: WeatherDesignSystem.Banner.transitionDuration,
+                animations: { self.alpha = 0 },
+                completion: { _ in self.isHidden = true }
+            )
+        } else {
+            alpha = 0
+            isHidden = false
+            UIView.animate(withDuration: WeatherDesignSystem.Banner.transitionDuration) {
+                self.alpha = 1
+            }
+        }
     }
 
     private func setup() {
         backgroundColor = WeatherDesignSystem.Banner.backgroundColor
         layer.cornerRadius = WeatherDesignSystem.Banner.cornerRadius
         layer.masksToBounds = true
+        isAccessibilityElement = true
+        accessibilityIdentifier = AccessibilityIdentifier.Banner.offline
+        accessibilityLabel = L10n.Notice.offline
 
         label.text = L10n.Notice.offline
         label.font = WeatherDesignSystem.Typography.preferred(.footnote)
@@ -31,11 +59,12 @@ final class OfflineBannerView: UIView {
         label.translatesAutoresizingMaskIntoConstraints = false
         addSubview(label)
 
+        let horizontalPadding = WeatherDesignSystem.Banner.horizontalPadding
         NSLayoutConstraint.activate([
             label.topAnchor.constraint(equalTo: topAnchor, constant: WeatherDesignSystem.Banner.verticalPadding),
             label.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -WeatherDesignSystem.Banner.verticalPadding),
-            label.leadingAnchor.constraint(equalTo: leadingAnchor, constant: WeatherDesignSystem.Banner.horizontalPadding),
-            label.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -WeatherDesignSystem.Banner.horizontalPadding),
+            label.leadingAnchor.constraint(equalTo: leadingAnchor, constant: horizontalPadding),
+            label.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -horizontalPadding)
         ])
     }
 }

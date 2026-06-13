@@ -33,9 +33,11 @@ public actor WeatherDiskCache {
         if let directoryURL {
             self.directoryURL = directoryURL
         } else {
+            let folderName = "weather-display-cache"
             let caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first
-            self.directoryURL = caches?.appendingPathComponent("weather-display-cache", isDirectory: true)
-                ?? URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("weather-display-cache", isDirectory: true)
+            let fallback = URL(fileURLWithPath: NSTemporaryDirectory())
+            self.directoryURL = caches?.appendingPathComponent(folderName, isDirectory: true)
+                ?? fallback.appendingPathComponent(folderName, isDirectory: true)
         }
     }
 
@@ -81,15 +83,15 @@ public actor WeatherDiskCache {
             options: [.skipsHiddenFiles]
         ), urls.count > maxEntryCount else { return }
 
-        let sorted = urls.sorted { lhs, rhs in
-            let lhsDate = (try? lhs.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate ?? .distantPast
-            let rhsDate = (try? rhs.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate ?? .distantPast
-            return lhsDate < rhsDate
-        }
+        let sorted = urls.sorted { modificationDate(of: $0) < modificationDate(of: $1) }
 
         for url in sorted.prefix(sorted.count - maxEntryCount) {
             try? fileManager.removeItem(at: url)
         }
+    }
+
+    private func modificationDate(of url: URL) -> Date {
+        (try? url.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate ?? .distantPast
     }
 
     public func remove(lat: Double, lon: Double) {
@@ -107,19 +109,23 @@ public actor WeatherDiskCache {
 
     private func ensureDirectoryExists() -> Bool {
         var isDirectory: ObjCBool = false
-        if fileManager.fileExists(atPath: directoryURL.path, isDirectory: &isDirectory), isDirectory.boolValue {
-            return true
+        let exists = fileManager.fileExists(atPath: directoryURL.path, isDirectory: &isDirectory)
+            && isDirectory.boolValue
+
+        if !exists {
+            guard (try? fileManager.createDirectory(at: directoryURL, withIntermediateDirectories: true)) != nil else {
+                return false
+            }
         }
 
-        do {
-            try fileManager.createDirectory(at: directoryURL, withIntermediateDirectories: true)
-            var values = URLResourceValues()
-            values.isExcludedFromBackup = true
-            var mutableURL = directoryURL
-            try? mutableURL.setResourceValues(values)
-            return true
-        } catch {
-            return false
-        }
+        applyBackupExclusion()
+        return true
+    }
+
+    private func applyBackupExclusion() {
+        var values = URLResourceValues()
+        values.isExcludedFromBackup = true
+        var mutableURL = directoryURL
+        try? mutableURL.setResourceValues(values)
     }
 }

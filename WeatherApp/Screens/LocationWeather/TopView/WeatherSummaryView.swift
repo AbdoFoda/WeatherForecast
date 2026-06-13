@@ -1,7 +1,7 @@
 import UIKit
 import WeatherCore
 
-class WeatherSummaryView: UIView {
+final class WeatherSummaryView: UIView {
     private let cityLabel = UILabel()
     private let placeLabel = UILabel()
     private let temperatureLabel = UILabel()
@@ -27,41 +27,73 @@ class WeatherSummaryView: UIView {
         iconLoadTask?.cancel()
     }
 
-    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
-        super.traitCollectionDidChange(previousTraitCollection)
-        if traitCollection.horizontalSizeClass != previousTraitCollection?.horizontalSizeClass {
-            updateAdaptiveLayout()
-        }
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        updateAdaptiveLayout()
     }
 
-    private var isRegularWidth: Bool {
-        traitCollection.horizontalSizeClass == .regular
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        updateAdaptiveLayout()
+    }
+
+    override func didMoveToWindow() {
+        super.didMoveToWindow()
+        updateAdaptiveLayout()
+    }
+
+    private enum AdaptiveLayout {
+        static let minExpandedWidth = WeatherConstants.TileLayout.tabletMinWidth
+        static let minExpandedHeight: CGFloat = 360
+    }
+
+    private var availableWidth: CGFloat {
+        bounds.width > 0 ? bounds.width : (window?.bounds.width ?? 0)
+    }
+
+    private var availableHeight: CGFloat {
+        if let window, window.bounds.height > 0 {
+            return window.bounds.height
+        }
+        return bounds.height
+    }
+
+    private var showsExpandedSummary: Bool {
+        availableWidth >= AdaptiveLayout.minExpandedWidth
+            && availableHeight >= AdaptiveLayout.minExpandedHeight
     }
 
     private func updateAdaptiveLayout() {
-        let regular = isRegularWidth
-        placeLabel.isHidden = regular ? placeLabel.text?.isEmpty ?? true : true
-        detailRow.isHidden = !regular || detailRow.arrangedSubviews.isEmpty
+        placeLabel.isHidden = placeLabel.text?.isEmpty ?? true
+        detailRow.isHidden = !showsExpandedSummary || detailRow.arrangedSubviews.isEmpty
     }
 
     private func setup() {
         backgroundColor = .clear
+        configureLabels()
+        assembleStack()
+    }
 
+    private func configureLabels() {
         cityLabel.font = WeatherDesignSystem.Typography.preferred(.title1)
         cityLabel.adjustsFontForContentSizeCategory = true
         cityLabel.textAlignment = .center
         cityLabel.numberOfLines = 2
+        cityLabel.accessibilityIdentifier = AccessibilityIdentifier.Summary.city
         WeatherSkyReadableText.applyPrimary(to: cityLabel)
 
         placeLabel.font = WeatherDesignSystem.Typography.preferred(.footnote)
         placeLabel.adjustsFontForContentSizeCategory = true
         placeLabel.textAlignment = .center
         placeLabel.numberOfLines = 1
+        placeLabel.adjustsFontSizeToFitWidth = true
+        placeLabel.minimumScaleFactor = 0.7
         WeatherSkyReadableText.applySecondary(to: placeLabel)
 
         temperatureLabel.font = WeatherDesignSystem.Typography.scaledTemperatureDisplay()
         temperatureLabel.adjustsFontForContentSizeCategory = true
         temperatureLabel.textAlignment = .center
+        temperatureLabel.accessibilityIdentifier = AccessibilityIdentifier.Summary.temperature
         WeatherSkyReadableText.applyPrimary(to: temperatureLabel)
 
         descriptionLabel.font = WeatherDesignSystem.Typography.preferred(.title3)
@@ -81,7 +113,9 @@ class WeatherSummaryView: UIView {
         detailRow.spacing = WeatherDesignSystem.Spacing.sm
 
         iconView.contentMode = .scaleAspectFit
+    }
 
+    private func assembleStack() {
         let stack = UIStackView(arrangedSubviews: [
             cityLabel,
             placeLabel,
@@ -89,7 +123,7 @@ class WeatherSummaryView: UIView {
             temperatureLabel,
             descriptionLabel,
             highLowLabel,
-            detailRow,
+            detailRow
         ])
         stack.axis = .vertical
         stack.alignment = .center
@@ -112,7 +146,7 @@ class WeatherSummaryView: UIView {
             iconView.heightAnchor.constraint(equalToConstant: WeatherDesignSystem.Icon.summaryWeather),
             iconView.widthAnchor.constraint(equalToConstant: WeatherDesignSystem.Icon.summaryWeather),
             detailRow.leadingAnchor.constraint(equalTo: stack.leadingAnchor),
-            detailRow.trailingAnchor.constraint(equalTo: stack.trailingAnchor),
+            detailRow.trailingAnchor.constraint(equalTo: stack.trailingAnchor)
         ])
     }
 
@@ -132,9 +166,8 @@ class WeatherSummaryView: UIView {
         guard let iconURL = data.iconURL else { return }
 
         iconLoadTask = Task { @MainActor [weak self] in
-            guard let (imageData, _) = try? await URLSession.shared.data(from: iconURL),
-                  !Task.isCancelled,
-                  let image = UIImage(data: imageData) else { return }
+            let image = await ImageLoader.shared.image(for: iconURL)
+            guard !Task.isCancelled, let image else { return }
             self?.iconView.image = image
         }
     }

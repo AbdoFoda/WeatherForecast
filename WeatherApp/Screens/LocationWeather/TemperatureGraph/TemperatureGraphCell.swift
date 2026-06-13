@@ -148,9 +148,8 @@ final class TemperatureGraphCell: UICollectionViewCell {
         }
 
         imageTask = Task { @MainActor [weak self] in
-            guard let (data, _) = try? await URLSession.shared.data(from: iconURL),
-                  !Task.isCancelled,
-                  let image = UIImage(data: data) else { return }
+            let image = await ImageLoader.shared.image(for: iconURL)
+            guard !Task.isCancelled, let image else { return }
             self?.iconView.image = image
         }
 
@@ -170,9 +169,11 @@ final class TemperatureGraphCell: UICollectionViewCell {
             cellWidth: cellWidth,
             graphTop: top,
             graphHeight: graphHeight,
-            prevNormalizedY: prevNormalizedY,
-            currentNormalizedY: currentNormalizedY,
-            nextNormalizedY: nextNormalizedY
+            normalizedY: TemperatureGraphRenderer.NeighborNormalizedY(
+                previous: prevNormalizedY,
+                current: currentNormalizedY,
+                next: nextNormalizedY
+            )
         )
         curveLayer.frame = bounds
         curveLayer.path = path.cgPath

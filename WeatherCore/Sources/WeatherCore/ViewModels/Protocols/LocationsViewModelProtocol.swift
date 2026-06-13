@@ -7,8 +7,8 @@ public protocol LocationsViewModelProtocol: AnyObject {
 
     func load()
     func addLocation(_ location: LocationModel)
-    func removeLocation(at index: Int)
-    func moveLocation(from sourceIndex: Int, to destinationIndex: Int)
+    func removeLocation(at indexPath: LocationsIndexPath)
+    func moveLocation(from source: LocationsIndexPath, to destination: LocationsIndexPath)
     func selectRow(at indexPath: LocationsIndexPath) -> LocationSelection?
     func selection(for id: String) -> LocationSelection
 

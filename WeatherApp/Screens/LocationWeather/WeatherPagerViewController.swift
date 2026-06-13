@@ -3,6 +3,7 @@ import WeatherCore
 
 final class WeatherPagerViewController: UIViewController {
     private let locationsViewModel: LocationsViewModelProtocol
+    private let deviceLocationManager: DeviceLocationManaging
     private let makeWeatherViewModel: () -> LocationWeatherViewModelProtocol
 
     private let pageViewController = UIPageViewController(
@@ -19,9 +20,11 @@ final class WeatherPagerViewController: UIViewController {
 
     init(
         locationsViewModel: LocationsViewModelProtocol,
+        deviceLocationManager: DeviceLocationManaging,
         makeWeatherViewModel: @escaping () -> LocationWeatherViewModelProtocol
     ) {
         self.locationsViewModel = locationsViewModel
+        self.deviceLocationManager = deviceLocationManager
         self.makeWeatherViewModel = makeWeatherViewModel
         super.init(nibName: nil, bundle: nil)
     }
@@ -93,7 +96,7 @@ final class WeatherPagerViewController: UIViewController {
             pageViewController.view.topAnchor.constraint(equalTo: view.topAnchor),
             pageViewController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             pageViewController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            pageViewController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            pageViewController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])
         pageViewController.didMove(toParent: self)
     }
@@ -108,7 +111,7 @@ final class WeatherPagerViewController: UIViewController {
         view.addSubview(pageControl)
         NSLayoutConstraint.activate([
             pageControl.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            pageControl.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            pageControl.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
         ])
     }
 
@@ -150,9 +153,16 @@ final class WeatherPagerViewController: UIViewController {
         let controller: LocationWeatherViewController
         switch selection {
         case .current:
-            controller = LocationWeatherViewController(viewModel: makeWeatherViewModel(), locationSource: .device)
+            controller = LocationWeatherViewController(
+                viewModel: makeWeatherViewModel(),
+                locationSource: .device,
+                deviceLocationManager: deviceLocationManager
+            )
         case .saved(let location):
-            controller = LocationWeatherViewController(viewModel: makeWeatherViewModel(), locationSource: .saved(location))
+            controller = LocationWeatherViewController(
+                viewModel: makeWeatherViewModel(),
+                locationSource: .saved(location)
+            )
         }
         controller.onTileDragStateChanged = { [weak self] isDragging in
             self?.setPagingEnabled(!isDragging)

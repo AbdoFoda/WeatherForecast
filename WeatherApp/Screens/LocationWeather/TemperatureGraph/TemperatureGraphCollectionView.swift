@@ -65,7 +65,7 @@ final class TemperatureGraphCollectionView: UIView {
                 equalTo: trailingAnchor,
                 constant: -WeatherDesignSystem.Layout.screenHorizontalInset
             ),
-            collectionView.bottomAnchor.constraint(equalTo: bottomAnchor),
+            collectionView.bottomAnchor.constraint(equalTo: bottomAnchor)
         ])
     }
 
@@ -145,4 +145,3 @@ extension TemperatureGraphCollectionView: UICollectionViewDataSource {
         return header
     }
 }
-

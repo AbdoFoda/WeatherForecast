@@ -6,7 +6,7 @@ final class TileOrderApplierTests: XCTestCase {
         let tiles = [
             makeTile(.humidity),
             makeTile(.feelsLike),
-            makeTile(.wind),
+            makeTile(.wind)
         ]
         let order: [TileKind] = [.wind, .feelsLike, .humidity]
 
@@ -26,7 +26,7 @@ final class TileOrderApplierTests: XCTestCase {
 
     func test_reorder_movingVisibleTile_preservesHiddenPositions() {
         let order: [TileKind] = [
-            .feelsLike, .humidity, .wind, .pressure, .visibility, .sun, .air, .clouds, .fiveDay, .precipitation,
+            .feelsLike, .humidity, .wind, .pressure, .visibility, .sun, .air, .clouds, .fiveDay, .precipitation
         ]
         let visible: [TileKind] = [.feelsLike, .humidity, .wind, .pressure, .sun, .air]
 

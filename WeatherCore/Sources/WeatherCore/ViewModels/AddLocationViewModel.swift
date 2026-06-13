@@ -48,7 +48,12 @@ public final class AddLocationViewModel: AddLocationViewModelProtocol {
     }
 
     private func update(query: String, results: [LocationModel], isSearching: Bool, searchFailed: Bool = false) {
-        state = AddLocationViewState(query: query, results: results, isSearching: isSearching, searchFailed: searchFailed)
+        state = AddLocationViewState(
+            query: query,
+            results: results,
+            isSearching: isSearching,
+            searchFailed: searchFailed
+        )
         onStateChange?(state)
     }
 }

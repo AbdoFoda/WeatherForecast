@@ -126,8 +126,10 @@ final class WeatherCloudParallaxView: UIView {
             layerPhase: WeatherBackgroundConstants.Cloud.frontLayerPhase
         )
 
-        backBand.alpha = configuredOpacity * WeatherBackgroundCloudPolicy.bandOpacityMultiplier(wide: isWideLayout, layer: .back)
-        frontBand.alpha = configuredOpacity * WeatherBackgroundCloudPolicy.bandOpacityMultiplier(wide: isWideLayout, layer: .front)
+        backBand.alpha = configuredOpacity
+            * WeatherBackgroundCloudPolicy.bandOpacityMultiplier(wide: isWideLayout, layer: .back)
+        frontBand.alpha = configuredOpacity
+            * WeatherBackgroundCloudPolicy.bandOpacityMultiplier(wide: isWideLayout, layer: .front)
     }
 
     private func applyMotionIfNeeded() {

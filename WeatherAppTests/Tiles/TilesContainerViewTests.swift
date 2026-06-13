@@ -8,7 +8,7 @@ final class TilesContainerViewTests: XCTestCase {
         let sut = TilesContainerView(frame: CGRect(x: 0, y: 0, width: 390, height: 400))
         let tiles = [
             TileDisplayItem(id: "a", title: "Humidity", value: "50%", subtitle: nil, tileSize: .standard),
-            TileDisplayItem(id: "b", title: "Wind", value: "3 m/s", subtitle: "N", tileSize: .wide),
+            TileDisplayItem(id: "b", title: "Wind", value: "3 m/s", subtitle: "N", tileSize: .wide)
         ]
 
         sut.configure(with: tiles)
@@ -21,7 +21,7 @@ final class TilesContainerViewTests: XCTestCase {
         let sut = TilesContainerView(frame: CGRect(x: 0, y: 0, width: 390, height: 400))
         sut.configure(with: [
             TileDisplayItem(id: "a", title: "A", value: "1", subtitle: nil, tileSize: .standard),
-            TileDisplayItem(id: "b", title: "B", value: "2", subtitle: nil, tileSize: .standard),
+            TileDisplayItem(id: "b", title: "B", value: "2", subtitle: nil, tileSize: .standard)
         ])
 
         sut.layoutIfNeeded()

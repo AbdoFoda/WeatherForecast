@@ -15,7 +15,16 @@ final class WeatherCardSummaryMapperTests: XCTestCase {
         CurrentWeatherResponse(
             coord: Coordinate(lat: 52.52, lon: 13.40),
             weather: [WeatherCondition(id: conditionID, main: "Clear", description: description, icon: icon)],
-            main: MainWeather(temp: temp, feelsLike: temp, tempMin: tempMin, tempMax: tempMax, pressure: 1013, seaLevel: nil, grndLevel: nil, humidity: 50),
+            main: MainWeather(
+                temp: temp,
+                feelsLike: temp,
+                tempMin: tempMin,
+                tempMax: tempMax,
+                pressure: 1013,
+                seaLevel: nil,
+                grndLevel: nil,
+                humidity: 50
+            ),
             visibility: nil,
             wind: nil,
             clouds: nil,
@@ -70,7 +79,14 @@ final class WeatherCardSummaryMapperTests: XCTestCase {
     }
 
     func test_map_localTimeUsesTimezoneOffset() {
-        let response = makeResponse(temp: 20, tempMin: 15, tempMax: 25, description: "clear sky", dt: 1_700_000_000, timezone: 3600)
+        let response = makeResponse(
+            temp: 20,
+            tempMin: 15,
+            tempMax: 25,
+            description: "clear sky",
+            dt: 1_700_000_000,
+            timezone: 3600
+        )
 
         let summary = WeatherCardSummaryMapper.map(weather: response)
 
@@ -81,7 +97,14 @@ final class WeatherCardSummaryMapperTests: XCTestCase {
     }
 
     func test_map_resolvesSceneFromResponse() {
-        let response = makeResponse(temp: 20, tempMin: 15, tempMax: 25, description: "clear sky", conditionID: 800, icon: "01d")
+        let response = makeResponse(
+            temp: 20,
+            tempMin: 15,
+            tempMax: 25,
+            description: "clear sky",
+            conditionID: 800,
+            icon: "01d"
+        )
 
         let summary = WeatherCardSummaryMapper.map(weather: response)
 

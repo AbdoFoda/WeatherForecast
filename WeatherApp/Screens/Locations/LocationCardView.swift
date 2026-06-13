@@ -47,7 +47,7 @@ final class LocationCardView: UIView {
 
         scrimLayer.colors = [
             UIColor.clear.cgColor,
-            UIColor.black.withAlphaComponent(0.22).cgColor,
+            UIColor.black.withAlphaComponent(0.22).cgColor
         ]
         scrimLayer.locations = [0.45, 1.0]
         layer.addSublayer(scrimLayer)
@@ -137,7 +137,7 @@ final class LocationCardView: UIView {
             content.leadingAnchor.constraint(equalTo: leadingAnchor, constant: Metrics.padding),
             content.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -Metrics.padding),
 
-            locationGlyph.widthAnchor.constraint(equalToConstant: 14),
+            locationGlyph.widthAnchor.constraint(equalToConstant: 14)
         ])
 
         addParallax(to: content, amount: Metrics.parallax)

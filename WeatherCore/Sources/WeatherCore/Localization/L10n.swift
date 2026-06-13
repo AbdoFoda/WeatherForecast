@@ -31,7 +31,7 @@ public enum L10n {
             tr("compass.n"), tr("compass.nne"), tr("compass.ne"), tr("compass.ene"),
             tr("compass.e"), tr("compass.ese"), tr("compass.se"), tr("compass.sse"),
             tr("compass.s"), tr("compass.ssw"), tr("compass.sw"), tr("compass.wsw"),
-            tr("compass.w"), tr("compass.wnw"), tr("compass.nw"), tr("compass.nnw"),
+            tr("compass.w"), tr("compass.wnw"), tr("compass.nw"), tr("compass.nnw")
         ]
     }
 
@@ -89,6 +89,7 @@ public enum L10n {
     public enum Notice {
         public static var offline: String { tr("notice.offline") }
         public static var unavailable: String { tr("notice.unavailable") }
+        public static var backOnline: String { tr("notice.back_online") }
     }
 
     public enum Locations {

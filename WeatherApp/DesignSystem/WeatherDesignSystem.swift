@@ -121,5 +121,7 @@ enum WeatherDesignSystem {
         static let verticalPadding = Spacing.md
         static let horizontalPadding = Spacing.lg
         static let backgroundColor: UIColor = .secondarySystemBackground
+        static let transitionDuration: TimeInterval = 0.3
+        static let backOnlineDisplayDuration: TimeInterval = 2.5
     }
 }

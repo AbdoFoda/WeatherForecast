@@ -1,6 +1,6 @@
 import Foundation
 
-public enum WeatherError: Error, Sendable {
+public enum WeatherError: Error, Equatable, Sendable {
     case offline
     case transport
     case invalidURL

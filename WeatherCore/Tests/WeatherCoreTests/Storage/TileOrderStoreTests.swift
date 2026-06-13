@@ -16,7 +16,10 @@ final class TileOrderStoreTests: XCTestCase {
 
     func test_saveAndLoadOrder_roundTrip() {
         let sut = TileOrderStore(defaultsSuiteName: suiteName)
-        let custom: [TileKind] = [.wind, .humidity, .feelsLike, .pressure, .visibility, .sun, .air, .clouds, .fiveDay, .precipitation]
+        let custom: [TileKind] = [
+            .wind, .humidity, .feelsLike, .pressure, .visibility,
+            .sun, .air, .clouds, .fiveDay, .precipitation
+        ]
 
         sut.saveOrder(custom)
 

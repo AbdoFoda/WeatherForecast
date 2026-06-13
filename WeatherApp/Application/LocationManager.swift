@@ -1,7 +1,7 @@
 import CoreLocation
 
 final class LocationManager: NSObject, CLLocationManagerDelegate {
-    weak var delegate: LocationManagerDelegate?
+    private let observers = NSHashTable<AnyObject>.weakObjects()
     private let coreLocationManager = CLLocationManager()
     private var didDeliverLocation = false
     private var isRequestingLocation = false
@@ -10,6 +10,22 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
         super.init()
         coreLocationManager.delegate = self
         coreLocationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters
+    }
+
+    func addObserver(_ observer: LocationManagerDelegate) {
+        observers.add(observer)
+    }
+
+    func removeObserver(_ observer: LocationManagerDelegate) {
+        observers.remove(observer)
+    }
+
+    private func notifyObservers(_ body: @escaping @MainActor (LocationManager, LocationManagerDelegate) -> Void) {
+        let current = observers.allObjects.compactMap { $0 as? LocationManagerDelegate }
+        notifyOnMain { [weak self] in
+            guard let self else { return }
+            current.forEach { body(self, $0) }
+        }
     }
 
     func requestLocation() {
@@ -21,9 +37,8 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
         case .authorizedWhenInUse, .authorizedAlways:
             beginLocationUpdates()
         case .denied, .restricted:
-            notifyOnMain { [weak self] in
-                guard let self else { return }
-                self.delegate?.locationManagerDidDenyPermission(self)
+            notifyObservers { manager, observer in
+                observer.locationManagerDidDenyPermission(manager)
             }
         @unknown default:
             break
@@ -41,9 +56,8 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
         case .authorizedWhenInUse, .authorizedAlways:
             beginLocationUpdates()
         case .denied, .restricted:
-            notifyOnMain { [weak self] in
-                guard let self else { return }
-                self.delegate?.locationManagerDidDenyPermission(self)
+            notifyObservers { manager, observer in
+                observer.locationManagerDidDenyPermission(manager)
             }
         default:
             break
@@ -57,16 +71,14 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
               location.horizontalAccuracy <= 5_000 else { return }
 
         didDeliverLocation = true
-        notifyOnMain { [weak self] in
-            guard let self else { return }
-            self.delegate?.locationManager(self, didUpdateLocation: location)
+        notifyObservers { manager, observer in
+            observer.locationManager(manager, didUpdateLocation: location)
         }
     }
 
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        notifyOnMain { [weak self] in
-            guard let self else { return }
-            self.delegate?.locationManager(self, didFailWithError: error)
+        notifyObservers { manager, observer in
+            observer.locationManager(manager, didFailWithError: error)
         }
     }
 

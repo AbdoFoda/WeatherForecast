@@ -67,7 +67,13 @@ final class WeatherDiskCacheTests: XCTestCase {
             windSpeedMetersPerSecond: 3,
             hourlyItems: [],
             tiles: [
-                TileDisplayItem(id: TileKind.humidity.rawValue, title: "Humidity", value: "50%", subtitle: nil, tileSize: .standard)
+                TileDisplayItem(
+                    id: TileKind.humidity.rawValue,
+                    title: "Humidity",
+                    value: "50%",
+                    subtitle: nil,
+                    tileSize: .standard
+                )
             ]
         )
     }

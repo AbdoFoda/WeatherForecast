@@ -47,7 +47,7 @@ final class LocationsViewController: UIViewController {
         view.backgroundColor = .systemGroupedBackground
         backgroundGradient.colors = [
             UIColor(red: 0.93, green: 0.95, blue: 0.99, alpha: 1).cgColor,
-            UIColor(red: 0.84, green: 0.89, blue: 0.96, alpha: 1).cgColor,
+            UIColor(red: 0.84, green: 0.89, blue: 0.96, alpha: 1).cgColor
         ]
         backgroundGradient.startPoint = CGPoint(x: 0.5, y: 0)
         backgroundGradient.endPoint = CGPoint(x: 0.5, y: 1)
@@ -60,11 +60,13 @@ final class LocationsViewController: UIViewController {
     }
 
     private func configureAddButton() {
-        navigationItem.rightBarButtonItem = UIBarButtonItem(
+        let addButton = UIBarButtonItem(
             barButtonSystemItem: .add,
             target: self,
             action: #selector(addTapped)
         )
+        addButton.accessibilityIdentifier = AccessibilityIdentifier.Locations.addButton
+        navigationItem.rightBarButtonItem = addButton
     }
 
     @objc private func addTapped() {
@@ -73,6 +75,7 @@ final class LocationsViewController: UIViewController {
 
     private func configureTableView() {
         tableView.translatesAutoresizingMaskIntoConstraints = false
+        tableView.accessibilityIdentifier = AccessibilityIdentifier.Locations.table
         tableView.dataSource = self
         tableView.delegate = self
         tableView.backgroundColor = .clear
@@ -90,7 +93,7 @@ final class LocationsViewController: UIViewController {
             tableView.topAnchor.constraint(equalTo: view.topAnchor),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
     }
 
@@ -147,8 +150,18 @@ extension LocationsViewController: UITableViewDataSource {
         if let cardCell = cell as? LocationCardCell,
            let row = state.row(at: indexPath.locationsIndexPath) {
             cardCell.configure(with: cardModel(for: row))
+            cardCell.accessibilityIdentifier = accessibilityIdentifier(for: row)
         }
         return cell
+    }
+
+    private func accessibilityIdentifier(for row: LocationsRow) -> String {
+        switch row {
+        case .currentLocation:
+            return AccessibilityIdentifier.Locations.currentCell
+        case .saved(let location, _):
+            return AccessibilityIdentifier.Locations.cell(id: location.id)
+        }
     }
 
     func tableView(
@@ -158,7 +171,7 @@ extension LocationsViewController: UITableViewDataSource {
     ) {
         guard editingStyle == .delete else { return }
         guard state.canEditRow(at: indexPath.locationsIndexPath) else { return }
-        viewModel.removeLocation(at: indexPath.row)
+        viewModel.removeLocation(at: indexPath.locationsIndexPath)
     }
 
     func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
@@ -170,7 +183,7 @@ extension LocationsViewController: UITableViewDataSource {
         moveRowAt sourceIndexPath: IndexPath,
         to destinationIndexPath: IndexPath
     ) {
-        viewModel.moveLocation(from: sourceIndexPath.row, to: destinationIndexPath.row)
+        viewModel.moveLocation(from: sourceIndexPath.locationsIndexPath, to: destinationIndexPath.locationsIndexPath)
     }
 
     func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {

@@ -4,13 +4,13 @@ import XCTest
 final class WeatherServiceTests: XCTestCase {
     private var mockClient: MockHTTPClient!
     private var sut: WeatherService!
-    
+
     override func setUp() {
         super.setUp()
         mockClient = MockHTTPClient()
         sut = WeatherService(client: mockClient)
     }
-    
+
     func test_fetchCurrentWeather_decodesCorrectly() async throws {
         let json = """
         {
@@ -38,10 +38,9 @@ final class WeatherServiceTests: XCTestCase {
           "name": "Berlin",
           "cod": 200
         }
-        """.data(using: .utf8)!
-        
-        mockClient.result = .success(json)
-        
+        """
+        mockClient.result = .success(Data(json.utf8))
+
         let response = try await sut.fetchCurrentWeather(lat: 52.52, lon: 13.405)
         XCTAssertEqual(response.name, "Berlin")
         XCTAssertEqual(response.main.temp, 18.5)

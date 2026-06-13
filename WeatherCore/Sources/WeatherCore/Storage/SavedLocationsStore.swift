@@ -1,6 +1,6 @@
 import Foundation
 
-public struct SavedLocationsStore: Sendable {
+public struct SavedLocationsStore: SavedLocationsStoring, Sendable {
     private let defaultsSuiteName: String?
     private let locationsKey: String
     private let selectionKey: String

@@ -1,40 +1,6 @@
 import XCTest
 @testable import WeatherCore
 
-final class MockWeatherService: WeatherServiceProtocol, @unchecked Sendable {
-    var shouldFail = false
-    var failure: Error = WeatherError.invalidResponse
-
-    func fetchCurrentWeather(lat: Double, lon: Double) async throws -> CurrentWeatherResponse {
-        if shouldFail { throw failure }
-        return CurrentWeatherResponse(
-            coord: Coordinate(lat: lat, lon: lon),
-            weather: [],
-            main: MainWeather(temp: 20, feelsLike: 20, tempMin: 15, tempMax: 25, pressure: 1013, seaLevel: nil, grndLevel: nil, humidity: 50),
-            visibility: nil,
-            wind: nil,
-            clouds: nil,
-            rain: nil,
-            snow: nil,
-            dt: 0,
-            sys: Sys(type: nil, id: nil, country: "DE", sunrise: 0, sunset: 0),
-            timezone: 0,
-            id: 1,
-            name: "Mock City"
-        )
-    }
-
-    func fetchForecast(lat: Double, lon: Double) async throws -> ForecastResponse {
-        if shouldFail { throw failure }
-        return ForecastResponse(cod: "200", message: nil, cnt: 0, list: [], city: ForecastCity(id: 1, name: "Mock City", coord: Coordinate(lat: lat, lon: lon), country: "DE", population: nil, timezone: 0, sunrise: nil, sunset: nil))
-    }
-
-    func fetchAirPollution(lat: Double, lon: Double) async throws -> AirPollutionResponse {
-        if shouldFail { throw failure }
-        return AirPollutionResponse(coord: Coordinate(lat: lat, lon: lon), list: [])
-    }
-}
-
 @MainActor
 final class LocationWeatherViewModelTests: XCTestCase {
     private var cacheDirectory: URL!
@@ -163,7 +129,9 @@ final class LocationWeatherViewModelTests: XCTestCase {
         await sut.refresh(lat: 0, lon: 0)
         await fulfillment(of: [refreshExpectation], timeout: 1.0)
     }
+}
 
+extension LocationWeatherViewModelTests {
     func test_saveTileOrder_persistsWithoutRepublishingLoadedState() async {
         let suiteName = "LocationWeatherViewModelTileOrderTests"
         UserDefaults(suiteName: suiteName)?.removePersistentDomain(forName: suiteName)
@@ -202,6 +170,81 @@ final class LocationWeatherViewModelTests: XCTestCase {
 
         XCTAssertEqual(publishCount, 0)
         XCTAssertEqual(store.loadOrder().prefix(customOrder.count).map { $0 }, customOrder)
+    }
+
+    func test_saveTileOrder_writesToInjectedTileOrderStore() async {
+        let mockService = MockWeatherService()
+        let mockStore = MockTileOrderStore()
+        let sut = LocationWeatherViewModel(
+            weatherService: mockService,
+            tileOrderStore: mockStore,
+            diskCache: WeatherDiskCache(directoryURL: cacheDirectory)
+        )
+
+        let customOrder: [TileKind] = [.wind, .humidity, .feelsLike]
+        sut.saveTileOrder(customOrder)
+
+        XCTAssertEqual(mockStore.savedOrders.count, 1)
+        XCTAssertEqual(Array(mockStore.order.prefix(customOrder.count)), customOrder)
+    }
+
+    func test_hideTile_writesHiddenKindsToInjectedStore() async {
+        let mockService = MockWeatherService()
+        let mockStore = MockTileOrderStore()
+        let sut = LocationWeatherViewModel(
+            weatherService: mockService,
+            tileOrderStore: mockStore,
+            diskCache: WeatherDiskCache(directoryURL: cacheDirectory)
+        )
+
+        sut.hideTile(.humidity)
+
+        XCTAssertEqual(mockStore.hidden, [.humidity])
+        XCTAssertTrue(sut.hasHiddenTiles)
+    }
+
+    func test_showAllTiles_restoresPreviouslyHiddenTile() async {
+        let suiteName = "LocationWeatherViewModelRestoreTests"
+        UserDefaults(suiteName: suiteName)?.removePersistentDomain(forName: suiteName)
+
+        let mockService = MockWeatherService()
+        let store = TileOrderStore(defaultsSuiteName: suiteName)
+        let sut = LocationWeatherViewModel(
+            weatherService: mockService,
+            tileOrderStore: store,
+            diskCache: WeatherDiskCache(directoryURL: cacheDirectory)
+        )
+
+        let loadExpectation = XCTestExpectation(description: "Wait for initial load")
+        var loadedTiles: [TileDisplayItem] = []
+        sut.onStateChange = { state in
+            if case .loaded(let display, _) = state {
+                loadedTiles = display.tiles
+                loadExpectation.fulfill()
+            }
+        }
+        await sut.loadWeather(lat: 0, lon: 0)
+        await fulfillment(of: [loadExpectation], timeout: 1.0)
+
+        let fullCount = loadedTiles.count
+        guard let kindToHide = loadedTiles.compactMap({ TileKind(rawValue: $0.id) }).first else {
+            return XCTFail("Expected at least one tile to hide")
+        }
+
+        var tilesAfterHide: [TileDisplayItem] = []
+        sut.onStateChange = { state in
+            if case .loaded(let display, _) = state { tilesAfterHide = display.tiles }
+        }
+        sut.hideTile(kindToHide)
+        XCTAssertEqual(tilesAfterHide.count, fullCount - 1)
+
+        var tilesAfterShowAll: [TileDisplayItem] = []
+        sut.onStateChange = { state in
+            if case .loaded(let display, _) = state { tilesAfterShowAll = display.tiles }
+        }
+        sut.showAllTiles()
+        XCTAssertEqual(tilesAfterShowAll.count, fullCount)
+        XCTAssertTrue(tilesAfterShowAll.contains { $0.id == kindToHide.rawValue })
     }
 
     func test_loadWeather_showsDiskCacheBeforeFetchCompletes() async {
@@ -254,5 +297,44 @@ final class LocationWeatherViewModelTests: XCTestCase {
 
         await fulfillment(of: [expectation], timeout: 1.0)
         XCTAssertEqual(firstLoadedCity, "Cached City")
+    }
+
+    func test_loadWeather_appliesBarometricAltitudeWhenLocationDetailsMissing() async {
+        let mockService = MockWeatherService()
+        let sut = makeViewModel(service: mockService)
+
+        var loadedAltitude: String?
+        let expectation = XCTestExpectation(description: "Wait for loaded state")
+        sut.onStateChange = { state in
+            guard case .loaded(let display, nil) = state else { return }
+            loadedAltitude = display.altitude
+            expectation.fulfill()
+        }
+
+        await sut.loadWeather(lat: 52.52, lon: 13.405)
+        await fulfillment(of: [expectation], timeout: 1.0)
+
+        XCTAssertNotNil(loadedAltitude)
+        XCTAssertTrue(loadedAltitude?.contains("m") == true)
+    }
+
+    func test_loadWeather_keepsPostalCodeWhenBarometricAltitudeApplied() async {
+        let mockService = MockWeatherService()
+        let sut = makeViewModel(service: mockService)
+        sut.updateLocationDetails(LocationDetails(postalCode: "10115", altitudeMeters: nil))
+
+        var loadedDisplay: LocationWeatherDisplayData?
+        let expectation = XCTestExpectation(description: "Wait for loaded state")
+        sut.onStateChange = { state in
+            guard case .loaded(let display, nil) = state else { return }
+            loadedDisplay = display
+            expectation.fulfill()
+        }
+
+        await sut.loadWeather(lat: 52.52, lon: 13.405)
+        await fulfillment(of: [expectation], timeout: 1.0)
+
+        XCTAssertEqual(loadedDisplay?.postalCode, "10115")
+        XCTAssertNotNil(loadedDisplay?.altitude)
     }
 }

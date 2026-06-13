@@ -10,7 +10,7 @@ let package = Package(
     products: [
         .library(
             name: "WeatherCore",
-            targets: ["WeatherCore"]),
+            targets: ["WeatherCore"])
     ],
     targets: [
         .target(
@@ -19,7 +19,7 @@ let package = Package(
             resources: [.process("Resources")]),
         .testTarget(
             name: "WeatherCoreTests",
-            dependencies: ["WeatherCore"]),
+            dependencies: ["WeatherCore"])
     ],
     swiftLanguageModes: [.v5]
 )

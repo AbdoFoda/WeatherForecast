@@ -3,23 +3,6 @@ import WeatherCore
 @testable import WeatherApp
 
 @MainActor
-final class MockLocationWeatherViewModel: LocationWeatherViewModelProtocol {
-    var onStateChange: ((LocationWeatherViewState) -> Void)?
-    var hasHiddenTiles = false
-
-    func loadWeather(lat: Double, lon: Double) async {}
-    func refresh(lat: Double, lon: Double) async {}
-    func updateLocationDetails(_ details: LocationDetails) {}
-    func saveTileOrder(_ order: [TileKind]) {}
-    func hideTile(_ kind: TileKind) {}
-    func showAllTiles() {}
-
-    func emit(_ state: LocationWeatherViewState) {
-        onStateChange?(state)
-    }
-}
-
-@MainActor
 final class LocationWeatherViewControllerTests: XCTestCase {
     func test_loadedState_showsContentAndHidesOfflineBanner() {
         let viewModel = MockLocationWeatherViewModel()
@@ -77,6 +60,69 @@ final class LocationWeatherViewControllerTests: XCTestCase {
 
         let background = sut.view.subviews.compactMap { $0 as? WeatherBackgroundView }.first
         XCTAssertTrue(background?.hasActiveParticleEmitter ?? false)
+    }
+
+    func test_recoveringFromOfflineNotice_showsBackOnlineBanner() {
+        let viewModel = MockLocationWeatherViewModel()
+        let sut = LocationWeatherViewController(viewModel: viewModel)
+        sut.loadViewIfNeeded()
+
+        viewModel.emit(.loaded(sampleDisplayData(), notice: .offline))
+        viewModel.emit(.loaded(sampleDisplayData(), notice: nil))
+
+        let banner = sut.view.subviews.compactMap { $0 as? OfflineBannerView }.first
+        XCTAssertEqual(banner?.isHidden, false)
+        XCTAssertEqual(banner?.displayedMessage, L10n.Notice.backOnline)
+    }
+
+    func test_loadedWithoutPriorNotice_doesNotShowBackOnlineBanner() {
+        let viewModel = MockLocationWeatherViewModel()
+        let sut = LocationWeatherViewController(viewModel: viewModel)
+        sut.loadViewIfNeeded()
+
+        viewModel.emit(.loaded(sampleDisplayData(), notice: nil))
+
+        let banner = sut.view.subviews.compactMap { $0 as? OfflineBannerView }.first
+        XCTAssertEqual(banner?.isHidden, true)
+    }
+
+    func test_connectionRestored_whileNoticeShowing_requestsRefresh() {
+        let viewModel = MockLocationWeatherViewModel()
+        let deviceManager = MockDeviceLocationManager()
+        let monitor = MockNetworkReachabilityMonitor()
+        let sut = LocationWeatherViewController(
+            viewModel: viewModel,
+            locationSource: .device,
+            deviceLocationManager: deviceManager,
+            reachabilityMonitor: monitor
+        )
+        sut.loadViewIfNeeded()
+
+        viewModel.emit(.loaded(sampleDisplayData(), notice: .offline))
+        let requestsBeforeReconnect = deviceManager.requestLocationCallCount
+        monitor.simulateConnectionRestored()
+
+        XCTAssertEqual(deviceManager.requestLocationCallCount, requestsBeforeReconnect + 1)
+        XCTAssertEqual(monitor.startCount, 1)
+    }
+
+    func test_connectionRestored_withoutNotice_doesNotRequestRefresh() {
+        let viewModel = MockLocationWeatherViewModel()
+        let deviceManager = MockDeviceLocationManager()
+        let monitor = MockNetworkReachabilityMonitor()
+        let sut = LocationWeatherViewController(
+            viewModel: viewModel,
+            locationSource: .device,
+            deviceLocationManager: deviceManager,
+            reachabilityMonitor: monitor
+        )
+        sut.loadViewIfNeeded()
+
+        viewModel.emit(.loaded(sampleDisplayData(), notice: nil))
+        let requestsBeforeReconnect = deviceManager.requestLocationCallCount
+        monitor.simulateConnectionRestored()
+
+        XCTAssertEqual(deviceManager.requestLocationCallCount, requestsBeforeReconnect)
     }
 
     func test_unavailable_hidesScrollContent() {

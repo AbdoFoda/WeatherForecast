@@ -45,22 +45,25 @@ final class WeatherTileView: UIView {
         super.layoutSubviews()
         glassView.frame = bounds
         let padding = WeatherDesignSystem.Tile.padding
-        let width = bounds.width - padding * 2
+        let width = max(0, bounds.width - padding * 2)
+        let fitting = CGSize(width: width, height: .greatestFiniteMagnitude)
 
-        titleLabel.frame = CGRect(x: padding, y: padding, width: width, height: WeatherDesignSystem.Tile.titleHeight)
+        let titleHeight = ceil(titleLabel.sizeThatFits(fitting).height)
+        titleLabel.frame = CGRect(x: padding, y: padding, width: width, height: titleHeight)
+
+        let valueHeight = ceil(valueLabel.sizeThatFits(fitting).height)
         valueLabel.frame = CGRect(
             x: padding,
             y: titleLabel.frame.maxY + WeatherDesignSystem.Tile.valueTopSpacing,
             width: width,
-            height: WeatherDesignSystem.Tile.valueHeight
+            height: valueHeight
         )
 
-        let subtitleHeight = subtitleLabel.text?.isEmpty == false
-            ? WeatherDesignSystem.Tile.subtitleHeight
-            : 0
+        let hasSubtitle = subtitleLabel.text?.isEmpty == false
+        let subtitleHeight = hasSubtitle ? ceil(subtitleLabel.sizeThatFits(fitting).height) : 0
         subtitleLabel.frame = CGRect(
             x: padding,
-            y: bounds.height - padding - subtitleHeight,
+            y: max(valueLabel.frame.maxY + WeatherDesignSystem.Spacing.xxs, bounds.height - padding - subtitleHeight),
             width: width,
             height: subtitleHeight
         )

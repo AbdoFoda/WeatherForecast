@@ -5,13 +5,13 @@ import CoreGraphics
 final class TemperatureGraphGeometryTests: XCTestCase {
     func test_hourlyForecastGrouper_normalisesYAxisCorrectly() {
         let list = [
-            HourlyForecastItem(dt: 1000, main: MainWeather(temp: 10, feelsLike: 10, tempMin: 10, tempMax: 10, pressure: 1000, seaLevel: nil, grndLevel: nil, humidity: 50), weather: [], clouds: nil, wind: nil, visibility: nil, pop: nil, rain: nil, snow: nil, sys: nil, dtTxt: nil),
-            HourlyForecastItem(dt: 10000, main: MainWeather(temp: 20, feelsLike: 20, tempMin: 20, tempMax: 20, pressure: 1000, seaLevel: nil, grndLevel: nil, humidity: 50), weather: [], clouds: nil, wind: nil, visibility: nil, pop: nil, rain: nil, snow: nil, sys: nil, dtTxt: nil)
+            sampleItem(dt: 1000, temp: 10),
+            sampleItem(dt: 10000, temp: 20)
         ]
 
-        let forecast = ForecastResponse(cod: "200", message: nil, cnt: 2, list: list, city: ForecastCity(id: 1, name: "City", coord: Coordinate(lat: 0, lon: 0), country: "DE", population: nil, timezone: 0, sunrise: nil, sunset: nil))
+        let forecast = makeForecast(list: list)
 
-        let (items, _, _) = HourlyForecastGrouper.process(forecast: forecast)
+        let items = HourlyForecastGrouper.process(forecast: forecast).items
 
         XCTAssertEqual(items.count, 2)
         XCTAssertEqual(items[0].temperatureDotY, 1.0)
@@ -21,7 +21,11 @@ final class TemperatureGraphGeometryTests: XCTestCase {
     func test_normalizedDotY_mapsMinToOneAndMaxToZero() {
         XCTAssertEqual(TemperatureGraphGeometry.normalizedDotY(temperature: 10, minTemp: 10, maxTemp: 20), 1.0)
         XCTAssertEqual(TemperatureGraphGeometry.normalizedDotY(temperature: 20, minTemp: 10, maxTemp: 20), 0.0)
-        XCTAssertEqual(TemperatureGraphGeometry.normalizedDotY(temperature: 15, minTemp: 10, maxTemp: 20), 0.5, accuracy: 0.001)
+        XCTAssertEqual(
+            TemperatureGraphGeometry.normalizedDotY(temperature: 15, minTemp: 10, maxTemp: 20),
+            0.5,
+            accuracy: 0.001
+        )
     }
 
     func test_bezierControlPoints_usesCatmullRomConversion() {
@@ -38,14 +42,11 @@ final class TemperatureGraphGeometryTests: XCTestCase {
 
     func test_groupByDay_groupsConsecutiveItems() {
         let list = [
-            HourlyForecastItem(dt: 1_718_000_000, main: sampleMain(temp: 18), weather: [], clouds: nil, wind: nil, visibility: nil, pop: nil, rain: nil, snow: nil, sys: nil, dtTxt: nil),
-            HourlyForecastItem(dt: 1_718_010_800, main: sampleMain(temp: 19), weather: [], clouds: nil, wind: nil, visibility: nil, pop: nil, rain: nil, snow: nil, sys: nil, dtTxt: nil),
-            HourlyForecastItem(dt: 1_718_086_400, main: sampleMain(temp: 17), weather: [], clouds: nil, wind: nil, visibility: nil, pop: nil, rain: nil, snow: nil, sys: nil, dtTxt: nil)
+            sampleItem(dt: 1_718_000_000, temp: 18),
+            sampleItem(dt: 1_718_010_800, temp: 19),
+            sampleItem(dt: 1_718_086_400, temp: 17)
         ]
-        let forecast = ForecastResponse(
-            cod: "200", message: nil, cnt: 3, list: list,
-            city: ForecastCity(id: 1, name: "City", coord: Coordinate(lat: 52.52, lon: 13.4), country: "DE", population: nil, timezone: 7200, sunrise: nil, sunset: nil)
-        )
+        let forecast = makeForecast(list: list, timezone: 7_200)
 
         let groups = HourlyForecastGrouper.groupByDay(forecast: forecast)
         XCTAssertEqual(groups.count, 2)
@@ -64,14 +65,11 @@ final class TemperatureGraphGeometryTests: XCTestCase {
         let base = formatter.date(from: "\(dayKey) 02:00:00")!.timeIntervalSince1970 - tzOffset
 
         let list = [
-            HourlyForecastItem(dt: base, main: sampleMain(temp: 12), weather: [], clouds: nil, wind: nil, visibility: nil, pop: nil, rain: nil, snow: nil, sys: nil, dtTxt: nil),
-            HourlyForecastItem(dt: base + 10_800, main: sampleMain(temp: 21), weather: [], clouds: nil, wind: nil, visibility: nil, pop: nil, rain: nil, snow: nil, sys: nil, dtTxt: nil),
-            HourlyForecastItem(dt: base + 86_400, main: sampleMain(temp: 9), weather: [], clouds: nil, wind: nil, visibility: nil, pop: nil, rain: nil, snow: nil, sys: nil, dtTxt: nil)
+            sampleItem(dt: base, temp: 12),
+            sampleItem(dt: base + 10_800, temp: 21),
+            sampleItem(dt: base + 86_400, temp: 9)
         ]
-        let forecast = ForecastResponse(
-            cod: "200", message: nil, cnt: 3, list: list,
-            city: ForecastCity(id: 1, name: "City", coord: Coordinate(lat: 52.52, lon: 13.4), country: "DE", population: nil, timezone: 7_200, sunrise: nil, sunset: nil)
-        )
+        let forecast = makeForecast(list: list, timezone: 7_200)
 
         let range = HourlyForecastGrouper.todayTemperatureRange(forecast: forecast)
         XCTAssertEqual(range?.min, 12)
@@ -79,6 +77,50 @@ final class TemperatureGraphGeometryTests: XCTestCase {
     }
 
     private func sampleMain(temp: Double) -> MainWeather {
-        MainWeather(temp: temp, feelsLike: temp, tempMin: temp, tempMax: temp, pressure: 1013, seaLevel: nil, grndLevel: nil, humidity: 50)
+        MainWeather(
+            temp: temp,
+            feelsLike: temp,
+            tempMin: temp,
+            tempMax: temp,
+            pressure: 1013,
+            seaLevel: nil,
+            grndLevel: nil,
+            humidity: 50
+        )
+    }
+
+    private func sampleItem(dt: TimeInterval, temp: Double) -> HourlyForecastItem {
+        HourlyForecastItem(
+            dt: dt,
+            main: sampleMain(temp: temp),
+            weather: [],
+            clouds: nil,
+            wind: nil,
+            visibility: nil,
+            pop: nil,
+            rain: nil,
+            snow: nil,
+            sys: nil,
+            dtTxt: nil
+        )
+    }
+
+    private func makeForecast(list: [HourlyForecastItem], timezone: Int = 0) -> ForecastResponse {
+        ForecastResponse(
+            cod: "200",
+            message: nil,
+            cnt: list.count,
+            list: list,
+            city: ForecastCity(
+                id: 1,
+                name: "City",
+                coord: Coordinate(lat: 52.52, lon: 13.4),
+                country: "DE",
+                population: nil,
+                timezone: timezone,
+                sunrise: nil,
+                sunset: nil
+            )
+        )
     }
 }

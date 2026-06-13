@@ -7,7 +7,7 @@ public struct MainWeather: Decodable, Sendable {
     public let seaLevel: Int?
     public let grndLevel: Int?
     public let humidity: Int
-    
+
     enum CodingKeys: String, CodingKey {
         case temp, pressure, humidity
         case feelsLike = "feels_like"

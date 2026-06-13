@@ -13,7 +13,7 @@ final class TileVisibilityPolicyTests: XCTestCase {
             makeTile(.air, size: .wide),
             makeTile(.clouds),
             makeTile(.fiveDay, size: .wide),
-            makeTile(.precipitation),
+            makeTile(.precipitation)
         ]
     }
 
@@ -27,7 +27,7 @@ final class TileVisibilityPolicyTests: XCTestCase {
             TileKind.wind.rawValue,
             TileKind.pressure.rawValue,
             TileKind.sun.rawValue,
-            TileKind.air.rawValue,
+            TileKind.air.rawValue
         ])
     }
 

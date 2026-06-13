@@ -1,6 +1,6 @@
 import Foundation
 
-public struct TileOrderStore: Sendable {
+public struct TileOrderStore: TileOrderStoring, Sendable {
     private let defaultsSuiteName: String?
     private let orderKey: String
     private let hiddenKey: String

@@ -12,4 +12,11 @@ public struct LocationDetails: Sendable, Equatable {
     public var isEmpty: Bool {
         postalCode == nil && altitudeMeters == nil
     }
+
+    public func merged(with other: LocationDetails) -> LocationDetails {
+        LocationDetails(
+            postalCode: other.postalCode ?? postalCode,
+            altitudeMeters: other.altitudeMeters ?? altitudeMeters
+        )
+    }
 }

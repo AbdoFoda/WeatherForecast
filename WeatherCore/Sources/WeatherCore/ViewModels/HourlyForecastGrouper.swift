@@ -1,6 +1,12 @@
 import Foundation
 
 public struct HourlyForecastGrouper {
+    public struct ProcessedForecast {
+        public let items: [HourlyDisplayItem]
+        public let minTemp: Double
+        public let maxTemp: Double
+    }
+
     public static func groupByDay(forecast: ForecastResponse) -> [[HourlyForecastItem]] {
         let tzOffset = TimeInterval(forecast.city.timezone)
         let formatter = WeatherFormatters.dayKey(timezoneOffset: tzOffset)
@@ -9,8 +15,7 @@ public struct HourlyForecastGrouper {
         var lastDayKey: String?
 
         for item in forecast.list {
-            let localDate = Date(timeIntervalSince1970: item.dt).addingTimeInterval(tzOffset)
-            let dayKey = formatter.string(from: localDate)
+            let dayKey = formatter.string(from: Date(timeIntervalSince1970: item.dt))
 
             if lastDayKey != dayKey, !currentGroup.isEmpty {
                 groups.append(currentGroup)
@@ -35,7 +40,10 @@ public struct HourlyForecastGrouper {
         }
     }
 
-    public static func todayTemperatureRange(forecast: ForecastResponse, now: Date = Date()) -> (min: Double, max: Double)? {
+    public static func todayTemperatureRange(
+        forecast: ForecastResponse,
+        now: Date = Date()
+    ) -> (min: Double, max: Double)? {
         temperatureRange(for: forecast, matchingLocalDay: now)
     }
 
@@ -56,12 +64,11 @@ public struct HourlyForecastGrouper {
     ) -> (min: Double, max: Double)? {
         let tzOffset = TimeInterval(forecast.city.timezone)
         let formatter = WeatherFormatters.dayKey(timezoneOffset: tzOffset)
-        let targetDayKey = formatter.string(from: date.addingTimeInterval(tzOffset))
+        let targetDayKey = formatter.string(from: date)
 
         let dayItems = groupByDay(forecast: forecast).first { group in
             guard let first = group.first else { return false }
-            let localDate = Date(timeIntervalSince1970: first.dt).addingTimeInterval(tzOffset)
-            return formatter.string(from: localDate) == targetDayKey
+            return formatter.string(from: Date(timeIntervalSince1970: first.dt)) == targetDayKey
         }
 
         guard let dayItems, !dayItems.isEmpty else { return nil }
@@ -75,10 +82,10 @@ public struct HourlyForecastGrouper {
         return (minTemp, maxTemp)
     }
 
-    public static func process(forecast: ForecastResponse) -> (items: [HourlyDisplayItem], minTemp: Double, maxTemp: Double) {
+    public static func process(forecast: ForecastResponse) -> ProcessedForecast {
         let (minTemp, maxTemp) = paddedTemperatureBounds(for: forecast.list)
         let items = makeDisplayItems(forecast: forecast, minTemp: minTemp, maxTemp: maxTemp)
-        return (items, minTemp, maxTemp)
+        return ProcessedForecast(items: items, minTemp: minTemp, maxTemp: maxTemp)
     }
 
     private static func paddedTemperatureBounds(
@@ -112,7 +119,7 @@ public struct HourlyForecastGrouper {
         var lastDayString: String?
 
         return forecast.list.map { item in
-            let localDate = Date(timeIntervalSince1970: item.dt).addingTimeInterval(tzOffset)
+            let localDate = Date(timeIntervalSince1970: item.dt)
             let dayString = dayHeaderFormatter.string(from: localDate)
             let dayLabel = lastDayString != dayString ? dayString : nil
             lastDayString = dayString

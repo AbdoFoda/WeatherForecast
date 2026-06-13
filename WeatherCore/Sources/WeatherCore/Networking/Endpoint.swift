@@ -27,7 +27,7 @@ public extension Endpoint {
         Endpoint(
             path: WeatherAPI.Route.forecast.rawValue,
             queryItems: coordinateQueryItems(lat: lat, lon: lon) + [
-                URLQueryItem(name: WeatherAPI.QueryKey.cnt.rawValue, value: String(count)),
+                URLQueryItem(name: WeatherAPI.QueryKey.cnt.rawValue, value: String(count))
             ]
         )
     }
@@ -47,7 +47,7 @@ public extension Endpoint {
         let format = "%.\(WeatherAPI.Defaults.coordinateDecimalPlaces)f"
         return [
             URLQueryItem(name: WeatherAPI.QueryKey.lat.rawValue, value: String(format: format, lat)),
-            URLQueryItem(name: WeatherAPI.QueryKey.lon.rawValue, value: String(format: format, lon)),
+            URLQueryItem(name: WeatherAPI.QueryKey.lon.rawValue, value: String(format: format, lon))
         ]
     }
 }

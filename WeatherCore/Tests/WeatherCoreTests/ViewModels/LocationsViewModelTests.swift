@@ -12,6 +12,31 @@ final class LocationsViewModelTests: XCTestCase {
         store = SavedLocationsStore(defaultsSuiteName: suiteName)
     }
 
+    func test_load_readsFromInjectedStore() {
+        let berlin = LocationModel(id: "berlin", name: "Berlin", lat: 52.52, lon: 13.40, country: "DE")
+        let mockStore = MockSavedLocationsStore(locations: [berlin], selectionID: "berlin")
+        let sut = LocationsViewModel(store: mockStore)
+
+        var published: LocationsViewState?
+        sut.onStateChange = { published = $0 }
+        sut.load()
+
+        XCTAssertEqual(published?.savedLocations, [berlin])
+        XCTAssertEqual(published?.selectedLocationID, "berlin")
+    }
+
+    func test_addLocation_writesToInjectedStore() {
+        let mockStore = MockSavedLocationsStore()
+        let sut = LocationsViewModel(store: mockStore)
+        sut.load()
+
+        let paris = LocationModel(id: "paris", name: "Paris", lat: 48.85, lon: 2.35, country: "FR")
+        sut.addLocation(paris)
+
+        XCTAssertEqual(mockStore.storedLocations, [paris])
+        XCTAssertEqual(mockStore.storedSelectionID, "paris")
+    }
+
     func test_load_publishesSavedLocations() {
         let berlin = LocationModel(id: "berlin", name: "Berlin", lat: 52.52, lon: 13.40, country: "DE")
         store.saveLocations([berlin])
@@ -74,7 +99,7 @@ final class LocationsViewModelTests: XCTestCase {
 
         let sut = LocationsViewModel(store: store)
         sut.load()
-        sut.removeLocation(at: 0)
+        sut.removeLocation(at: LocationsIndexPath(section: 1, row: 0))
 
         XCTAssertTrue(sut.state.savedLocations.isEmpty)
         XCTAssertEqual(sut.state.selectedLocationID, LocationModel.currentLocationID)
@@ -87,7 +112,10 @@ final class LocationsViewModelTests: XCTestCase {
 
         let sut = LocationsViewModel(store: store)
         sut.load()
-        sut.moveLocation(from: 0, to: 1)
+        sut.moveLocation(
+            from: LocationsIndexPath(section: 1, row: 0),
+            to: LocationsIndexPath(section: 1, row: 1)
+        )
 
         XCTAssertEqual(sut.state.savedLocations, [paris, berlin])
         XCTAssertEqual(store.loadLocations(), [paris, berlin])
