@@ -8,7 +8,6 @@ public final class LocationSummariesViewModel: LocationSummariesViewModelProtoco
     private let weatherService: WeatherServiceProtocol
     private var inFlightIDs: Set<String> = []
     private var retryBlockedUntil: [String: Date] = [:]
-
     private let failureRetryInterval: TimeInterval = 60
 
     public init(weatherService: WeatherServiceProtocol) {
@@ -33,7 +32,7 @@ public final class LocationSummariesViewModel: LocationSummariesViewModelProtoco
     }
 
     private func fetch(_ requests: [LocationSummaryRequest], forceRetry: Bool) {
-        let requested = requests.filter { !inFlightIDs.contains($0.id) }
+        let requested = forceRetry ? requests : requests.filter { !inFlightIDs.contains($0.id) }
         guard !requested.isEmpty else { return }
 
         if forceRetry {
@@ -42,6 +41,7 @@ public final class LocationSummariesViewModel: LocationSummariesViewModelProtoco
         requested.forEach { inFlightIDs.insert($0.id) }
 
         let weatherService = self.weatherService
+        let requestedIDs = requested.map(\.id)
         Task { [weak self] in
             await withTaskGroup(of: (String, LocationCardSummary?).self) { group in
                 for request in requested {
@@ -59,7 +59,6 @@ public final class LocationSummariesViewModel: LocationSummariesViewModelProtoco
                 }
 
                 for await (id, summary) in group {
-                    guard !Task.isCancelled else { return }
                     guard let self else { continue }
                     self.inFlightIDs.remove(id)
                     if let summary {
@@ -71,6 +70,8 @@ public final class LocationSummariesViewModel: LocationSummariesViewModelProtoco
                     }
                 }
             }
+            guard let self else { return }
+            requestedIDs.forEach { self.inFlightIDs.remove($0) }
         }
     }
 }

@@ -22,8 +22,3 @@ public extension LocationModel {
         String(format: "%.4f,%.4f", lat, lon)
     }
 }
-
-public enum LocationSelection: Equatable, Sendable {
-    case current
-    case saved(LocationModel)
-}

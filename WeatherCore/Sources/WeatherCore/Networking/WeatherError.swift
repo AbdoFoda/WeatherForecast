@@ -1,12 +1,12 @@
 import Foundation
 
 public enum WeatherError: Error, Sendable {
-    case offline(underlying: Error)
-    case transport(underlying: Error)
+    case offline
+    case transport
     case invalidURL
     case invalidResponse
     case httpError(statusCode: Int)
-    case decodingFailed(underlying: Error)
+    case decodingFailed
 }
 
 public extension WeatherError {
@@ -34,10 +34,7 @@ extension URLError {
         case .notConnectedToInternet,
              .networkConnectionLost,
              .dataNotAllowed,
-             .internationalRoamingOff,
-             .cannotFindHost,
-             .cannotConnectToHost,
-             .dnsLookupFailed:
+             .internationalRoamingOff:
             return true
         default:
             return false

@@ -26,10 +26,11 @@ public actor WeatherService: WeatherServiceProtocol {
     
     private func fetchAndDecode<T: Decodable>(endpoint: Endpoint, type: T.Type) async throws -> T {
         let data = try await client.data(for: endpoint)
+        try Task.checkCancellation()
         do {
             return try decoder.decode(T.self, from: data)
         } catch {
-            throw WeatherError.decodingFailed(underlying: error)
+            throw WeatherError.decodingFailed
         }
     }
 }

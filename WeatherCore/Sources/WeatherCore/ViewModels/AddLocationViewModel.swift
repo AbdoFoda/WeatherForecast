@@ -37,7 +37,7 @@ public final class AddLocationViewModel: AddLocationViewModelProtocol {
                 self.update(query: self.state.query, results: results, isSearching: false)
             } catch {
                 guard !Task.isCancelled else { return }
-                self.update(query: self.state.query, results: [], isSearching: false)
+                self.update(query: self.state.query, results: [], isSearching: false, searchFailed: true)
             }
         }
         await searchTask?.value
@@ -47,8 +47,8 @@ public final class AddLocationViewModel: AddLocationViewModelProtocol {
         state.result(at: index)
     }
 
-    private func update(query: String, results: [LocationModel], isSearching: Bool) {
-        state = AddLocationViewState(query: query, results: results, isSearching: isSearching)
+    private func update(query: String, results: [LocationModel], isSearching: Bool, searchFailed: Bool = false) {
+        state = AddLocationViewState(query: query, results: results, isSearching: isSearching, searchFailed: searchFailed)
         onStateChange?(state)
     }
 }

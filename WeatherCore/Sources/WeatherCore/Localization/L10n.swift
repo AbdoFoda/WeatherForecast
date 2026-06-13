@@ -88,6 +88,7 @@ public enum L10n {
 
     public enum Notice {
         public static var offline: String { tr("notice.offline") }
+        public static var unavailable: String { tr("notice.unavailable") }
     }
 
     public enum Locations {
@@ -98,6 +99,7 @@ public enum L10n {
         public static var savedHeader: String { tr("locations.saved_header") }
         public static var addLocation: String { tr("locations.add_location") }
         public static var addLocationTitle: String { tr("locations.add_location.title") }
+        public static var searchFailed: String { tr("locations.search_failed") }
     }
 
     public enum Tiles {

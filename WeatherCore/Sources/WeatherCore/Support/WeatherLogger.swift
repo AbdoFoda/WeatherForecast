@@ -8,6 +8,6 @@ public enum WeatherLogger {
     }
 
     public static func log(_ error: Error) {
-        log(String(describing: error))
+        log(String(reflecting: type(of: error)))
     }
 }

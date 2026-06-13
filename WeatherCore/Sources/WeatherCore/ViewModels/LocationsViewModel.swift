@@ -80,6 +80,7 @@ public final class LocationsViewModel: LocationsViewModelProtocol {
             return .current
         }
         guard let location = state.savedLocations.first(where: { $0.id == id }) else {
+            WeatherLogger.log("LocationsViewModel.selection(for:) unknown id; defaulting to current location.")
             return .current
         }
         return .saved(location)

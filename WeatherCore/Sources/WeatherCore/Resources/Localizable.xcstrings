@@ -381,6 +381,16 @@
         }
       }
     },
+    "locations.search_failed" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't search locations. Check your connection and try again."
+          }
+        }
+      }
+    },
     "locations.search_placeholder" : {
       "localizations" : {
         "en" : {
@@ -407,6 +417,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "You're offline. Showing saved weather."
+          }
+        }
+      }
+    },
+    "notice.unavailable" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't refresh weather. Showing saved data."
           }
         }
       }

@@ -17,12 +17,21 @@ public struct SavedLocationsStore: Sendable {
 
     public func loadLocations() -> [LocationModel] {
         guard let data = defaults.data(forKey: locationsKey) else { return [] }
-        return (try? JSONDecoder().decode([LocationModel].self, from: data)) ?? []
+        do {
+            return try JSONDecoder().decode([LocationModel].self, from: data)
+        } catch {
+            WeatherLogger.log(error)
+            return []
+        }
     }
 
     public func saveLocations(_ locations: [LocationModel]) {
-        guard let data = try? JSONEncoder().encode(locations) else { return }
-        defaults.set(data, forKey: locationsKey)
+        do {
+            let data = try JSONEncoder().encode(locations)
+            defaults.set(data, forKey: locationsKey)
+        } catch {
+            WeatherLogger.log(error)
+        }
     }
 
     public func loadSelectedLocationID() -> String {
