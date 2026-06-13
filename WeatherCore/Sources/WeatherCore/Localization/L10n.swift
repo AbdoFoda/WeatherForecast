@@ -75,6 +75,15 @@ public enum L10n {
         public static func tempHighLow(high: Int, low: Int) -> String {
             tr("format.temp_high_low", high, low)
         }
+
+        public static func altitude(_ meters: Int) -> String {
+            tr("format.altitude", meters)
+        }
+    }
+
+    public enum Summary {
+        public static var hourlyForecast: String { tr("summary.hourly_forecast") }
+        public static var elevation: String { tr("summary.elevation") }
     }
 
     public enum Notice {

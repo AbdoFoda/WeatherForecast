@@ -15,6 +15,14 @@ final class TemperatureGraphCell: UICollectionViewCell {
     private var currentNormalizedY: CGFloat = 0.5
     private var nextNormalizedY: CGFloat = 0.5
 
+    private struct DrawKey: Equatable {
+        let size: CGSize
+        let prev: CGFloat
+        let current: CGFloat
+        let next: CGFloat
+    }
+    private var lastDrawKey: DrawKey?
+
     override init(frame: CGRect) {
         super.init(frame: frame)
         setup()
@@ -27,18 +35,28 @@ final class TemperatureGraphCell: UICollectionViewCell {
     override func prepareForReuse() {
         super.prepareForReuse()
         imageTask?.cancel()
+        imageTask = nil
         iconView.image = nil
+        curveLayer.path = nil
+        dotLayer.path = nil
+        lastDrawKey = nil
         timeLabel.font = WeatherDesignSystem.Typography.preferred(.caption1)
     }
 
     private func setup() {
         timeLabel.font = WeatherDesignSystem.Typography.preferred(.caption1)
         timeLabel.adjustsFontForContentSizeCategory = true
+        timeLabel.adjustsFontSizeToFitWidth = true
+        timeLabel.minimumScaleFactor = 0.6
+        timeLabel.numberOfLines = 1
         timeLabel.textAlignment = .center
         timeLabel.textColor = GlassStyle.textPrimary
 
         temperatureLabel.font = WeatherDesignSystem.Typography.preferred(.caption1)
         temperatureLabel.adjustsFontForContentSizeCategory = true
+        temperatureLabel.adjustsFontSizeToFitWidth = true
+        temperatureLabel.minimumScaleFactor = 0.6
+        temperatureLabel.numberOfLines = 1
         temperatureLabel.textAlignment = .center
         temperatureLabel.textColor = GlassStyle.textSecondary
 
@@ -129,20 +147,21 @@ final class TemperatureGraphCell: UICollectionViewCell {
             return
         }
 
-        imageTask = Task { [weak self] in
-            do {
-                let (data, _) = try await URLSession.shared.data(from: iconURL)
-                guard !Task.isCancelled, let image = UIImage(data: data) else { return }
-                await MainActor.run {
-                    self?.iconView.image = image
-                }
-            } catch {}
+        imageTask = Task { @MainActor [weak self] in
+            guard let (data, _) = try? await URLSession.shared.data(from: iconURL),
+                  !Task.isCancelled,
+                  let image = UIImage(data: data) else { return }
+            self?.iconView.image = image
         }
 
         setNeedsLayout()
     }
 
     private func drawGraph() {
+        let key = DrawKey(size: bounds.size, prev: prevNormalizedY, current: currentNormalizedY, next: nextNormalizedY)
+        guard key != lastDrawKey else { return }
+        lastDrawKey = key
+
         let top = graphTop
         let graphHeight = max(0, bounds.height - top - WeatherDesignSystem.Graph.Cell.graphBottomInset)
         let cellWidth = bounds.width

@@ -221,6 +221,16 @@
         }
       }
     },
+    "format.altitude" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld m"
+          }
+        }
+      }
+    },
     "format.feels_like" : {
       "localizations" : {
         "en" : {
@@ -397,6 +407,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "You're offline. Showing saved weather."
+          }
+        }
+      }
+    },
+    "summary.elevation" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elevation"
+          }
+        }
+      }
+    },
+    "summary.hourly_forecast" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hourly Forecast"
           }
         }
       }
