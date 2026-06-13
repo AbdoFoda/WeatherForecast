@@ -6,23 +6,42 @@ import WeatherCore
 final class AppCoordinator: NSObject {
     private let weatherService: WeatherServiceProtocol
     private let locationSearchService: LocationSearchProviding
-    private let locationsStore = SavedLocationsStore()
-    private let tileOrderStore = TileOrderStore()
-    private var locationsViewModel: LocationsViewModel?
-    private var summariesViewModel: LocationSummariesViewModel?
-    private let deviceLocationManager = LocationManager()
+    private let locationsStore: any SavedLocationsStoring
+    private let tileOrderStore: any TileOrderStoring
+    private let makeLocationsViewModel: @MainActor (any SavedLocationsStoring) -> LocationsViewModelProtocol
+    private let makeSummariesViewModel: @MainActor (WeatherServiceProtocol) -> LocationSummariesViewModelProtocol
+    private let makeWeatherViewModelOverride: (@MainActor () -> LocationWeatherViewModelProtocol)?
+    private var locationsViewModel: LocationsViewModelProtocol?
+    private var summariesViewModel: LocationSummariesViewModelProtocol?
+    private let deviceLocationManager: DeviceLocationManaging
     private var deviceCoordinate: (lat: Double, lon: Double)?
     private weak var splitViewController: UISplitViewController?
     private weak var pagerViewController: WeatherPagerViewController?
-    private weak var masterViewController: LocationsViewController?
+    private weak var primaryViewController: LocationsViewController?
     private weak var addLocationViewController: AddLocationViewController?
 
     init(
         weatherService: WeatherServiceProtocol,
-        locationSearchService: LocationSearchProviding = MapKitLocationSearchService()
+        locationSearchService: LocationSearchProviding = MapKitLocationSearchService(),
+        locationsStore: any SavedLocationsStoring = SavedLocationsStore(),
+        tileOrderStore: any TileOrderStoring = TileOrderStore(),
+        deviceLocationManager: DeviceLocationManaging = LocationManager(),
+        makeLocationsViewModel: @escaping @MainActor (any SavedLocationsStoring) -> LocationsViewModelProtocol = {
+            LocationsViewModel(store: $0)
+        },
+        makeSummariesViewModel: @escaping @MainActor (WeatherServiceProtocol) -> LocationSummariesViewModelProtocol = {
+            LocationSummariesViewModel(weatherService: $0)
+        },
+        makeWeatherViewModel: (@MainActor () -> LocationWeatherViewModelProtocol)? = nil
     ) {
         self.weatherService = weatherService
         self.locationSearchService = locationSearchService
+        self.locationsStore = locationsStore
+        self.tileOrderStore = tileOrderStore
+        self.deviceLocationManager = deviceLocationManager
+        self.makeLocationsViewModel = makeLocationsViewModel
+        self.makeSummariesViewModel = makeSummariesViewModel
+        self.makeWeatherViewModelOverride = makeWeatherViewModel
     }
 
     private static let fallbackBaseURL =
@@ -44,10 +63,10 @@ final class AppCoordinator: NSObject {
     }
 
     func start(window: UIWindow) {
-        let locationsViewModel = LocationsViewModel(store: locationsStore)
+        let locationsViewModel = makeLocationsViewModel(locationsStore)
         self.locationsViewModel = locationsViewModel
 
-        let summariesViewModel = LocationSummariesViewModel(weatherService: weatherService)
+        let summariesViewModel = makeSummariesViewModel(weatherService)
         self.summariesViewModel = summariesViewModel
 
         bindViewModels(locationsViewModel: locationsViewModel, summariesViewModel: summariesViewModel)
@@ -59,35 +78,39 @@ final class AppCoordinator: NSObject {
 
         locationsViewModel.load()
 
-        deviceLocationManager.delegate = self
+        deviceLocationManager.addObserver(self)
         deviceLocationManager.requestLocation()
     }
 
     private func bindViewModels(
-        locationsViewModel: LocationsViewModel,
-        summariesViewModel: LocationSummariesViewModel
+        locationsViewModel: LocationsViewModelProtocol,
+        summariesViewModel: LocationSummariesViewModelProtocol
     ) {
         locationsViewModel.onStateChange = { [weak self] state in
             self?.pagerViewController?.apply(state)
-            self?.masterViewController?.render(state)
+            self?.primaryViewController?.render(state)
             self?.refreshSummaries(for: state)
         }
         summariesViewModel.onChange = { [weak self] summaries in
-            self?.masterViewController?.renderSummaries(summaries)
+            self?.primaryViewController?.renderSummaries(summaries)
         }
     }
 
-    private func makeSplitViewController(locationsViewModel: LocationsViewModel) -> UISplitViewController {
-        let master = LocationsViewController(viewModel: locationsViewModel)
-        master.delegate = self
-        masterViewController = master
-        let masterNavigation = UINavigationController(rootViewController: master)
-        masterNavigation.overrideUserInterfaceStyle = .light
+    private func makeSplitViewController(locationsViewModel: LocationsViewModelProtocol) -> UISplitViewController {
+        let primary = LocationsViewController(viewModel: locationsViewModel)
+        primary.delegate = self
+        primaryViewController = primary
+        let primaryNavigation = UINavigationController(rootViewController: primary)
+        primaryNavigation.overrideUserInterfaceStyle = .light
 
         let pager = WeatherPagerViewController(
             locationsViewModel: locationsViewModel,
-            makeWeatherViewModel: { [weatherService, tileOrderStore] in
-                LocationWeatherViewModel(
+            deviceLocationManager: deviceLocationManager,
+            makeWeatherViewModel: { [weatherService, tileOrderStore, makeWeatherViewModelOverride] in
+                if let makeWeatherViewModelOverride {
+                    return makeWeatherViewModelOverride()
+                }
+                return LocationWeatherViewModel(
                     weatherService: weatherService,
                     tileOrderStore: tileOrderStore
                 )
@@ -99,7 +122,7 @@ final class AppCoordinator: NSObject {
         configureTransparentNavigationBar(detailNavigation.navigationBar)
 
         let split = UISplitViewController(style: .doubleColumn)
-        split.setViewController(masterNavigation, for: .primary)
+        split.setViewController(primaryNavigation, for: .primary)
         split.setViewController(detailNavigation, for: .secondary)
         split.preferredDisplayMode = .oneBesideSecondary
         split.preferredSplitBehavior = .tile

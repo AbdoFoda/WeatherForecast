@@ -56,6 +56,19 @@ targets:
       PRODUCT_BUNDLE_IDENTIFIER: com.abdo.weather.tests
       TEST_HOST: $(BUILT_PRODUCTS_DIR)/WeatherApp.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/WeatherApp
       BUNDLE_LOADER: $(TEST_HOST)
+  WeatherAppUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - WeatherAppUITests
+      - path: WeatherApp/Support/AccessibilityIdentifier.swift
+      - path: WeatherApp/Support/UITestLaunchArgument.swift
+    dependencies:
+      - target: WeatherApp
+    settings:
+      GENERATE_INFOPLIST_FILE: YES
+      PRODUCT_BUNDLE_IDENTIFIER: com.abdo.weather.uitests
+      TEST_TARGET_NAME: WeatherApp
 packages:
   WeatherCore:
     path: WeatherCore
@@ -65,12 +78,14 @@ schemes:
       targets:
         WeatherApp: all
         WeatherAppTests: [test]
+        WeatherAppUITests: [test]
     run:
       config: Debug
     test:
       config: Debug
       targets:
         - WeatherAppTests
+        - WeatherAppUITests
     profile:
       config: Release
     analyze:
