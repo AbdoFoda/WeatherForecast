@@ -23,6 +23,17 @@
         }
       }
     },
+    "common.updating" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Updating…"
+          }
+        }
+      }
+    },
     "location.permission.message" : {
       "extractionState" : "stale",
       "localizations" : {

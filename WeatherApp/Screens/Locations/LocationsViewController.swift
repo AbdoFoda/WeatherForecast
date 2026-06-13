@@ -4,6 +4,8 @@ import WeatherCore
 @MainActor
 protocol LocationsViewControllerDelegate: AnyObject {
     func locationsViewController(_ controller: LocationsViewController, didSelect selection: LocationSelection)
+    func locationsViewControllerDidTapAdd(_ controller: LocationsViewController)
+    func locationsViewControllerDidRequestRefresh(_ controller: LocationsViewController)
 }
 
 final class LocationsViewController: UIViewController {
@@ -11,8 +13,10 @@ final class LocationsViewController: UIViewController {
 
     private let viewModel: LocationsViewModelProtocol
     private let tableView = UITableView(frame: .zero, style: .insetGrouped)
-    private let searchController = UISearchController(searchResultsController: nil)
+    private let backgroundGradient = CAGradientLayer()
+    private let refreshControl = UIRefreshControl()
     private var state = LocationsViewState.initial
+    private var summaries: [String: LocationCardSummary] = [:]
 
     init(viewModel: LocationsViewModelProtocol) {
         self.viewModel = viewModel
@@ -26,9 +30,9 @@ final class LocationsViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         title = L10n.Locations.title
-        view.backgroundColor = .systemGroupedBackground
-        configureCloseButton()
-        configureSearch()
+        navigationController?.navigationBar.prefersLargeTitles = true
+        configureBackground()
+        configureAddButton()
         configureTableView()
         render(viewModel.state)
     }
@@ -39,33 +43,55 @@ final class LocationsViewController: UIViewController {
         tableView.reloadData()
     }
 
-    private func configureCloseButton() {
+    func renderSummaries(_ summaries: [String: LocationCardSummary]) {
+        self.summaries = summaries
+        guard isViewLoaded else { return }
+        refreshControl.endRefreshing()
+        tableView.reloadData()
+    }
+
+    private func configureBackground() {
+        view.backgroundColor = .systemGroupedBackground
+        backgroundGradient.colors = [
+            UIColor(red: 0.93, green: 0.95, blue: 0.99, alpha: 1).cgColor,
+            UIColor(red: 0.84, green: 0.89, blue: 0.96, alpha: 1).cgColor,
+        ]
+        backgroundGradient.startPoint = CGPoint(x: 0.5, y: 0)
+        backgroundGradient.endPoint = CGPoint(x: 0.5, y: 1)
+        view.layer.insertSublayer(backgroundGradient, at: 0)
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        backgroundGradient.frame = view.bounds
+    }
+
+    private func configureAddButton() {
         navigationItem.rightBarButtonItem = UIBarButtonItem(
-            barButtonSystemItem: .close,
+            barButtonSystemItem: .add,
             target: self,
-            action: #selector(closeTapped)
+            action: #selector(addTapped)
         )
     }
 
-    @objc private func closeTapped() {
-        dismiss(animated: true)
-    }
-
-    private func configureSearch() {
-        searchController.searchResultsUpdater = self
-        searchController.obscuresBackgroundDuringPresentation = false
-        searchController.searchBar.placeholder = L10n.Locations.searchPlaceholder
-        navigationItem.searchController = searchController
-        definesPresentationContext = true
+    @objc private func addTapped() {
+        delegate?.locationsViewControllerDidTapAdd(self)
     }
 
     private func configureTableView() {
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.dataSource = self
         tableView.delegate = self
+        tableView.backgroundColor = .clear
+        tableView.separatorStyle = .none
+        tableView.rowHeight = Metrics.rowHeight
         tableView.dragDelegate = self
         tableView.dragInteractionEnabled = true
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "Cell")
+        tableView.register(LocationCardCell.self, forCellReuseIdentifier: LocationCardCell.reuseIdentifier)
+
+        refreshControl.addTarget(self, action: #selector(handleRefresh), for: .valueChanged)
+        tableView.refreshControl = refreshControl
+
         view.addSubview(tableView)
         NSLayoutConstraint.activate([
             tableView.topAnchor.constraint(equalTo: view.topAnchor),
@@ -73,6 +99,37 @@ final class LocationsViewController: UIViewController {
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
         ])
+    }
+
+    @objc private func handleRefresh() {
+        delegate?.locationsViewControllerDidRequestRefresh(self)
+    }
+
+    private func cardModel(for row: LocationsRow) -> LocationCardView.Model {
+        switch row {
+        case .currentLocation(let isSelected):
+            let summary = summaries[LocationModel.currentLocationID]
+            return LocationCardView.Model(
+                title: L10n.Locations.currentLocation,
+                subtitle: summary?.localTime ?? "",
+                isCurrentLocation: true,
+                summary: summary,
+                isSelected: isSelected
+            )
+        case .saved(let location, let isSelected):
+            let summary = summaries[location.id]
+            return LocationCardView.Model(
+                title: location.displayTitle,
+                subtitle: summary?.localTime ?? "",
+                isCurrentLocation: false,
+                summary: summary,
+                isSelected: isSelected
+            )
+        }
+    }
+
+    private enum Metrics {
+        static let rowHeight: CGFloat = 124
     }
 }
 
@@ -90,28 +147,14 @@ extension LocationsViewController: UITableViewDataSource {
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
-        var content = cell.defaultContentConfiguration()
-
-        switch state.row(at: indexPath.locationsIndexPath) {
-        case .currentLocation(let isSelected):
-            content.text = L10n.Locations.currentLocation
-            content.image = UIImage(systemName: "location.fill")
-            cell.accessoryType = isSelected ? .checkmark : .none
-        case .saved(let location, let isSelected):
-            content.text = location.displayTitle
-            content.image = nil
-            cell.accessoryType = isSelected ? .checkmark : .none
-        case .search(let location):
-            content.text = location.displayTitle
-            content.image = UIImage(systemName: "plus.circle")
-            cell.accessoryType = .none
-        case .none:
-            break
+        let cell = tableView.dequeueReusableCell(
+            withIdentifier: LocationCardCell.reuseIdentifier,
+            for: indexPath
+        )
+        if let cardCell = cell as? LocationCardCell,
+           let row = state.row(at: indexPath.locationsIndexPath) {
+            cardCell.configure(with: cardModel(for: row))
         }
-
-        cell.contentConfiguration = content
-        cell.selectionStyle = .default
         return cell
     }
 
@@ -156,16 +199,8 @@ extension LocationsViewController: UITableViewDragDelegate {
 extension LocationsViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-
-        if let selection = viewModel.addSearchResult(at: indexPath.locationsIndexPath) {
-            delegate?.locationsViewController(self, didSelect: selection)
-            collapseSearchUI()
-            return
-        }
-
         guard let selection = viewModel.selectRow(at: indexPath.locationsIndexPath) else { return }
         delegate?.locationsViewController(self, didSelect: selection)
-        collapseSearchUI()
     }
 
     func tableView(
@@ -178,23 +213,10 @@ extension LocationsViewController: UITableViewDelegate {
         }
         return proposedDestinationIndexPath
     }
-
-    private func collapseSearchUI() {
-        guard searchController.isActive else { return }
-        searchController.isActive = false
-        searchController.searchBar.text = nil
-    }
 }
 
 private extension IndexPath {
     var locationsIndexPath: LocationsIndexPath {
         LocationsIndexPath(section: section, row: row)
-    }
-}
-
-extension LocationsViewController: UISearchResultsUpdating {
-    func updateSearchResults(for searchController: UISearchController) {
-        let query = searchController.searchBar.text ?? ""
-        Task { await viewModel.setSearchQuery(query) }
     }
 }
