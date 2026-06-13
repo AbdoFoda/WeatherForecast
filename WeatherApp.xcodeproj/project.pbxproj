@@ -55,12 +55,17 @@
 		FDCC39C6B8EAF7CFA370AC4A /* WeatherStormFlashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B778195BF3409CD5CA75C3C /* WeatherStormFlashView.swift */; };
 		FEDCBA9876543210ABCDEF01 /* WeatherSkyReadableText.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABCDEF0123456789FEDCBA98 /* WeatherSkyReadableText.swift */; };
 		DESIGNSYS001BUILD00001 /* WeatherDesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = DESIGNSYS001FILE00001 /* WeatherDesignSystem.swift */; };
+		GLASSSTYLE001BUILD0001 /* GlassStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = GLASSSTYLE001FILE0001 /* GlassStyle.swift */; };
 		E5F60718293A4B5C6D7E8F90 /* WeatherBackgroundSnapshotFixtures.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60718293A4B5C6D7E8F9012 /* WeatherBackgroundSnapshotFixtures.swift */; };
 		0718293A4B5C6D7E8F901234 /* WeatherBackgroundSnapshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18293A4B5C6D7E8F90123456 /* WeatherBackgroundSnapshotTests.swift */; };
 		JSONSNAP001BUILD00001 /* JSONSnapshotTesting.swift in Sources */ = {isa = PBXBuildFile; fileRef = JSONSNAP001FILE00001 /* JSONSnapshotTesting.swift */; };
 		SNAPREP001BUILD000001 /* WeatherBackgroundSnapshotRepresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = SNAPREP001FILE000001 /* WeatherBackgroundSnapshotRepresentation.swift */; };
 		LOCATIONSVC001BUILD00001 /* LocationsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = LOCATIONSVC001FILE00001 /* LocationsViewController.swift */; };
 		WEATHERPAGER001BUILD0001 /* WeatherPagerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = WEATHERPAGER001FILE0001 /* WeatherPagerViewController.swift */; };
+		MAPKITSEARCH01BUILD00001 /* MapKitLocationSearchService.swift in Sources */ = {isa = PBXBuildFile; fileRef = MAPKITSEARCH01FILE000001 /* MapKitLocationSearchService.swift */; };
+		ADDLOCATIONVC01BUILD0001 /* AddLocationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADDLOCATIONVC01FILE00001 /* AddLocationViewController.swift */; };
+		LOCATIONCARD01BUILD00001 /* LocationCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = LOCATIONCARD01FILE000001 /* LocationCardView.swift */; };
+		LOCATIONCARD02BUILD00001 /* LocationCardCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = LOCATIONCARD02FILE000001 /* LocationCardCell.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -124,12 +129,17 @@
 		F7DF9AAD1297FA426933546D /* ProxyConfigurationLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProxyConfigurationLoader.swift; sourceTree = "<group>"; };
 		ABCDEF0123456789FEDCBA98 /* WeatherSkyReadableText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherSkyReadableText.swift; sourceTree = "<group>"; };
 		DESIGNSYS001FILE00001 /* WeatherDesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherDesignSystem.swift; sourceTree = "<group>"; };
+		GLASSSTYLE001FILE0001 /* GlassStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassStyle.swift; sourceTree = "<group>"; };
 		18293A4B5C6D7E8F90123456 /* WeatherBackgroundSnapshotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherBackgroundSnapshotTests.swift; sourceTree = "<group>"; };
 		F60718293A4B5C6D7E8F9012 /* WeatherBackgroundSnapshotFixtures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherBackgroundSnapshotFixtures.swift; sourceTree = "<group>"; };
 		JSONSNAP001FILE00001 /* JSONSnapshotTesting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONSnapshotTesting.swift; sourceTree = "<group>"; };
 		SNAPREP001FILE000001 /* WeatherBackgroundSnapshotRepresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherBackgroundSnapshotRepresentation.swift; sourceTree = "<group>"; };
 		LOCATIONSVC001FILE00001 /* LocationsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationsViewController.swift; sourceTree = "<group>"; };
 		WEATHERPAGER001FILE0001 /* WeatherPagerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherPagerViewController.swift; sourceTree = "<group>"; };
+		MAPKITSEARCH01FILE000001 /* MapKitLocationSearchService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapKitLocationSearchService.swift; sourceTree = "<group>"; };
+		ADDLOCATIONVC01FILE00001 /* AddLocationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddLocationViewController.swift; sourceTree = "<group>"; };
+		LOCATIONCARD01FILE000001 /* LocationCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationCardView.swift; sourceTree = "<group>"; };
+		LOCATIONCARD02FILE000001 /* LocationCardCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationCardCell.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -218,6 +228,7 @@
 			isa = PBXGroup;
 			children = (
 				DESIGNSYS001FILE00001 /* WeatherDesignSystem.swift */,
+				GLASSSTYLE001FILE0001 /* GlassStyle.swift */,
 			);
 			path = DesignSystem;
 			sourceTree = "<group>";
@@ -274,6 +285,7 @@
 			children = (
 				F5F16F8BAC2D25F9845A85FA /* AppCoordinator.swift */,
 				09368FD00A15FC6110047639 /* LocationManager.swift */,
+				MAPKITSEARCH01FILE000001 /* MapKitLocationSearchService.swift */,
 				F7DF9AAD1297FA426933546D /* ProxyConfigurationLoader.swift */,
 			);
 			path = Application;
@@ -384,6 +396,9 @@
 		LOCATIONS000GROUP001 /* Locations */ = {
 			isa = PBXGroup;
 			children = (
+				ADDLOCATIONVC01FILE00001 /* AddLocationViewController.swift */,
+				LOCATIONCARD02FILE000001 /* LocationCardCell.swift */,
+				LOCATIONCARD01FILE000001 /* LocationCardView.swift */,
 				LOCATIONSVC001FILE00001 /* LocationsViewController.swift */,
 			);
 			path = Locations;
@@ -497,6 +512,10 @@
 				ABDBB88BF5D6D30BED223968 /* OfflineBannerView.swift in Sources */,
 				7C0D2A40BC930F4968669DDD /* ProxyConfigurationLoader.swift in Sources */,
 				LOCATIONSVC001BUILD00001 /* LocationsViewController.swift in Sources */,
+				ADDLOCATIONVC01BUILD0001 /* AddLocationViewController.swift in Sources */,
+				LOCATIONCARD01BUILD00001 /* LocationCardView.swift in Sources */,
+				LOCATIONCARD02BUILD00001 /* LocationCardCell.swift in Sources */,
+				MAPKITSEARCH01BUILD00001 /* MapKitLocationSearchService.swift in Sources */,
 				WEATHERPAGER001BUILD0001 /* WeatherPagerViewController.swift in Sources */,
 				08881BCB571A08EB72EBDF3C /* SceneDelegate.swift in Sources */,
 				22BA52706C31FAE812E30434 /* TemperatureGraphCell.swift in Sources */,
@@ -519,6 +538,7 @@
 				FDCC39C6B8EAF7CFA370AC4A /* WeatherStormFlashView.swift in Sources */,
 				1835B6372518624C2124F092 /* WeatherSummaryView.swift in Sources */,
 				DESIGNSYS001BUILD00001 /* WeatherDesignSystem.swift in Sources */,
+				GLASSSTYLE001BUILD0001 /* GlassStyle.swift in Sources */,
 				FEDCBA9876543210ABCDEF01 /* WeatherSkyReadableText.swift in Sources */,
 				EDA5CC13DB84A6A450CE5B34 /* WeatherTileView.swift in Sources */,
 			);

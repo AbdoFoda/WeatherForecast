@@ -1,14 +1,7 @@
 import UIKit
 import WeatherCore
 
-@MainActor
-protocol WeatherPagerViewControllerDelegate: AnyObject {
-    func weatherPagerViewControllerDidRequestLocationsList(_ controller: WeatherPagerViewController)
-}
-
 final class WeatherPagerViewController: UIViewController {
-    weak var delegate: WeatherPagerViewControllerDelegate?
-
     private let locationsViewModel: LocationsViewModelProtocol
     private let makeWeatherViewModel: () -> LocationWeatherViewModelProtocol
 
@@ -22,6 +15,7 @@ final class WeatherPagerViewController: UIViewController {
     private var pagesByID: [String: LocationWeatherViewController] = [:]
     private var currentIndex = 0
     private var pendingState: LocationsViewState?
+    private var isRefreshingPageContainer = false
 
     init(
         locationsViewModel: LocationsViewModelProtocol,
@@ -39,11 +33,33 @@ final class WeatherPagerViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
-        configureNavigationItem()
         configurePageViewController()
         configurePageControl()
         apply(pendingState ?? locationsViewModel.state)
         pendingState = nil
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        guard !isRefreshingPageContainer, pageContainerNeedsRefresh else { return }
+        refreshPageContainerLayout()
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        refreshPageContainerLayout()
+    }
+
+    override func viewSafeAreaInsetsDidChange() {
+        super.viewSafeAreaInsetsDidChange()
+        refreshPageContainerLayout()
+    }
+
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        super.viewWillTransition(to: size, with: coordinator)
+        coordinator.animate(alongsideTransition: { [weak self] _ in
+            self?.refreshPageContainerLayout()
+        })
     }
 
     func apply(_ state: LocationsViewState) {
@@ -65,18 +81,6 @@ final class WeatherPagerViewController: UIViewController {
             showPage(at: selectedIndex, animated: true)
         }
         updatePageControl()
-    }
-
-    private func configureNavigationItem() {
-        navigationItem.hidesBackButton = true
-        let locationsButton = UIBarButtonItem(
-            image: UIImage(systemName: "list.bullet"),
-            style: .plain,
-            target: self,
-            action: #selector(openLocations)
-        )
-        locationsButton.accessibilityLabel = L10n.Locations.title
-        navigationItem.rightBarButtonItem = locationsButton
     }
 
     private func configurePageViewController() {
@@ -159,8 +163,41 @@ final class WeatherPagerViewController: UIViewController {
         }
     }
 
-    @objc private func openLocations() {
-        delegate?.weatherPagerViewControllerDidRequestLocationsList(self)
+    func refreshPageContainerLayout() {
+        guard !isRefreshingPageContainer else { return }
+        isRefreshingPageContainer = true
+        defer { isRefreshingPageContainer = false }
+
+        if let pageScrollView = pageViewController.view.subviews.first(where: { $0 is UIScrollView }) {
+            pageScrollView.frame = pageViewController.view.bounds
+            pageScrollView.layoutIfNeeded()
+        }
+
+        guard selections.indices.contains(currentIndex) else { return }
+        let controller = page(at: currentIndex)
+        pageViewController.setViewControllers(
+            [controller],
+            direction: .forward,
+            animated: false
+        )
+        relayoutAllWeatherPages()
+    }
+
+    private var pageContainerNeedsRefresh: Bool {
+        let containerBounds = pageViewController.view.bounds
+        guard containerBounds.width > 0 else { return false }
+
+        if let pageScrollView = pageViewController.view.subviews.first(where: { $0 is UIScrollView }),
+           abs(pageScrollView.bounds.width - containerBounds.width) > 1 {
+            return true
+        }
+
+        guard let weatherPage = pageViewController.viewControllers?.first else { return false }
+        return abs(weatherPage.view.bounds.width - containerBounds.width) > 1
+    }
+
+    func relayoutAllWeatherPages() {
+        pagesByID.values.forEach { $0.refreshLayoutAfterExternalTransition() }
     }
 
     @objc private func pageControlChanged() {

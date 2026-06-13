@@ -4,6 +4,7 @@ import WeatherCore
 final class WeatherTileView: UIView {
     var tileKind: TileKind?
 
+    private let glassView = GlassStyle.makeBlurView()
     private let titleLabel = UILabel()
     private let valueLabel = UILabel()
     private let subtitleLabel = UILabel()
@@ -18,21 +19,23 @@ final class WeatherTileView: UIView {
     }
 
     private func setup() {
-        backgroundColor = WeatherDesignSystem.Tile.backgroundColor
-        layer.cornerRadius = WeatherDesignSystem.Tile.cornerRadius
-        layer.cornerCurve = .continuous
+        backgroundColor = .clear
+        GlassStyle.applyHairline(to: layer, radius: WeatherDesignSystem.Tile.cornerRadius)
         clipsToBounds = true
+
+        addSubview(glassView)
 
         titleLabel.font = WeatherDesignSystem.Typography.preferred(.headline)
         titleLabel.adjustsFontForContentSizeCategory = true
-        titleLabel.textColor = .secondaryLabel
+        titleLabel.textColor = GlassStyle.textSecondary
 
         valueLabel.font = WeatherDesignSystem.Typography.preferred(.title1)
         valueLabel.adjustsFontForContentSizeCategory = true
+        valueLabel.textColor = GlassStyle.textPrimary
 
         subtitleLabel.font = WeatherDesignSystem.Typography.preferred(.subheadline)
         subtitleLabel.adjustsFontForContentSizeCategory = true
-        subtitleLabel.textColor = .secondaryLabel
+        subtitleLabel.textColor = GlassStyle.textSecondary
         subtitleLabel.numberOfLines = 0
 
         [titleLabel, valueLabel, subtitleLabel].forEach { addSubview($0) }
@@ -40,6 +43,7 @@ final class WeatherTileView: UIView {
 
     override func layoutSubviews() {
         super.layoutSubviews()
+        glassView.frame = bounds
         let padding = WeatherDesignSystem.Tile.padding
         let width = bounds.width - padding * 2
 

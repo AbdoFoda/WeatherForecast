@@ -38,6 +38,11 @@ final class TilesContainerView: UIView {
         refreshVisibleTileContent()
     }
 
+    func prepareForContainerSizeChange() {
+        appliedSizeClass = nil
+        invalidateIntrinsicContentSize()
+    }
+
     private func refreshVisibleTileContent() {
         let itemsByID = Dictionary(uniqueKeysWithValues: allTileItems.map { ($0.id, $0) })
         for (index, view) in tileViews.enumerated() {

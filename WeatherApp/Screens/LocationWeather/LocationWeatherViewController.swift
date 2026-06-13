@@ -40,10 +40,12 @@ final class LocationWeatherViewController: UIViewController {
     private let permissionView = LocationPermissionView()
     private let offlineBanner = OfflineBannerView()
     private let refreshControl = UIRefreshControl()
+    private let refreshSpinner = UIActivityIndicatorView(style: .medium)
 
     private var tilesHeightConstraint: NSLayoutConstraint?
     private var graphHeightConstraint: NSLayoutConstraint?
     private var summaryTopConstraint: NSLayoutConstraint?
+    private var lastTilesLayoutBounds: CGSize = .zero
 
     init(
         viewModel: LocationWeatherViewModelProtocol,
@@ -105,6 +107,15 @@ final class LocationWeatherViewController: UIViewController {
         refreshControl.addTarget(self, action: #selector(handleRefresh), for: .valueChanged)
         scrollView.refreshControl = refreshControl
 
+        refreshControl.tintColor = .clear
+        refreshSpinner.translatesAutoresizingMaskIntoConstraints = false
+        refreshSpinner.hidesWhenStopped = true
+        refreshSpinner.color = .white
+        refreshSpinner.layer.shadowColor = UIColor.black.cgColor
+        refreshSpinner.layer.shadowOpacity = 0.25
+        refreshSpinner.layer.shadowRadius = 3
+        refreshSpinner.layer.shadowOffset = .zero
+
         tilesView.onOrderChanged = { [weak self] order in
             self?.viewModel.saveTileOrder(order)
         }
@@ -127,6 +138,7 @@ final class LocationWeatherViewController: UIViewController {
         view.addSubview(loadingView)
         view.addSubview(permissionView)
         view.addSubview(offlineBanner)
+        view.addSubview(refreshSpinner)
 
         graphHeightConstraint = graphView.heightAnchor.constraint(
             equalToConstant: WeatherDesignSystem.Layout.graphHeight
@@ -150,9 +162,9 @@ final class LocationWeatherViewController: UIViewController {
             contentView.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor),
             contentView.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor),
             contentView.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor),
-            contentView.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor),
+            contentView.widthAnchor.constraint(equalTo: view.widthAnchor),
             contentView.heightAnchor.constraint(
-                greaterThanOrEqualTo: scrollView.frameLayoutGuide.heightAnchor,
+                greaterThanOrEqualTo: scrollView.heightAnchor,
                 constant: 1
             ),
 
@@ -214,6 +226,12 @@ final class LocationWeatherViewController: UIViewController {
                 equalTo: view.safeAreaLayoutGuide.bottomAnchor,
                 constant: -WeatherDesignSystem.Layout.offlineBannerBottomInset
             ),
+
+            refreshSpinner.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            refreshSpinner.centerYAnchor.constraint(
+                equalTo: view.safeAreaLayoutGuide.topAnchor,
+                constant: WeatherDesignSystem.Layout.summarySafeAreaExtra
+            ),
         ])
 
         summaryTopConstraint = topView.topAnchor.constraint(
@@ -229,10 +247,20 @@ final class LocationWeatherViewController: UIViewController {
         tilesHeightConstraint?.constant = tilesView.intrinsicContentSize.height
     }
 
+    func refreshLayoutAfterExternalTransition() {
+        lastTilesLayoutBounds = .zero
+        graphView.invalidateGraphLayout()
+        tilesView.prepareForContainerSizeChange()
+        view.setNeedsLayout()
+        view.layoutIfNeeded()
+    }
+
     private func updateTilesLayoutForAvailableSpace() {
         contentView.layoutIfNeeded()
 
         let visibleHeight = scrollView.bounds.height
+        let visibleWidth = scrollView.bounds.width
+        let boundsSize = CGSize(width: visibleWidth, height: visibleHeight)
 
         let fixedHeight =
             (summaryTopConstraint?.constant ?? 0)
@@ -244,9 +272,17 @@ final class LocationWeatherViewController: UIViewController {
             + WeatherDesignSystem.Layout.attributionBottomInset * 2
 
         let availableForTiles = max(0, visibleHeight - fixedHeight)
-        guard abs(tilesView.layoutTargetHeight - availableForTiles) > 0.5 else { return }
+        let boundsChanged =
+            abs(boundsSize.width - lastTilesLayoutBounds.width) > 0.5
+            || abs(boundsSize.height - lastTilesLayoutBounds.height) > 0.5
+        let targetHeightChanged = abs(tilesView.layoutTargetHeight - availableForTiles) > 0.5
+        guard boundsChanged || targetHeightChanged else { return }
 
+        lastTilesLayoutBounds = boundsSize
         tilesView.layoutTargetHeight = availableForTiles
+        if boundsChanged {
+            tilesView.prepareForContainerSizeChange()
+        }
         tilesView.invalidateIntrinsicContentSize()
         updateTilesHeight()
     }
@@ -256,9 +292,16 @@ final class LocationWeatherViewController: UIViewController {
         updateTilesLayoutForAvailableSpace()
     }
 
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        refreshLayoutAfterExternalTransition()
+    }
+
     override func viewSafeAreaInsetsDidChange() {
         super.viewSafeAreaInsetsDidChange()
         summaryTopConstraint?.constant = view.safeAreaInsets.top + WeatherDesignSystem.Layout.summarySafeAreaExtra
+        lastTilesLayoutBounds = .zero
+        view.setNeedsLayout()
     }
 
     private func bindViewModel() {
@@ -273,6 +316,7 @@ final class LocationWeatherViewController: UIViewController {
             case .loaded(let displayData, let notice):
                 self.loadingView.stopAnimating()
                 self.refreshControl.endRefreshing()
+                self.refreshSpinner.stopAnimating()
                 self.permissionView.setVisible(false)
                 self.setContentHidden(false)
                 self.topView.configure(with: displayData)
@@ -288,6 +332,7 @@ final class LocationWeatherViewController: UIViewController {
             case .unavailable(let notice):
                 self.loadingView.stopAnimating()
                 self.refreshControl.endRefreshing()
+                self.refreshSpinner.stopAnimating()
                 self.permissionView.setVisible(false)
                 self.setContentHidden(true)
                 self.setOfflineBannerVisible(notice == .offline)
@@ -352,6 +397,7 @@ final class LocationWeatherViewController: UIViewController {
             refreshControl.endRefreshing()
             return
         }
+        refreshSpinner.startAnimating()
         Task {
             await viewModel.refresh(lat: lat, lon: lon)
         }
@@ -380,6 +426,8 @@ extension LocationWeatherViewController: LocationManagerDelegate {
 
     func locationManager(_ manager: LocationManager, didFailWithError error: Error) {
         loadingView.stopAnimating()
+        refreshSpinner.stopAnimating()
+        refreshControl.endRefreshing()
         setContentHidden(true)
         setOfflineBannerVisible(false)
         permissionView.configure(message: AppL10n.simulatorLocationHint)

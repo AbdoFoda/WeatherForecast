@@ -8,12 +8,12 @@ final class TemperatureGraphCollectionView: UIView {
 
     private lazy var collectionView: UICollectionView = {
         let view = UICollectionView(frame: .zero, collectionViewLayout: graphLayout)
-        view.backgroundColor = WeatherDesignSystem.Graph.Container.backgroundColor
-        view.layer.cornerRadius = WeatherDesignSystem.Graph.Container.cornerRadius
+        view.backgroundColor = .clear
+        view.backgroundView = GlassStyle.makeBlurView()
+        GlassStyle.applyHairline(to: view.layer, radius: WeatherDesignSystem.Graph.Container.cornerRadius)
         view.clipsToBounds = true
         view.showsHorizontalScrollIndicator = false
         view.dataSource = self
-        view.delegate = self
         view.contentInset = UIEdgeInsets(
             top: 0,
             left: WeatherDesignSystem.Graph.Container.contentInsetHorizontal,
@@ -34,9 +34,10 @@ final class TemperatureGraphCollectionView: UIView {
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        sectionLabel.text = "Hourly Forecast"
+        sectionLabel.text = L10n.Summary.hourlyForecast
         sectionLabel.font = WeatherDesignSystem.Typography.preferred(.headline)
         sectionLabel.adjustsFontForContentSizeCategory = true
+        WeatherSkyReadableText.applyPrimary(to: sectionLabel)
         sectionLabel.translatesAutoresizingMaskIntoConstraints = false
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(sectionLabel)
@@ -145,8 +146,3 @@ extension TemperatureGraphCollectionView: UICollectionViewDataSource {
     }
 }
 
-extension TemperatureGraphCollectionView: UICollectionViewDelegate {
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        graphLayout.invalidateLayout()
-    }
-}

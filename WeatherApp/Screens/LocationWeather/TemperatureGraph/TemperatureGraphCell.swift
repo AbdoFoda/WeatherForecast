@@ -35,11 +35,12 @@ final class TemperatureGraphCell: UICollectionViewCell {
         timeLabel.font = WeatherDesignSystem.Typography.preferred(.caption1)
         timeLabel.adjustsFontForContentSizeCategory = true
         timeLabel.textAlignment = .center
+        timeLabel.textColor = GlassStyle.textPrimary
 
         temperatureLabel.font = WeatherDesignSystem.Typography.preferred(.caption1)
         temperatureLabel.adjustsFontForContentSizeCategory = true
         temperatureLabel.textAlignment = .center
-        temperatureLabel.textColor = .secondaryLabel
+        temperatureLabel.textColor = GlassStyle.textSecondary
 
         iconView.contentMode = .scaleAspectFit
 
@@ -52,7 +53,7 @@ final class TemperatureGraphCell: UICollectionViewCell {
         curveLayer.lineJoin = .round
 
         dotLayer.fillColor = WeatherDesignSystem.Graph.Cell.curveColor.cgColor
-        dotLayer.strokeColor = UIColor.systemBackground.cgColor
+        dotLayer.strokeColor = UIColor.white.cgColor
         dotLayer.lineWidth = WeatherDesignSystem.Graph.Cell.dotBorderWidth
 
         layer.addSublayer(curveLayer)
@@ -117,9 +118,9 @@ final class TemperatureGraphCell: UICollectionViewCell {
 
         if item.isCurrentHour {
             timeLabel.font = WeatherDesignSystem.Typography.preferred(.caption1).bold()
-            temperatureLabel.textColor = .label
+            temperatureLabel.textColor = GlassStyle.textPrimary
         } else {
-            temperatureLabel.textColor = .secondaryLabel
+            temperatureLabel.textColor = GlassStyle.textSecondary
         }
 
         imageTask?.cancel()

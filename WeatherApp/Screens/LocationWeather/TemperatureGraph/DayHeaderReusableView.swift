@@ -8,15 +8,15 @@ final class DayHeaderReusableView: UICollectionReusableView {
     override init(frame: CGRect) {
         super.init(frame: frame)
         isUserInteractionEnabled = false
-        backgroundColor = .systemBackground
+        backgroundColor = UIColor.white.withAlphaComponent(0.16)
         layer.cornerRadius = WeatherDesignSystem.Graph.DayHeader.cornerRadius
         layer.borderWidth = WeatherDesignSystem.Graph.DayHeader.borderWidth
-        layer.borderColor = UIColor.separator.cgColor
+        layer.borderColor = UIColor.white.withAlphaComponent(0.28).cgColor
         clipsToBounds = true
 
         label.font = WeatherDesignSystem.Typography.preferred(.footnote)
         label.adjustsFontForContentSizeCategory = true
-        label.textColor = .label
+        label.textColor = GlassStyle.textPrimary
         addSubview(label)
     }
 
