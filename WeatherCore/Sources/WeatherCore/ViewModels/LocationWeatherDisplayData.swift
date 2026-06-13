@@ -21,6 +21,8 @@ public struct LocationWeatherDisplayData: Sendable, Codable {
     public let backgroundScene: WeatherScene
     public let cloudCoveragePercent: Int
     public let windSpeedMetersPerSecond: Double
+    public let postalCode: String?
+    public let altitude: String?
 
     public let hourlyItems: [HourlyDisplayItem]
     public let tiles: [TileDisplayItem]
@@ -46,7 +48,9 @@ public struct LocationWeatherDisplayData: Sendable, Codable {
         cloudCoveragePercent: Int,
         windSpeedMetersPerSecond: Double,
         hourlyItems: [HourlyDisplayItem],
-        tiles: [TileDisplayItem]
+        tiles: [TileDisplayItem],
+        postalCode: String? = nil,
+        altitude: String? = nil
     ) {
         self.cityName = cityName
         self.countryCode = countryCode
@@ -69,9 +73,23 @@ public struct LocationWeatherDisplayData: Sendable, Codable {
         self.windSpeedMetersPerSecond = windSpeedMetersPerSecond
         self.hourlyItems = hourlyItems
         self.tiles = tiles
+        self.postalCode = postalCode
+        self.altitude = altitude
     }
 
     public func withTiles(_ tiles: [TileDisplayItem]) -> LocationWeatherDisplayData {
+        copy(tiles: tiles)
+    }
+
+    public func withLocationDetails(postalCode: String?, altitude: String?) -> LocationWeatherDisplayData {
+        copy(postalCode: postalCode, altitude: altitude)
+    }
+
+    private func copy(
+        tiles: [TileDisplayItem]? = nil,
+        postalCode: String?? = nil,
+        altitude: String?? = nil
+    ) -> LocationWeatherDisplayData {
         LocationWeatherDisplayData(
             cityName: cityName,
             countryCode: countryCode,
@@ -93,61 +111,9 @@ public struct LocationWeatherDisplayData: Sendable, Codable {
             cloudCoveragePercent: cloudCoveragePercent,
             windSpeedMetersPerSecond: windSpeedMetersPerSecond,
             hourlyItems: hourlyItems,
-            tiles: tiles
+            tiles: tiles ?? self.tiles,
+            postalCode: postalCode ?? self.postalCode,
+            altitude: altitude ?? self.altitude
         )
-    }
-}
-
-public struct HourlyDisplayItem: Sendable, Codable {
-    public let time: String
-    public let temperature: String
-    public let iconURL: URL?
-    public let temperatureDotY: CGFloat
-    public let isCurrentHour: Bool
-    public let dayLabel: String?
-    public let precipitationChance: String?
-
-    public init(
-        time: String,
-        temperature: String,
-        iconURL: URL?,
-        temperatureDotY: CGFloat,
-        isCurrentHour: Bool,
-        dayLabel: String?,
-        precipitationChance: String?
-    ) {
-        self.time = time
-        self.temperature = temperature
-        self.iconURL = iconURL
-        self.temperatureDotY = temperatureDotY
-        self.isCurrentHour = isCurrentHour
-        self.dayLabel = dayLabel
-        self.precipitationChance = precipitationChance
-    }
-}
-
-public struct TileDisplayItem: Sendable, Codable {
-    public let id: String
-    public let title: String
-    public let value: String
-    public let subtitle: String?
-    public let tileSize: TileSize
-
-    public enum TileSize: String, Sendable, Codable {
-        case standard, wide, tall
-    }
-
-    public init(
-        id: String,
-        title: String,
-        value: String,
-        subtitle: String?,
-        tileSize: TileSize
-    ) {
-        self.id = id
-        self.title = title
-        self.value = value
-        self.subtitle = subtitle
-        self.tileSize = tileSize
     }
 }

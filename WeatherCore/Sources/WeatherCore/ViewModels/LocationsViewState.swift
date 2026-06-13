@@ -1,25 +1,5 @@
 import Foundation
 
-public struct LocationsIndexPath: Equatable, Sendable {
-    public let section: Int
-    public let row: Int
-
-    public init(section: Int, row: Int) {
-        self.section = section
-        self.row = row
-    }
-}
-
-public enum LocationsSection: Sendable {
-    case current
-    case saved
-}
-
-public enum LocationsRow: Equatable, Sendable {
-    case currentLocation(isSelected: Bool)
-    case saved(LocationModel, isSelected: Bool)
-}
-
 public struct LocationsViewState: Equatable, Sendable {
     public let savedLocations: [LocationModel]
     public let selectedLocationID: String
