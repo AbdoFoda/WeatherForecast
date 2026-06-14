@@ -13,6 +13,7 @@ public final class LocationWeatherViewModel: LocationWeatherViewModelProtocol {
     private var locationDetails: LocationDetails?
     private var resolvedPostalCode: String?
     private var barometricAltitudeMeters: Double?
+    private var persistTask: Task<Void, Never>?
 
     public init(
         weatherService: WeatherServiceProtocol,
@@ -65,7 +66,8 @@ public final class LocationWeatherViewModel: LocationWeatherViewModelProtocol {
         let tiles = TileOrderApplier.apply(order: fullOrder, to: fullDisplayData.tiles)
         let updated = fullDisplayData.withTiles(tiles)
         self.fullDisplayData = updated
-        Task { await persistToDisk(updated) }
+        persistTask?.cancel()
+        persistTask = Task { [weak self] in await self?.persistToDisk(updated) }
     }
 
     public var hasHiddenTiles: Bool {
