@@ -44,9 +44,6 @@ __pycache__/
 .wrangler/
 .dev.vars
 
-# App configuration
-WeatherApp/Resources/Config.plist
-
 # CocoaPods
 Pods/
 
