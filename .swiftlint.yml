@@ -40,3 +40,10 @@ identifier_name:
 
 nesting:
   type_level: 2
+
+custom_rules:
+  no_file_header:
+    name: "File header boilerplate"
+    regex: '//\s+Created by .+ on \d'
+    message: "Remove Xcode file-header boilerplate (filename/author/date)."
+    severity: error
