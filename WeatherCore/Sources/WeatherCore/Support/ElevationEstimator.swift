@@ -1,6 +1,12 @@
 import Foundation
 
 public enum ElevationEstimator {
+    // International barometric formula: h = scale * (1 - (p/p0)^exponent)
+    private enum Barometric {
+        static let scaleMeters = 44_330.0
+        static let pressureExponent = 1.0 / 5.255
+    }
+
     public static func metersAboveSeaLevel(from main: MainWeather) -> Double? {
         metersAboveSeaLevel(
             seaLevelHPa: main.seaLevel,
@@ -20,6 +26,6 @@ public enum ElevationEstimator {
 
         let ratio = Double(ground) / Double(sea)
         guard ratio > 0 else { return nil }
-        return 44_330.0 * (1.0 - pow(ratio, 0.1903))
+        return Barometric.scaleMeters * (1.0 - pow(ratio, Barometric.pressureExponent))
     }
 }
