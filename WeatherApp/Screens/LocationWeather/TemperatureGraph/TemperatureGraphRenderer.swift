@@ -44,7 +44,7 @@ enum TemperatureGraphRenderer {
             normalized: normalizedY,
             graphHeight: graphHeight,
             inset: graphInset
-        ) - (WeatherDesignSystem.Graph.Cell.curveLineWidth / 2)
+        )
         return CGPoint(x: cellWidth / 2, y: y)
     }
 }
