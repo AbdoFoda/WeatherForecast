@@ -1,6 +1,6 @@
 import WeatherCore
 
-final class MockWeatherServiceForApp: WeatherServiceProtocol, @unchecked Sendable {
+actor MockWeatherServiceForApp: WeatherServiceProtocol {
     func fetchCurrentWeather(lat: Double, lon: Double) async throws -> CurrentWeatherResponse {
         throw WeatherError.invalidResponse
     }

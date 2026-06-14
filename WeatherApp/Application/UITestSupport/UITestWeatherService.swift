@@ -2,7 +2,7 @@
 import Foundation
 import WeatherCore
 
-final class UITestWeatherService: WeatherServiceProtocol, @unchecked Sendable {
+actor UITestWeatherService: WeatherServiceProtocol {
     private let offline: Bool
     private let decoder = JSONDecoder()
 

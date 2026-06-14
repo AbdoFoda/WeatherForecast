@@ -2,7 +2,7 @@
 import Foundation
 import WeatherCore
 
-final class UITestLocationSearchService: LocationSearchProviding, @unchecked Sendable {
+actor UITestLocationSearchService: LocationSearchProviding {
     func search(query: String) async throws -> [LocationModel] {
         let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return [] }
