@@ -3,6 +3,8 @@ import WeatherCore
 
 final class WeatherStormFlashView: UIView {
     private var flashTimer: Timer?
+    private var isActive = false
+    private var isAnimated = false
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -19,13 +21,28 @@ final class WeatherStormFlashView: UIView {
     }
 
     func configure(active: Bool, animated: Bool) {
-        flashTimer?.invalidate()
-        flashTimer = nil
+        isActive = active
+        isAnimated = animated
         layer.removeAllAnimations()
         backgroundColor = UIColor.white.withAlphaComponent(0)
         isHidden = !active
+        startTimerIfNeeded()
+    }
 
-        guard active, animated, !UIAccessibility.isReduceMotionEnabled else { return }
+    func pause() {
+        flashTimer?.invalidate()
+        flashTimer = nil
+    }
+
+    func resume() {
+        startTimerIfNeeded()
+    }
+
+    private func startTimerIfNeeded() {
+        flashTimer?.invalidate()
+        flashTimer = nil
+
+        guard isActive, isAnimated, !UIAccessibility.isReduceMotionEnabled else { return }
 
         flashTimer = Timer.scheduledTimer(
             withTimeInterval: WeatherBackgroundConstants.Storm.flashInterval,

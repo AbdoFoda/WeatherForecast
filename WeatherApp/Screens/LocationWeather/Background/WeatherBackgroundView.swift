@@ -36,6 +36,7 @@ final class WeatherBackgroundView: UIView {
         layer.speed = 0
         layer.timeOffset = pausedTime
         particleEmitter?.birthRate = 0
+        stormFlash.pause()
     }
 
     func resumeAnimations() {
@@ -47,6 +48,7 @@ final class WeatherBackgroundView: UIView {
         let timeSincePause = layer.convertTime(CACurrentMediaTime(), from: nil) - pausedTime
         layer.beginTime = timeSincePause
         particleEmitter?.birthRate = 1
+        stormFlash.resume()
     }
 
     override func layoutSubviews() {
