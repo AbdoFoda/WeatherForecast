@@ -4,7 +4,10 @@ import Synchronization
 
 // @unchecked Sendable: all mutable state is guarded by the Mutex below.
 public final class NetworkReachabilityMonitor: NetworkReachabilityMonitoring, @unchecked Sendable {
-    public var onConnectionRestored: (@MainActor () -> Void)?
+    public var onConnectionRestored: (@MainActor () -> Void)? {
+        get { handler.withLock { $0 } }
+        set { handler.withLock { $0 = newValue } }
+    }
 
     private let monitor: NWPathMonitor
     private let queue: DispatchQueue
@@ -15,6 +18,7 @@ public final class NetworkReachabilityMonitor: NetworkReachabilityMonitoring, @u
     }
 
     private let state = Mutex(State())
+    private let handler = Mutex<(@MainActor () -> Void)?>(nil)
 
     public init() {
         monitor = NWPathMonitor()
@@ -46,9 +50,9 @@ public final class NetworkReachabilityMonitor: NetworkReachabilityMonitoring, @u
 
         guard hadInitialPath, !wasConnected, isSatisfied else { return }
 
-        let handler = onConnectionRestored
+        let restored = handler.withLock { $0 }
         Task { @MainActor in
-            handler?()
+            restored?()
         }
     }
 }
