@@ -105,7 +105,6 @@ enum WeatherDesignSystem {
             static let curveLineWidth: CGFloat = 2.5
             static let dotRadius: CGFloat = 5
             static let dotBorderWidth: CGFloat = 2
-            static let curveColor: UIColor = .systemOrange
         }
 
         enum DayHeader {
@@ -123,5 +122,32 @@ enum WeatherDesignSystem {
         static let backgroundColor: UIColor = .secondarySystemBackground
         static let transitionDuration: TimeInterval = 0.3
         static let backOnlineDisplayDuration: TimeInterval = 2.5
+    }
+
+    enum Glass {
+        static let hairlineWidth: CGFloat = 1
+        static let selectedHairlineWidth: CGFloat = 2
+        static let glowOpacity: Float = 0.45
+        static let glowRadius: CGFloat = 16
+        static let panelTintTopAlpha: CGFloat = 0.32
+        static let panelTintBottomAlpha: CGFloat = 0.50
+        static let cardTintTopAlpha: CGFloat = 0.20
+        static let cardTintBottomAlpha: CGFloat = 0.30
+        static let inactiveDotAlpha: CGFloat = 0.45
+    }
+
+    enum PageControl {
+        static let bottomInset = Spacing.sm
+        static let glassHeight: CGFloat = 34
+        static let glassHorizontalPadding = Spacing.lg
+    }
+
+    enum ThemeSettings {
+        static let gridSpacing = Spacing.lg
+        static let cardHeight: CGFloat = 124
+        static let cardCornerRadius: CGFloat = 18
+        static let cardPadding: CGFloat = 14
+        static let swatchSize: CGFloat = 18
+        static let columns: CGFloat = 2
     }
 }

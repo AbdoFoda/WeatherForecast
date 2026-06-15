@@ -3,6 +3,7 @@ enum AccessibilityIdentifier {
         static let table = "locations.table"
         static let addButton = "locations.addButton"
         static let currentCell = "locations.cell.current"
+        static let settingsButton = "locations.settingsButton"
         static func cell(id: String) -> String { "locations.cell.\(id)" }
     }
 

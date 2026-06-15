@@ -45,13 +45,31 @@ final class LocationsViewController: UIViewController {
 
     private func configureBackground() {
         view.backgroundColor = .systemGroupedBackground
-        backgroundGradient.colors = [
-            UIColor(red: 0.93, green: 0.95, blue: 0.99, alpha: 1).cgColor,
-            UIColor(red: 0.84, green: 0.89, blue: 0.96, alpha: 1).cgColor
-        ]
         backgroundGradient.startPoint = CGPoint(x: 0.5, y: 0)
         backgroundGradient.endPoint = CGPoint(x: 0.5, y: 1)
         view.layer.insertSublayer(backgroundGradient, at: 0)
+        applyThemeBackground()
+
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(applyTheme),
+            name: .themeDidChange,
+            object: nil
+        )
+    }
+
+    private func applyThemeBackground() {
+        let palette = ThemeManager.shared.palette
+        backgroundGradient.colors = [
+            palette.listBackgroundTop.cgColor,
+            palette.listBackgroundBottom.cgColor
+        ]
+    }
+
+    @objc private func applyTheme() {
+        applyThemeBackground()
+        guard isViewLoaded else { return }
+        tableView.reloadData()
     }
 
     override func viewDidLayoutSubviews() {
@@ -67,10 +85,23 @@ final class LocationsViewController: UIViewController {
         )
         addButton.accessibilityIdentifier = AccessibilityIdentifier.Locations.addButton
         navigationItem.rightBarButtonItem = addButton
+
+        let settingsButton = UIBarButtonItem(
+            image: UIImage(systemName: "paintpalette"),
+            style: .plain,
+            target: self,
+            action: #selector(settingsTapped)
+        )
+        settingsButton.accessibilityIdentifier = AccessibilityIdentifier.Locations.settingsButton
+        navigationItem.leftBarButtonItem = settingsButton
     }
 
     @objc private func addTapped() {
         delegate?.locationsViewControllerDidTapAdd(self)
+    }
+
+    @objc private func settingsTapped() {
+        delegate?.locationsViewControllerDidTapSettings(self)
     }
 
     private func configureTableView() {

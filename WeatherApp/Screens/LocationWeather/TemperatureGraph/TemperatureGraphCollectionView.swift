@@ -9,7 +9,9 @@ final class TemperatureGraphCollectionView: UIView {
     private lazy var collectionView: UICollectionView = {
         let view = UICollectionView(frame: .zero, collectionViewLayout: graphLayout)
         view.backgroundColor = .clear
-        view.backgroundView = GlassStyle.makeBlurView()
+        view.backgroundView = TintedGlassBackgroundView(
+            cornerRadius: WeatherDesignSystem.Graph.Container.cornerRadius
+        )
         GlassStyle.applyHairline(to: view.layer, radius: WeatherDesignSystem.Graph.Container.cornerRadius)
         view.clipsToBounds = true
         view.showsHorizontalScrollIndicator = false
@@ -67,10 +69,25 @@ final class TemperatureGraphCollectionView: UIView {
             ),
             collectionView.bottomAnchor.constraint(equalTo: bottomAnchor)
         ])
+
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(applyTheme),
+            name: .themeDidChange,
+            object: nil
+        )
     }
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+    @objc private func applyTheme() {
+        GlassStyle.applyHairline(
+            to: collectionView.layer,
+            radius: WeatherDesignSystem.Graph.Container.cornerRadius
+        )
+        collectionView.reloadData()
     }
 
     override var intrinsicContentSize: CGSize {

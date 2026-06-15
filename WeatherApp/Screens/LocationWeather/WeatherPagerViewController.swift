@@ -11,6 +11,7 @@ final class WeatherPagerViewController: UIViewController {
         navigationOrientation: .horizontal
     )
     private let pageControl = UIPageControl()
+    private let pageControlGlass = TintedGlassBackgroundView(capsule: true, showsBorder: true)
 
     private var selections: [LocationSelection] = []
     private var pagesByID: [String: LocationWeatherViewController] = [:]
@@ -103,16 +104,48 @@ final class WeatherPagerViewController: UIViewController {
 
     private func configurePageControl() {
         pageControl.hidesForSinglePage = true
-        pageControl.currentPageIndicatorTintColor = .label
-        pageControl.pageIndicatorTintColor = .tertiaryLabel
         pageControl.backgroundStyle = .minimal
         pageControl.translatesAutoresizingMaskIntoConstraints = false
         pageControl.addTarget(self, action: #selector(pageControlChanged), for: .valueChanged)
+
+        pageControlGlass.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(pageControlGlass)
         view.addSubview(pageControl)
+
         NSLayoutConstraint.activate([
             pageControl.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            pageControl.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+            pageControl.bottomAnchor.constraint(
+                equalTo: view.safeAreaLayoutGuide.bottomAnchor,
+                constant: -WeatherDesignSystem.PageControl.bottomInset
+            ),
+
+            pageControlGlass.leadingAnchor.constraint(
+                equalTo: pageControl.leadingAnchor,
+                constant: -WeatherDesignSystem.PageControl.glassHorizontalPadding
+            ),
+            pageControlGlass.trailingAnchor.constraint(
+                equalTo: pageControl.trailingAnchor,
+                constant: WeatherDesignSystem.PageControl.glassHorizontalPadding
+            ),
+            pageControlGlass.centerYAnchor.constraint(equalTo: pageControl.centerYAnchor),
+            pageControlGlass.heightAnchor.constraint(
+                equalToConstant: WeatherDesignSystem.PageControl.glassHeight
+            )
         ])
+
+        applyPageControlTheme()
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(applyPageControlTheme),
+            name: .themeDidChange,
+            object: nil
+        )
+    }
+
+    @objc private func applyPageControlTheme() {
+        pageControl.currentPageIndicatorTintColor = GlassStyle.accent
+        pageControl.pageIndicatorTintColor = UIColor.white
+            .withAlphaComponent(WeatherDesignSystem.Glass.inactiveDotAlpha)
     }
 
     private func updatePageControl() {
@@ -121,6 +154,7 @@ final class WeatherPagerViewController: UIViewController {
         if !selections.isEmpty {
             pageControl.setIndicatorImage(UIImage(systemName: "location.fill"), forPage: 0)
         }
+        pageControlGlass.isHidden = selections.count <= 1
     }
 
     private func showPage(at index: Int, animated: Bool) {

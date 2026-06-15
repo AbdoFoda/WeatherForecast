@@ -47,8 +47,10 @@
 		4442DCC4E63EA26468FAB63A /* testSnapshot_catalog_iPhone.catalog.json in Resources */ = {isa = PBXBuildFile; fileRef = A36D5FA7BA739E2808104E85 /* testSnapshot_catalog_iPhone.catalog.json */; };
 		44F3C71C8DB92191914835F9 /* LocationWeatherViewControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44F246F04D822F8BCE69917E /* LocationWeatherViewControllerTests.swift */; };
 		452C692B8726AEA7658683E6 /* GlassStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67B459D3EBF5D8589828A3F2 /* GlassStyle.swift */; };
+		4929A5E912CC7F8E7C755886 /* TintedGlassBackgroundView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03F9F3C72D524BA7ECEF2FB9 /* TintedGlassBackgroundView.swift */; };
 		49F92D96D82B933B9DB70A87 /* testSnapshot_allWeatherScenes_iPad.thunderstorm.json in Resources */ = {isa = PBXBuildFile; fileRef = BD6F5E6F67DD124E161ECABB /* testSnapshot_allWeatherScenes_iPad.thunderstorm.json */; };
 		4A6D2C95596F15F4E8C789D5 /* ImageLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1136D2FC5D2A2E215A03CD6 /* ImageLoader.swift */; };
+		4F22AF4B32232AEDE6D1DED3 /* ThemeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5058B3CA8B5727D49FE4F71F /* ThemeManager.swift */; };
 		51CD720B4711A237E9B3AC89 /* MockSavedLocationsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5669C21DD090681FF9F909DF /* MockSavedLocationsStore.swift */; };
 		535CC420C07684B620CFF5D0 /* VerticalOnlyScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 248B2243AFAC0E59447C229C /* VerticalOnlyScrollView.swift */; };
 		544021F1D95795961D4E018A /* AppCoordinator+UITesting.swift in Sources */ = {isa = PBXBuildFile; fileRef = B075497B343F5EA28DAB5FD8 /* AppCoordinator+UITesting.swift */; };
@@ -67,6 +69,7 @@
 		6EF03E9B706B3B6838B865AB /* testSnapshot_allWeatherScenes_iPhone.snow.json in Resources */ = {isa = PBXBuildFile; fileRef = B688B1960C42ADBFCA89969C /* testSnapshot_allWeatherScenes_iPhone.snow.json */; };
 		70671226B402171607902008 /* WeatherBackgroundAssetFactory+Precipitation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 636E6E056DE359E2630ED946 /* WeatherBackgroundAssetFactory+Precipitation.swift */; };
 		7238D2BC3A3106F7D61799F5 /* testSnapshot_allWeatherScenes_iPad.partlyCloudyNight.json in Resources */ = {isa = PBXBuildFile; fileRef = D91807FEC48E97AFD3A361D8 /* testSnapshot_allWeatherScenes_iPad.partlyCloudyNight.json */; };
+		74063DDE3FBEAC202C26CE18 /* ThemeSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2D7A1FEC99C034AECB19DE9 /* ThemeSettingsViewController.swift */; };
 		753E3FF42FB81691926DA55E /* UITestLaunchArgument.swift in Sources */ = {isa = PBXBuildFile; fileRef = F61669860A608B048AC4216A /* UITestLaunchArgument.swift */; };
 		771422AC75E031FA075C3DFC /* testSnapshot_allWeatherScenes_iPad.rain.json in Resources */ = {isa = PBXBuildFile; fileRef = BDA161BC118749FEA91F8B4E /* testSnapshot_allWeatherScenes_iPad.rain.json */; };
 		78D6D3A2ACD82F97B2AE0117 /* Config.plist in Resources */ = {isa = PBXBuildFile; fileRef = 566FE958D883DC5A96A01E69 /* Config.plist */; };
@@ -114,11 +117,13 @@
 		C6F1E4322B5FBFB62DAC6865 /* testSnapshot_allWeatherScenes_iPad.unknown.json in Resources */ = {isa = PBXBuildFile; fileRef = B6872F7217657696D47C3FC0 /* testSnapshot_allWeatherScenes_iPad.unknown.json */; };
 		C8A68F656913AE84780F8C38 /* testSnapshot_allWeatherScenes_iPhone.thunderstorm.json in Resources */ = {isa = PBXBuildFile; fileRef = FABF2562BF89C22CB910FEC3 /* testSnapshot_allWeatherScenes_iPhone.thunderstorm.json */; };
 		CB38992975E65F63314E0150 /* LocationWeatherViewController+Layout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97F8118D842C7FA634FA34E2 /* LocationWeatherViewController+Layout.swift */; };
+		CD2846265677ADFF21B533D3 /* ThemePalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02892029F1ADE5A0C3BB85FF /* ThemePalette.swift */; };
 		CD9F7D1DB7050C89DD83DF4D /* WeatherSummaryViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 373B667EFF54C1BFF0D58EC5 /* WeatherSummaryViewTests.swift */; };
 		D4778B607473452C1E8D8BAE /* LocationWeatherSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA7822337A7AC4D3A3367CB4 /* LocationWeatherSource.swift */; };
 		DC0D614CA67C438F53C54178 /* UITestLaunchArgument.swift in Sources */ = {isa = PBXBuildFile; fileRef = F61669860A608B048AC4216A /* UITestLaunchArgument.swift */; };
 		E1688F3BDDF548BB507A75E6 /* WeatherBackgroundEffectsPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1505F3EB62C744A68E4C8288 /* WeatherBackgroundEffectsPolicyTests.swift */; };
 		E211E64961B85FB3851503FA /* DeviceLocationManaging.swift in Sources */ = {isa = PBXBuildFile; fileRef = A67EC1B89925D39D948E2C2F /* DeviceLocationManaging.swift */; };
+		E2542F6F5B8DB49A54098E60 /* ThemeCardCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC88FAD44F5C56A7047E2A79 /* ThemeCardCell.swift */; };
 		E56B1BB070843944C201072F /* TemperatureGraphRendererTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E8269635F04FBDDB0EA7B2B /* TemperatureGraphRendererTests.swift */; };
 		E5EF8AC469C3A5E0FFC14C41 /* WeatherParticleEmitterBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AEF72E637E94AE673DEF732 /* WeatherParticleEmitterBuilder.swift */; };
 		EA1831DA42B164196DCC262C /* AppL10n.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1586BA19A356C3B7AFDE1BF8 /* AppL10n.swift */; };
@@ -154,6 +159,8 @@
 
 /* Begin PBXFileReference section */
 		01837B7EE901B72077346558 /* LocationWeatherViewController+LocationDetails.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LocationWeatherViewController+LocationDetails.swift"; sourceTree = "<group>"; };
+		02892029F1ADE5A0C3BB85FF /* ThemePalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemePalette.swift; sourceTree = "<group>"; };
+		03F9F3C72D524BA7ECEF2FB9 /* TintedGlassBackgroundView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TintedGlassBackgroundView.swift; sourceTree = "<group>"; };
 		05E050219C8E0DCDEA8DFE37 /* testSnapshot_allWeatherScenes_iPad.cloudy.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = testSnapshot_allWeatherScenes_iPad.cloudy.json; sourceTree = "<group>"; };
 		07575764ED69A3D061167614 /* UITestLocationSearchService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITestLocationSearchService.swift; sourceTree = "<group>"; };
 		09368FD00A15FC6110047639 /* LocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationManager.swift; sourceTree = "<group>"; };
@@ -185,6 +192,7 @@
 		479A9310E47A2328CE1CE168 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		4AEF72E637E94AE673DEF732 /* WeatherParticleEmitterBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherParticleEmitterBuilder.swift; sourceTree = "<group>"; };
 		4D121B7787AF6D6CFFDCDE2F /* testSnapshot_allWeatherScenes_iPhone.partlyCloudyDay.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = testSnapshot_allWeatherScenes_iPhone.partlyCloudyDay.json; sourceTree = "<group>"; };
+		5058B3CA8B5727D49FE4F71F /* ThemeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeManager.swift; sourceTree = "<group>"; };
 		5398A2A05D4426AB15CD9696 /* UITestWeatherFixtures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITestWeatherFixtures.swift; sourceTree = "<group>"; };
 		53BF1687A357FAB8EB92DD7A /* TemperatureGraphCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemperatureGraphCell.swift; sourceTree = "<group>"; };
 		5473C3158C22C92EF1FCD20E /* UITestDeviceLocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITestDeviceLocationManager.swift; sourceTree = "<group>"; };
@@ -236,6 +244,7 @@
 		B075497B343F5EA28DAB5FD8 /* AppCoordinator+UITesting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppCoordinator+UITesting.swift"; sourceTree = "<group>"; };
 		B0879003B5F766408D227C59 /* WeatherPagerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherPagerViewController.swift; sourceTree = "<group>"; };
 		B1E1A7CF7FED915B7B02A9E0 /* AccessibilityIdentifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityIdentifier.swift; sourceTree = "<group>"; };
+		B2D7A1FEC99C034AECB19DE9 /* ThemeSettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeSettingsViewController.swift; sourceTree = "<group>"; };
 		B405F1472E1AF3AF7BFCC73C /* WeatherTileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherTileView.swift; sourceTree = "<group>"; };
 		B6872F7217657696D47C3FC0 /* testSnapshot_allWeatherScenes_iPad.unknown.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = testSnapshot_allWeatherScenes_iPad.unknown.json; sourceTree = "<group>"; };
 		B688B1960C42ADBFCA89969C /* testSnapshot_allWeatherScenes_iPhone.snow.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = testSnapshot_allWeatherScenes_iPhone.snow.json; sourceTree = "<group>"; };
@@ -280,6 +289,7 @@
 		F623C0F47A87C8087C574EC0 /* WeatherBackgroundAssetFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherBackgroundAssetFactory.swift; sourceTree = "<group>"; };
 		F7DF9AAD1297FA426933546D /* ProxyConfigurationLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProxyConfigurationLoader.swift; sourceTree = "<group>"; };
 		FABF2562BF89C22CB910FEC3 /* testSnapshot_allWeatherScenes_iPhone.thunderstorm.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = testSnapshot_allWeatherScenes_iPhone.thunderstorm.json; sourceTree = "<group>"; };
+		FC88FAD44F5C56A7047E2A79 /* ThemeCardCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeCardCell.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -348,6 +358,9 @@
 			isa = PBXGroup;
 			children = (
 				67B459D3EBF5D8589828A3F2 /* GlassStyle.swift */,
+				5058B3CA8B5727D49FE4F71F /* ThemeManager.swift */,
+				02892029F1ADE5A0C3BB85FF /* ThemePalette.swift */,
+				03F9F3C72D524BA7ECEF2FB9 /* TintedGlassBackgroundView.swift */,
 				BD3AC6B21A745EA8836BED85 /* WeatherDesignSystem.swift */,
 			);
 			path = DesignSystem;
@@ -516,6 +529,7 @@
 			children = (
 				BF0BA81708D172590F4277CD /* Locations */,
 				FBEE0FCDFB1A8CD24CD23593 /* LocationWeather */,
+				C2E97986270EA9D98FC5CBE7 /* Settings */,
 				20CCF13E31D152E67D66ACEC /* Shared */,
 			);
 			path = Screens;
@@ -543,6 +557,15 @@
 				72D337D347A1EDA37AAAF115 /* LocationsViewControllerDelegate.swift */,
 			);
 			path = Locations;
+			sourceTree = "<group>";
+		};
+		C2E97986270EA9D98FC5CBE7 /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				FC88FAD44F5C56A7047E2A79 /* ThemeCardCell.swift */,
+				B2D7A1FEC99C034AECB19DE9 /* ThemeSettingsViewController.swift */,
+			);
+			path = Settings;
 			sourceTree = "<group>";
 		};
 		D46353D024D7FBEE876E8881 /* TopView */ = {
@@ -821,7 +844,12 @@
 				10B529173A54E8ABBB6BEEAA /* TemperatureGraphCollectionView.swift in Sources */,
 				9786ED40BF64ED3FCC0F8BBE /* TemperatureGraphLayout.swift in Sources */,
 				B26C3F79C2FE2CF9D8D8D972 /* TemperatureGraphRenderer.swift in Sources */,
+				E2542F6F5B8DB49A54098E60 /* ThemeCardCell.swift in Sources */,
+				4F22AF4B32232AEDE6D1DED3 /* ThemeManager.swift in Sources */,
+				CD2846265677ADFF21B533D3 /* ThemePalette.swift in Sources */,
+				74063DDE3FBEAC202C26CE18 /* ThemeSettingsViewController.swift in Sources */,
 				B09A42BA6BC5964B9359FDB7 /* TilesContainerView.swift in Sources */,
+				4929A5E912CC7F8E7C755886 /* TintedGlassBackgroundView.swift in Sources */,
 				31D93FBC586D065CE56DA4EB /* UITestDeviceLocationManager.swift in Sources */,
 				753E3FF42FB81691926DA55E /* UITestLaunchArgument.swift in Sources */,
 				EFF2F45808949BD41547A0A1 /* UITestLocationSearchService.swift in Sources */,

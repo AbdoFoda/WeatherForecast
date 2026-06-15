@@ -64,18 +64,24 @@ final class TemperatureGraphCell: UICollectionViewCell {
 
         [timeLabel, iconView, temperatureLabel].forEach { addSubview($0) }
 
-        curveLayer.strokeColor = WeatherDesignSystem.Graph.Cell.curveColor.cgColor
         curveLayer.fillColor = UIColor.clear.cgColor
         curveLayer.lineWidth = WeatherDesignSystem.Graph.Cell.curveLineWidth
         curveLayer.lineCap = .round
         curveLayer.lineJoin = .round
 
-        dotLayer.fillColor = WeatherDesignSystem.Graph.Cell.curveColor.cgColor
         dotLayer.strokeColor = UIColor.white.cgColor
         dotLayer.lineWidth = WeatherDesignSystem.Graph.Cell.dotBorderWidth
 
+        applyThemeColors()
+
         layer.addSublayer(curveLayer)
         layer.addSublayer(dotLayer)
+    }
+
+    private func applyThemeColors() {
+        let curveColor = ThemeManager.shared.palette.curveColor
+        curveLayer.strokeColor = curveColor.cgColor
+        dotLayer.fillColor = curveColor.cgColor
     }
 
     override func layoutSubviews() {
@@ -128,6 +134,7 @@ final class TemperatureGraphCell: UICollectionViewCell {
         prevNormalizedY: CGFloat,
         nextNormalizedY: CGFloat
     ) {
+        applyThemeColors()
         timeLabel.text = item.time
         temperatureLabel.text = item.temperature
         self.prevNormalizedY = prevNormalizedY

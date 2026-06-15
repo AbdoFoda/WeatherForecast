@@ -12,6 +12,7 @@ final class LocationCardView: UIView {
 
     private let gradientLayer = CAGradientLayer()
     private let scrimLayer = CAGradientLayer()
+    private let themeTintLayer = CAGradientLayer()
     private let glassBlur = UIBlurEffect(style: GlassStyle.cardBlur)
     private lazy var glassVeil = UIVisualEffectView(effect: glassBlur)
     private let highlightBorder = CALayer()
@@ -51,6 +52,10 @@ final class LocationCardView: UIView {
         ]
         scrimLayer.locations = [0.45, 1.0]
         layer.addSublayer(scrimLayer)
+
+        themeTintLayer.startPoint = CGPoint(x: 0, y: 0)
+        themeTintLayer.endPoint = CGPoint(x: 1, y: 1)
+        layer.addSublayer(themeTintLayer)
 
         highlightBorder.borderColor = UIColor.white.withAlphaComponent(0.18).cgColor
         highlightBorder.borderWidth = 1
@@ -172,6 +177,12 @@ final class LocationCardView: UIView {
         let colors = CardPalette.gradient(for: scene)
         gradientLayer.colors = colors
 
+        let palette = ThemeManager.shared.palette
+        themeTintLayer.colors = [
+            palette.cardTintTop.withAlphaComponent(WeatherDesignSystem.Glass.cardTintTopAlpha).cgColor,
+            palette.cardTintBottom.withAlphaComponent(WeatherDesignSystem.Glass.cardTintBottomAlpha).cgColor
+        ]
+
         if let summary = model.summary {
             temperatureLabel.text = summary.temperature
             conditionLabel.text = summary.conditionText
@@ -183,7 +194,7 @@ final class LocationCardView: UIView {
         }
 
         highlightBorder.borderColor = (model.isSelected
-            ? UIColor.white.withAlphaComponent(0.95)
+            ? palette.selectedBorderColor
             : UIColor.white.withAlphaComponent(0.18)).cgColor
         highlightBorder.borderWidth = model.isSelected ? 2 : 1
     }
@@ -192,6 +203,7 @@ final class LocationCardView: UIView {
         super.layoutSubviews()
         gradientLayer.frame = bounds
         scrimLayer.frame = bounds
+        themeTintLayer.frame = bounds
         highlightBorder.frame = bounds
     }
 

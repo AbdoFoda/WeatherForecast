@@ -4,7 +4,9 @@ import WeatherCore
 final class WeatherTileView: UIView {
     var tileKind: TileKind?
 
-    private let glassView = GlassStyle.makeBlurView()
+    private let glassView = TintedGlassBackgroundView(
+        cornerRadius: WeatherDesignSystem.Tile.cornerRadius
+    )
     private let titleLabel = UILabel()
     private let valueLabel = UILabel()
     private let subtitleLabel = UILabel()
@@ -20,10 +22,18 @@ final class WeatherTileView: UIView {
 
     private func setup() {
         backgroundColor = .clear
-        GlassStyle.applyHairline(to: layer, radius: WeatherDesignSystem.Tile.cornerRadius)
-        clipsToBounds = true
+        clipsToBounds = false
+
+        applyTheme()
 
         addSubview(glassView)
+
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(applyTheme),
+            name: .themeDidChange,
+            object: nil
+        )
 
         titleLabel.font = WeatherDesignSystem.Typography.preferred(.headline)
         titleLabel.adjustsFontForContentSizeCategory = true
@@ -39,6 +49,11 @@ final class WeatherTileView: UIView {
         subtitleLabel.numberOfLines = 0
 
         [titleLabel, valueLabel, subtitleLabel].forEach { addSubview($0) }
+    }
+
+    @objc private func applyTheme() {
+        GlassStyle.applyHairline(to: layer, radius: WeatherDesignSystem.Tile.cornerRadius)
+        GlassStyle.applyMagicGlow(to: layer)
     }
 
     override func layoutSubviews() {

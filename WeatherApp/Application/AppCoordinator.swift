@@ -187,9 +187,28 @@ extension AppCoordinator: LocationsViewControllerDelegate {
         controller.present(navigation, animated: true)
     }
 
+    func locationsViewControllerDidTapSettings(_ controller: LocationsViewController) {
+        let settingsController = ThemeSettingsViewController()
+        settingsController.delegate = self
+
+        let navigation = UINavigationController(rootViewController: settingsController)
+        navigation.modalPresentationStyle = .pageSheet
+        if let sheet = navigation.sheetPresentationController {
+            sheet.detents = [.medium(), .large()]
+            sheet.prefersGrabberVisible = true
+        }
+        controller.present(navigation, animated: true)
+    }
+
     func locationsViewControllerDidRequestRefresh(_ controller: LocationsViewController) {
         guard let state = locationsViewModel?.state else { return }
         summariesViewModel?.reload(summaryRequests(for: state))
+    }
+}
+
+extension AppCoordinator: ThemeSettingsViewControllerDelegate {
+    func themeSettingsViewControllerDidFinish(_ controller: ThemeSettingsViewController) {
+        controller.presentingViewController?.dismiss(animated: true)
     }
 }
 
