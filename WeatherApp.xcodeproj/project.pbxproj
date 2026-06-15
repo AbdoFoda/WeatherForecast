@@ -72,6 +72,7 @@
 		78D6D3A2ACD82F97B2AE0117 /* Config.plist in Resources */ = {isa = PBXBuildFile; fileRef = 566FE958D883DC5A96A01E69 /* Config.plist */; };
 		7B76F4A7CDFBC216CAA40359 /* MapKitLocationSearchService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C393CC680AFD65F8E5A7B5FD /* MapKitLocationSearchService.swift */; };
 		7C0D2A40BC930F4968669DDD /* ProxyConfigurationLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7DF9AAD1297FA426933546D /* ProxyConfigurationLoader.swift */; };
+		7DE65769526FD02D35D781E1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CFE8ED386144669536DC04C1 /* Assets.xcassets */; };
 		7E29FEC76F19E27B44012075 /* LocationsViewControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130DD314D7A98FAF570B4AA8 /* LocationsViewControllerTests.swift */; };
 		7FD87854B8740C83B454AD83 /* testSnapshot_allWeatherScenes_iPad.clearNight.json in Resources */ = {isa = PBXBuildFile; fileRef = D1846F3AB7179DF484BF3130 /* testSnapshot_allWeatherScenes_iPad.clearNight.json */; };
 		824438190190530BA883FB89 /* LocationWeatherViewController+LocationDetails.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01837B7EE901B72077346558 /* LocationWeatherViewController+LocationDetails.swift */; };
@@ -252,6 +253,7 @@
 		C9445F5FDA3413101097ABA0 /* MockLocationWeatherViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockLocationWeatherViewModel.swift; sourceTree = "<group>"; };
 		CBC3C1E44B1AA2BF5DD4D1D7 /* testSnapshot_allWeatherScenes_iPhone.neutral.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = testSnapshot_allWeatherScenes_iPhone.neutral.json; sourceTree = "<group>"; };
 		CCA4F0B6BCBA55AA36445574 /* WeatherCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = WeatherCore; path = WeatherCore; sourceTree = SOURCE_ROOT; };
+		CFE8ED386144669536DC04C1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		D1846F3AB7179DF484BF3130 /* testSnapshot_allWeatherScenes_iPad.clearNight.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = testSnapshot_allWeatherScenes_iPad.clearNight.json; sourceTree = "<group>"; };
 		D5654219CB9DB36F592038BB /* AddLocationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddLocationViewController.swift; sourceTree = "<group>"; };
 		D91807FEC48E97AFD3A361D8 /* testSnapshot_allWeatherScenes_iPad.partlyCloudyNight.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = testSnapshot_allWeatherScenes_iPad.partlyCloudyNight.json; sourceTree = "<group>"; };
@@ -554,6 +556,7 @@
 		D8851AA99DF2E8E5E4EA88B7 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				CFE8ED386144669536DC04C1 /* Assets.xcassets */,
 				566FE958D883DC5A96A01E69 /* Config.plist */,
 				E44CC81D863754AF22921D47 /* Config.plist.example */,
 				1BF26741692A427A71D99669 /* Localizable.xcstrings */,
@@ -772,6 +775,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7DE65769526FD02D35D781E1 /* Assets.xcassets in Resources */,
 				78D6D3A2ACD82F97B2AE0117 /* Config.plist in Resources */,
 				24F0CD62976342CF5813DBC2 /* Config.plist.example in Resources */,
 				900BE3082D9EAE8151808C11 /* Localizable.xcstrings in Resources */,

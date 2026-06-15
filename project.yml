@@ -16,7 +16,11 @@ targets:
     info:
       path: WeatherApp/Info.plist
       properties:
-        UILaunchScreen: {}
+        UILaunchScreen:
+          UIImageName: SplashIcon
+          UIColorName: SplashBackground
+        NSAppTransportSecurity:
+          NSAllowsArbitraryLoads: false
         UIApplicationSceneManifest:
           UIApplicationSupportsMultipleScenes: false
           UISceneConfigurations:
