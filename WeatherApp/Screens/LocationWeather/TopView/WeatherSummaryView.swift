@@ -12,6 +12,7 @@ final class WeatherSummaryView: UIView {
     private var iconLoadTask: Task<Void, Never>?
 
     private var displayData: LocationWeatherDisplayData?
+    private var appliedMetricSizeClass: TileLayoutSizeClass?
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -65,6 +66,11 @@ final class WeatherSummaryView: UIView {
 
     private func updateAdaptiveLayout() {
         placeLabel.isHidden = placeLabel.text?.isEmpty ?? true
+        let sizeClass = TileLayoutSizeClass.from(containerWidth: availableWidth)
+        if sizeClass != appliedMetricSizeClass, let displayData {
+            appliedMetricSizeClass = sizeClass
+            rebuildDetailRow(for: displayData, sizeClass: sizeClass)
+        }
         detailRow.isHidden = !showsExpandedSummary || detailRow.arrangedSubviews.isEmpty
     }
 
@@ -157,7 +163,9 @@ final class WeatherSummaryView: UIView {
         temperatureLabel.text = data.currentTemperature
         descriptionLabel.text = data.weatherDescription
         highLowLabel.text = data.tempRange
-        rebuildDetailRow(for: data)
+        let sizeClass = TileLayoutSizeClass.from(containerWidth: availableWidth)
+        appliedMetricSizeClass = sizeClass
+        rebuildDetailRow(for: data, sizeClass: sizeClass)
         updateAdaptiveLayout()
 
         iconLoadTask?.cancel()
@@ -188,7 +196,7 @@ final class WeatherSummaryView: UIView {
         return parts.isEmpty ? nil : parts.joined(separator: "  ·  ")
     }
 
-    private func rebuildDetailRow(for data: LocationWeatherDisplayData) {
+    private func rebuildDetailRow(for data: LocationWeatherDisplayData, sizeClass: TileLayoutSizeClass) {
         detailRow.arrangedSubviews.forEach {
             detailRow.removeArrangedSubview($0)
             $0.removeFromSuperview()
@@ -200,14 +208,26 @@ final class WeatherSummaryView: UIView {
             tilesByKind[kind] = tile
         }
 
-        let order: [TileKind] = [.feelsLike, .humidity, .pressure, .air]
-        for kind in order {
+        for kind in metricKinds(for: sizeClass) {
             guard let tile = tilesByKind[kind] else { continue }
-            detailRow.addArrangedSubview(makeMetricChip(title: tile.title, value: tile.value))
+            detailRow.addArrangedSubview(
+                makeMetricChip(title: tile.title, value: tile.value, subtitle: tile.subtitle)
+            )
         }
     }
 
-    private func makeMetricChip(title: String, value: String) -> UIView {
+    private func metricKinds(for sizeClass: TileLayoutSizeClass) -> [TileKind] {
+        switch sizeClass {
+        case .compact:
+            return []
+        case .regular:
+            return [.feelsLike, .humidity, .wind, .pressure, .air]
+        case .large:
+            return [.feelsLike, .humidity, .wind, .pressure, .visibility, .sun, .air]
+        }
+    }
+
+    private func makeMetricChip(title: String, value: String, subtitle: String?) -> UIView {
         let valueLabel = UILabel()
         valueLabel.font = WeatherDesignSystem.Typography.preferred(.headline)
         valueLabel.adjustsFontForContentSizeCategory = true
@@ -230,6 +250,24 @@ final class WeatherSummaryView: UIView {
         chip.axis = .vertical
         chip.alignment = .center
         chip.spacing = WeatherDesignSystem.Spacing.xxs
+
+        var accessibilityValue = "\(title), \(value)"
+        if let subtitle, !subtitle.isEmpty {
+            let subtitleLabel = UILabel()
+            subtitleLabel.font = WeatherDesignSystem.Typography.preferred(.caption2)
+            subtitleLabel.adjustsFontForContentSizeCategory = true
+            subtitleLabel.textAlignment = .center
+            subtitleLabel.numberOfLines = 1
+            subtitleLabel.adjustsFontSizeToFitWidth = true
+            subtitleLabel.minimumScaleFactor = 0.6
+            subtitleLabel.text = subtitle
+            WeatherSkyReadableText.applySecondary(to: subtitleLabel)
+            chip.addArrangedSubview(subtitleLabel)
+            accessibilityValue += ", \(subtitle)"
+        }
+
+        chip.isAccessibilityElement = true
+        chip.accessibilityLabel = accessibilityValue
         return chip
     }
 }
